@@ -51,7 +51,15 @@ export function StockProvider({ children }) {
   // Leitura dos dados mais recentes (útil para quem precisa calcular antes de agir).
   const lerDados = useCallback(() => dadosRef.current, []);
 
-  const valor = useMemo(() => ({ ...dados, ...acoes, lerDados }), [dados, acoes, lerDados]);
+  // Situação do carregamento: "carregando" | "pronto" | "erro". Com os mocks é sempre "pronto";
+  // o back-end vai alimentar este valor e `recarregar` ("Tentar novamente").
+  const [status] = useState("pronto");
+  const recarregar = useCallback(() => {}, []);
+
+  const valor = useMemo(
+    () => ({ ...dados, ...acoes, lerDados, status, recarregar }),
+    [dados, acoes, lerDados, status, recarregar],
+  );
 
   return <StockContext.Provider value={valor}>{children}</StockContext.Provider>;
 }

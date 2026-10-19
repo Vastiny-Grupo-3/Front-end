@@ -1,0 +1,45 @@
+.etiquetas {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--espaco-8);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* raio-total, cor-fundo, borda cor-texto-secundario, com "X" */
+.etiqueta {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--espaco-4);
+  padding-left: var(--espaco-12);
+  border: var(--borda-1) solid var(--cor-texto-secundario);
+  border-radius: var(--raio-total);
+  background: var(--cor-fundo);
+  font: var(--texto-label);
+  color: var(--cor-texto);
+}
+
+.etiqueta__remover {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--alvo-toque);
+  height: var(--alvo-toque);
+  padding: 0;
+  border: 0;
+  border-radius: var(--raio-total);
+  background: transparent;
+  color: var(--cor-texto);
+  cursor: pointer;
+}
+
+.etiqueta__remover:hover {
+  background: var(--cor-borda);
+}
+
+.etiqueta__remover svg {
+  width: var(--espaco-16);
+  height: var(--espaco-16);
+}

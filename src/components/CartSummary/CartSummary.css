@@ -1,0 +1,72 @@
+/* Contêiner com borda cor-texto-secundario, raio-12, cor-superficie */
+.resumo-carrinho {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espaco-8) var(--espaco-16);
+  padding: var(--espaco-8) var(--espaco-16);
+  border: var(--borda-1) solid var(--cor-texto-secundario);
+  border-radius: var(--raio-12);
+  background: var(--cor-superficie);
+}
+
+.resumo-carrinho__dados {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espaco-8);
+  margin: 0;
+}
+
+.resumo-carrinho__item {
+  display: flex;
+  gap: var(--espaco-4);
+  padding: var(--espaco-8) var(--espaco-12);
+  border: var(--borda-1) solid var(--cor-texto-secundario);
+  border-radius: var(--raio-8);
+  font: var(--texto-corpo);
+  color: var(--cor-texto);
+}
+
+.resumo-carrinho__item dt {
+  font-weight: 400;
+}
+
+.resumo-carrinho__item dd {
+  margin: 0;
+  font-weight: 600;
+}
+
+/* "Alterar carrinho" com aparência de link (texto-link, sublinhado no hover) */
+.resumo-carrinho__alterar {
+  min-height: var(--alvo-toque);
+  padding: 0 var(--espaco-8);
+  border: 0;
+  border-radius: var(--raio-8);
+  background: none;
+  color: var(--cor-primaria);
+  font: var(--texto-link);
+  cursor: pointer;
+}
+
+.resumo-carrinho__alterar:hover {
+  text-decoration: underline;
+}
+
+.resumo-carrinho__esqueleto {
+  width: calc(var(--largura-menu) - var(--espaco-48));
+  height: var(--espaco-24);
+}
+
+/* bp-base: os 3 indicadores empilham e "Alterar carrinho" vai para a última linha */
+@media (max-width: 767px) {
+  .resumo-carrinho,
+  .resumo-carrinho__dados {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .resumo-carrinho__alterar {
+    align-self: flex-start;
+  }
+}
