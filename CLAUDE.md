@@ -6,6 +6,7 @@ Sistema web de controle de estoque e vendas para auto elétricas.
 
 - Especificação de design: `docs/vastiny-design-spec-v2.md` (tokens, componentes, telas, fluxos, acessibilidade e decisões).
 - Wireframes: `docs/wireframes/` (guia de layout; a especificação prevalece quando houver diferença).
+- Plano de etapas e progresso: `docs/etapas.md`. Trabalhar uma etapa por vez e, ao concluir, marcá-la como concluída na tabela de progresso no mesmo commit da etapa.
 
 ## Escopo
 
@@ -19,6 +20,11 @@ Sistema web de controle de estoque e vendas para auto elétricas.
 - React 19.2.7, JavaScript (sem TypeScript) e CSS puro.
 - Dependências permitidas: `react-router-dom` e `lucide-react`. Não adicionar outras sem perguntar.
 - Gráficos do Dashboard: SVG/CSS próprios, sem biblioteca.
+
+## Comandos
+
+- `npm run dev`: servidor de desenvolvimento (Vite).
+- `npm run build`: build de produção. Rodar ao fim de cada etapa e corrigir erros antes do commit.
 
 ## Regras
 
