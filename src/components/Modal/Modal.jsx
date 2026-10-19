@@ -94,13 +94,15 @@ export default function Modal({
     };
   }, [container]);
 
-  // Foco inicial: primeiro campo ou o título.
+  // Foco inicial: primeiro campo ou o título. Com título oculto, o foco não pode ficar
+  // num elemento invisível: vai para o primeiro controle do modal.
   useEffect(() => {
     if (!container || !painelRef.current) return;
     const primeiroCampo =
       focoInicial === "campo" ? painelRef.current.querySelector(SELETOR_CAMPOS) : null;
-    (primeiroCampo ?? tituloRef.current)?.focus();
-  }, [container, focoInicial]);
+    const alvoTitulo = tituloOculto ? focaveis(painelRef.current)[0] : tituloRef.current;
+    (primeiroCampo ?? alvoTitulo ?? tituloRef.current)?.focus();
+  }, [container, focoInicial, tituloOculto]);
 
   // Teclado ouvido no documento: Esc e Tab funcionam mesmo se o elemento focado
   // sair da tela (ex.: item removido) e o foco cair no body.

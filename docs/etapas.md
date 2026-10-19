@@ -18,7 +18,7 @@ Para pedir uma etapa ao Claude Code, basta escrever: `Faça a Etapa N de docs/et
 | 8 | Catálogo e filtros (TL01 e TL17) | Concluída | `feat: catálogo e modal de filtros` |
 | 9 | Carrinho (TL02, TL03 e TL19) | Concluída | `feat: carrinho, modal do carrinho e compra finalizada` |
 | 10 | Clientes (TL04 e TL05) | Concluída | `feat: clientes e modais de cliente` |
-| 11 | Histórico (TL06 a TL11) | Pendente | `feat: histórico com seis abas` |
+| 11 | Histórico (TL06 a TL11) | Concluída | `feat: histórico com seis abas` |
 | 12 | Dashboard (TL12) | Pendente | `feat: dashboard` |
 | 13 | Entrada e Saída (TL13 e TL14) | Pendente | `feat: entrada e saída de estoque` |
 | 14 | Configurações (TL15, TL16 e TL20) | Pendente | `feat: configurações, cadastro de conta e categorias` |
@@ -39,6 +39,7 @@ Para pedir uma etapa ao Claude Code, basta escrever: `Faça a Etapa N de docs/et
 - Lucro da venda = soma de (quantidade × lucro por unidade) − descontos dos itens.
 - Carrinho (Etapa 9): o modal TL02 fica no AppShell e abre pelo ícone do carrinho de qualquer `PageHeader` com `carrinho` e por "Alterar carrinho". A pesquisa do cabeçalho da TL03 filtra os itens do carrinho pelo nome. O título do TL02 é só para leitores de tela (o wireframe não mostra título).
 - Modal: a prop `focoAoFechar` define para onde vai o foco quando o botão que abriu o modal deixa de existir (ex.: linha excluída em Clientes).
+- Histórico (Etapa 11): as seis abas são configuradas em `src/pages/Historico/abasHistorico.js` e usam um único `HistoryTable`. Os painéis de detalhes não têm título visível (como nos wireframes); o título existe só para leitores de tela. Ids de transação e de cliente com 3 dígitos ("001") e ids de produto e de cadastro com 4 ("0001"), como nos wireframes.
 - Os filtros (`src/utils/filtros.js`, `FilterModal`, `FilterChips`) já aceitam as opções da Entrada e da Saída (`mostrarAbaixoMinimo`).
 - `status` do StockContext é sempre "pronto" com os mocks; os estados carregando e erro das telas aparecem quando o back-end alimentar esse valor.
 - O build mostra um aviso `"use client"` vindo de dentro do `lucide-react`; é inofensivo, mas precisa ser tratado na Etapa 17 (build sem avisos).

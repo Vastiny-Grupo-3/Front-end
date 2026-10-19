@@ -1,0 +1,12 @@
+/* Nomes longos quebram em duas linhas na célula "Nome" */
+.historico-tabela .tabela__linha td {
+  overflow-wrap: anywhere;
+}
+
+/* Coluna "…" fixa à direita (só no modo tabela; em bp-base a linha vira cartão) */
+@media (min-width: 768px) {
+  .historico-tabela .tabela__linha td:last-child {
+    width: calc(var(--alvo-toque) + var(--espaco-24));
+    text-align: right;
+  }
+}

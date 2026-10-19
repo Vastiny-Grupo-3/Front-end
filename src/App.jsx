@@ -45,12 +45,10 @@ export default function App() {
             <Route path="carrinho" element={<Carrinho />} />
             <Route path="clientes" element={<Clientes />} />
             <Route path="historico" element={<Historico />}>
-              <Route index element={<HistoricoAba />} />
-              <Route path="clientes" element={<HistoricoAba />} />
-              <Route path="entrada" element={<HistoricoAba />} />
-              <Route path="saida" element={<HistoricoAba />} />
-              <Route path="cadastro-produtos" element={<HistoricoAba />} />
-              <Route path="cadastro-clientes" element={<HistoricoAba />} />
+              <Route index element={<HistoricoAba key="vendas" id="vendas" />} />
+              {["clientes", "entrada", "saida", "cadastro-produtos", "cadastro-clientes"].map((id) => (
+                <Route key={id} path={id} element={<HistoricoAba key={id} id={id} />} />
+              ))}
             </Route>
             <Route path="dashboard" element={<Dashboard />} />
             <Route path="entrada" element={<Entrada />} />

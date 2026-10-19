@@ -1,0 +1,37 @@
+.detalhes-historico {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-24);
+}
+
+.detalhes-historico__campos {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(calc(var(--largura-menu) - var(--espaco-32)), 1fr));
+  gap: var(--espaco-16);
+  margin: 0;
+}
+
+.detalhes-historico__campo dt {
+  font: var(--texto-label);
+  color: var(--cor-texto-secundario);
+}
+
+.detalhes-historico__campo dd {
+  margin: var(--espaco-4) 0 0;
+  font: var(--texto-corpo);
+  font-weight: 600;
+  color: var(--cor-texto);
+  overflow-wrap: anywhere;
+}
+
+.detalhes-historico__venda {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-8);
+  padding-top: var(--espaco-16);
+  border-top: var(--borda-1) solid var(--cor-borda);
+}
+
+.detalhes-historico__titulo-venda {
+  font: var(--texto-h3);
+}
