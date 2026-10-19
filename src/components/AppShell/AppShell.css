@@ -1,0 +1,104 @@
+.casca {
+  display: grid;
+  grid-template-columns: var(--largura-menu) minmax(0, 1fr);
+  min-height: 100vh;
+  background: var(--cor-fundo);
+}
+
+.casca__barra-topo,
+.casca__fechar-gaveta,
+.casca__sobreposicao {
+  display: none;
+}
+
+.casca__lateral {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  border-right: var(--borda-1) solid var(--cor-borda);
+  background: var(--cor-superficie);
+}
+
+.casca__conteudo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-32);
+  min-width: 0;
+  padding: var(--espaco-48);
+}
+
+.casca__conteudo:focus {
+  outline: none;
+}
+
+/* bp-1024: margem da página espaco-32 */
+@media (max-width: 1439px) {
+  .casca__conteudo {
+    padding: var(--espaco-32);
+  }
+}
+
+/* Abaixo de 1024 px a barra lateral vira gaveta */
+@media (max-width: 1023px) {
+  .casca {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto 1fr;
+  }
+
+  .casca__barra-topo {
+    display: flex;
+    align-items: center;
+    gap: var(--espaco-12);
+    padding: var(--espaco-8) var(--espaco-24);
+    border-bottom: var(--borda-1) solid var(--cor-borda);
+    background: var(--cor-superficie);
+  }
+
+  .casca__marca {
+    font: var(--texto-h3);
+    color: var(--cor-texto);
+  }
+
+  .casca__lateral {
+    position: fixed;
+    z-index: var(--camada-modal);
+    inset: 0 auto 0 0;
+    display: none;
+    flex-direction: column;
+    width: min(var(--largura-menu), 100vw);
+    box-shadow: var(--sombra-modal);
+  }
+
+  .casca--gaveta-aberta .casca__lateral {
+    display: flex;
+  }
+
+  .casca__fechar-gaveta {
+    display: flex;
+    justify-content: flex-end;
+    padding: var(--espaco-8) var(--espaco-8) 0;
+  }
+
+  .casca--gaveta-aberta .casca__sobreposicao {
+    position: fixed;
+    z-index: calc(var(--camada-modal) - 1);
+    inset: 0;
+    display: block;
+    background: var(--cor-sobreposicao);
+  }
+
+  .casca__conteudo {
+    padding: var(--espaco-24);
+  }
+}
+
+/* bp-base: margem espaco-16 */
+@media (max-width: 767px) {
+  .casca__barra-topo {
+    padding-inline: var(--espaco-16);
+  }
+
+  .casca__conteudo {
+    padding: var(--espaco-16);
+  }
+}

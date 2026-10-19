@@ -1,0 +1,45 @@
+.login {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: var(--espaco-16);
+  background: var(--cor-fundo);
+}
+
+.login:focus {
+  outline: none;
+}
+
+.login__cartao {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-24);
+  width: 100%;
+  max-width: var(--largura-login);
+  padding: var(--espaco-32);
+  border-radius: var(--raio-16);
+  background: var(--cor-superficie);
+  box-shadow: var(--sombra-modal);
+}
+
+.login__marca {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-8);
+}
+
+.login__frase {
+  margin: 0;
+  color: var(--cor-texto-secundario);
+}
+
+.login__formulario {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-16);
+}
+
+.login__entrar {
+  width: 100%;
+}

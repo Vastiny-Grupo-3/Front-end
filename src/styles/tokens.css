@@ -74,6 +74,8 @@
   --modal-medio: 640px;
   --modal-grande: 960px;
   --largura-toast: 360px;
+  --largura-pesquisa: 320px;
+  --largura-login: 420px;
 
   /* Camadas */
   --camada-modal: 100;
