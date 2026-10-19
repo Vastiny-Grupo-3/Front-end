@@ -1,0 +1,160 @@
+/* Cartão de seção: cor-superficie, borda cor-borda, raio-16, padding e gap espaco-24 */
+.secao {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-24);
+  padding: var(--espaco-24);
+  border: var(--borda-1) solid var(--cor-borda);
+  border-radius: var(--raio-16);
+  background: var(--cor-superficie);
+}
+
+/* "Ações da conta": borda 1 px cor-erro */
+.secao--perigo {
+  border-color: var(--cor-erro);
+}
+
+.secao__cabecalho {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--espaco-16);
+}
+
+.secao__titulos {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-4);
+}
+
+.secao__titulo {
+  font: var(--texto-h2);
+}
+
+.secao__subtitulo,
+.secao__texto {
+  margin: 0;
+  font: var(--texto-corpo);
+  color: var(--cor-texto-secundario);
+}
+
+.secao__texto {
+  color: var(--cor-texto);
+}
+
+.secao__formulario {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-16);
+}
+
+/* Campos em 2 colunas a partir de bp-768 */
+.secao__duas-colunas {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--espaco-16);
+}
+
+.secao__rodape {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.secao__botoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espaco-8);
+}
+
+.secao__erro,
+.secao__aviso {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--espaco-8);
+  margin: 0;
+  padding: var(--espaco-12) var(--espaco-16);
+  border: var(--borda-1) solid var(--cor-erro);
+  border-radius: var(--raio-8);
+  color: var(--cor-erro);
+}
+
+.secao__aviso {
+  border-color: var(--cor-alerta);
+  color: var(--cor-texto);
+}
+
+.secao__icone-erro {
+  width: var(--tamanho-icone);
+  height: var(--tamanho-icone);
+  flex-shrink: 0;
+}
+
+.secao__lista:focus {
+  outline: none;
+}
+
+.secao__acoes-linha {
+  display: flex;
+  gap: var(--espaco-8);
+}
+
+.secao__excluir.botao--icone {
+  color: var(--cor-erro);
+}
+
+/* TL16 */
+.nova-conta {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-16);
+}
+
+.nova-conta__acesso {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-4);
+  padding-top: var(--espaco-16);
+  border-top: var(--borda-1) solid var(--cor-borda);
+}
+
+.nova-conta__titulo-acesso {
+  font: var(--texto-label);
+  font-weight: 600;
+}
+
+.nova-conta__texto {
+  margin: 0;
+  font: var(--texto-corpo-pequeno);
+  color: var(--cor-texto-secundario);
+}
+
+/* bp-base: 1 coluna; botões empilhados */
+@media (max-width: 767px) {
+  .secao {
+    padding: var(--espaco-16);
+  }
+
+  .secao__duas-colunas {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .secao__botoes,
+  .secao__botoes .botao,
+  .secao__rodape .botao {
+    width: 100%;
+  }
+
+  .secao__botoes {
+    flex-direction: column;
+  }
+
+  /* TL16: "Cadastrar conta" primeiro */
+  .modal:has(.nova-conta) .modal__rodape {
+    flex-direction: column-reverse;
+  }
+
+  .modal:has(.nova-conta) .modal__rodape .botao {
+    width: 100%;
+  }
+}

@@ -28,19 +28,23 @@ function focaveis(elemento) {
  * Modal acessível: foco preso, Esc fecha, foco volta ao gatilho e o restante
  * da página fica inerte enquanto ele está aberto.
  *
- * tamanho: "pequeno" (~480 px) | "medio" (~640 px) | "grande" (~960 px)
+ * tamanho: "pequeno" (~480 px) | "medio" (~640 px) | "largo" (~720 px) | "grande" (~960 px)
  * focoInicial: "campo" (primeiro campo) | "titulo" (confirmações e detalhes)
  * tituloOculto: o título só existe para leitores de tela (quando o wireframe não o mostra)
+ * subtitulo: texto de apoio sob o título
+ * rodapeADireita: botões do rodapé alinhados à direita (padrão: Cancelar à esquerda)
  * focoAoFechar: ref do elemento que recebe o foco se o gatilho deixar de existir (ex.: item excluído)
  */
 export default function Modal({
   aberto,
   aoFechar,
   titulo,
+  subtitulo,
   tituloOculto = false,
   tamanho = "medio",
   focoInicial = "campo",
   mostrarFechar = false,
+  rodapeADireita = false,
   focoAoFechar,
   erro,
   rodape,
@@ -162,14 +166,17 @@ export default function Modal({
         aria-labelledby={idTitulo}
       >
         <div className={`modal__cabecalho ${tituloOculto ? "modal__cabecalho--sem-titulo" : ""}`.trim()}>
-          <h2
-            id={idTitulo}
-            ref={tituloRef}
-            tabIndex={-1}
-            className={tituloOculto ? "sr-only" : "modal__titulo"}
-          >
-            {titulo}
-          </h2>
+          <div>
+            <h2
+              id={idTitulo}
+              ref={tituloRef}
+              tabIndex={-1}
+              className={tituloOculto ? "sr-only" : "modal__titulo"}
+            >
+              {titulo}
+            </h2>
+            {subtitulo && <p className="modal__subtitulo">{subtitulo}</p>}
+          </div>
           {mostrarFechar && (
             <Button variante="icone" icone={X} aria-label="Fechar" onClick={aoFechar} />
           )}
@@ -181,7 +188,11 @@ export default function Modal({
           </p>
         )}
         <div className="modal__conteudo">{children}</div>
-        {rodape && <div className="modal__rodape">{rodape}</div>}
+        {rodape && (
+          <div className={`modal__rodape ${rodapeADireita ? "modal__rodape--direita" : ""}`.trim()}>
+            {rodape}
+          </div>
+        )}
       </div>
     </div>,
     container,

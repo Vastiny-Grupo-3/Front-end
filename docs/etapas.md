@@ -21,7 +21,7 @@ Para pedir uma etapa ao Claude Code, basta escrever: `Faça a Etapa N de docs/et
 | 11 | Histórico (TL06 a TL11) | Concluída | `feat: histórico com seis abas` |
 | 12 | Dashboard (TL12) | Concluída | `feat: dashboard` |
 | 13 | Entrada e Saída (TL13 e TL14) | Concluída | `feat: entrada e saída de estoque` |
-| 14 | Configurações (TL15, TL16 e TL20) | Pendente | `feat: configurações, cadastro de conta e categorias` |
+| 14 | Configurações (TL15, TL16 e TL20) | Concluída | `feat: configurações, cadastro de conta e categorias` |
 | 15 | Revisão de acessibilidade | Pendente | `fix: ajustes de acessibilidade` |
 | 16 | Revisão visual contra os wireframes | Pendente | `fix: alinhamento com wireframes e especificação` |
 | 17 | Entrega | Pendente | `docs: README e build final` |
@@ -30,9 +30,8 @@ Para pedir uma etapa ao Claude Code, basta escrever: `Faça a Etapa N de docs/et
 
 - `lucide-react` (Etapa 4) e `react-router-dom` (Etapa 5) já estão instalados.
 - A página temporária `/componentes` (Etapa 4) é uma rota pública em `src/App.jsx`; removê-la quando as telas reais existirem.
-- Login (Etapa 7): `entrar` no AuthContext é assíncrona e devolve `{ ok, motivo }`. Na autenticação simulada qualquer e-mail e senha preenchidos entram, então as mensagens de credenciais incorretas e de erro de conexão só aparecem quando o back-end existir.
+- Login (Etapa 7): `entrar` no AuthContext é assíncrona e devolve `{ ok, motivo }`. Desde a Etapa 14 o login confere as contas de `src/data/contas.js` (a conta de teste está nesse arquivo); o erro de conexão só aparece quando o back-end existir.
 - `PasswordField` (mostrar/ocultar senha) fica disponível para as senhas da Etapa 14.
-- O nome do usuário na saudação vem, por enquanto, da parte do e-mail antes do @; trocar pelo nome da conta quando existirem os dados das contas.
 - Dados (Etapa 6): ficam em memória; recarregar a página volta aos mocks de `src/data/`. As regras estão em funções puras em `src/utils/carrinho.js` e `src/utils/estoque.js`; os contextos só guardam o estado.
 - Produto guarda `categoriaId` (e não o nome) para que renomear uma categoria atualize os produtos; os registros do histórico guardam o nome da época.
 - O campo `estado` do estoque não é recalculado no front: entradas, saídas e vendas não o alteram, e produto novo fica com `estado: null` até o back-end enviar o valor.
@@ -45,6 +44,7 @@ Para pedir uma etapa ao Claude Code, basta escrever: `Faça a Etapa N de docs/et
 - Paleta dos gráficos: o validador de cores aponta `cor-grafico-4` (#C25100) e `cor-grafico-5` (#DE350B) como difíceis de distinguir (daltonismo protan e até visão normal). O gráfico compensa com o nome da categoria e o valor em cada barra, mas vale a equipe revisar essas cores.
 - Entrada e Saída (Etapa 13): `ProductBrowser` (filtros + etiquetas + grade) é usado por Catálogo, Entrada e Saída; `StockMovementModal` faz "Adicionar Quantidade" e "Diminuir Quantidade". Os modais "Novo Produto" e "Editar Produto" têm "Cancelar" à esquerda (anatomia padrão do Modal), embora o wireframe só mostre o botão principal. A imagem do produto fica em memória como data URL até existir back-end.
 - Stepper: nos limites os botões usam `aria-disabled` (e não `disabled`) para não perder o foco do teclado.
+- Configurações (Etapa 14): regras de conta em `src/utils/contas.js`. Contas e sessão ficam no sessionStorage (somem ao fechar a aba). Excluir conta remove só a conta e o acesso dela; textos da TL15/TL20 ajustados (ver CLAUDE.md). "Informe o nome de usuário." foi criado porque a especificação não define mensagem para o nome vazio.
 - Os filtros (`src/utils/filtros.js`, `FilterModal`, `FilterChips`) já aceitam as opções da Entrada e da Saída (`mostrarAbaixoMinimo`).
 - `status` do StockContext é sempre "pronto" com os mocks; os estados carregando e erro das telas aparecem quando o back-end alimentar esse valor.
 - O build mostra um aviso `"use client"` vindo de dentro do `lucide-react`; é inofensivo, mas precisa ser tratado na Etapa 17 (build sem avisos).

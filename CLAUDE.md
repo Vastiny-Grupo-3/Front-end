@@ -41,4 +41,6 @@ Sistema web de controle de estoque e vendas para auto elétricas.
 
 - Os modais TL02 (Carrinho) e TL17 (Filtros) devem retornar à tela que os abriu quando forem fechados ou cancelados.
 - Senhas: exigir preenchimento, mínimo de 8 caracteres e pelo menos uma letra e um número. A confirmação deve corresponder à senha. Não acrescentar outras regras de composição sem perguntar.
+- Excluir conta remove a conta e, com ela, o acesso daquela conta; os dados da empresa ficam. Por isso os textos da TL15 ("Sair encerra sua sessão. Excluir conta remove seu acesso.") e da TL20 ("Tem certeza que deseja excluir sua conta? Você perderá o acesso. Esta ação não pode ser desfeita.") não dizem que os dados são removidos, diferente da especificação.
+- O login confere as contas de `src/data/contas.js` (a conta de teste está nesse arquivo); qualquer e-mail ou senha fora delas mostra o erro de credenciais.
 - As referências a RF01–RF39 não incluem todos os critérios completos. Usar as descrições de tela e regras presentes na especificação; não inventar comportamentos adicionais.

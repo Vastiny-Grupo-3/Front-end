@@ -16,6 +16,7 @@ export default function ConfirmModal({
   rotuloCancelar = "Cancelar",
   destrutivo = false,
   carregando = false,
+  confirmarDesabilitado = false,
   focoAoFechar,
   erro,
   children,
@@ -37,6 +38,7 @@ export default function ConfirmModal({
           <Button
             variante={destrutivo ? "destrutivo" : "primario"}
             onClick={aoConfirmar}
+            disabled={confirmarDesabilitado}
             carregando={carregando}
           >
             {rotuloConfirmar}

@@ -1,61 +1,107 @@
-import { createContext, useCallback, useContext, useMemo, useState } from "react";
+import { createContext, useCallback, useContext, useMemo, useRef, useState } from "react";
+import { contas as contasIniciais } from "../data/contas.js";
+import * as regras from "../utils/contas.js";
 
 /*
- * Autenticação simulada até existir back-end: qualquer e-mail e senha
- * preenchidos entram. A sessão fica no sessionStorage para sobreviver ao
- * recarregamento da página.
+ * Autenticação com as contas mockadas de src/data/contas.js até existir back-end.
+ * Contas e sessão ficam no sessionStorage para sobreviver ao recarregamento da página.
+ * Excluir uma conta remove só aquela conta (e o acesso dela); os dados da empresa ficam.
  */
 
 const CHAVE_SESSAO = "vastiny:sessao";
+const CHAVE_CONTAS = "vastiny:contas";
 
 const AuthContext = createContext(null);
 
-function lerSessao() {
+function ler(chave, padrao) {
   try {
-    const salva = sessionStorage.getItem(CHAVE_SESSAO);
-    return salva ? JSON.parse(salva) : null;
+    const salvo = sessionStorage.getItem(chave);
+    return salvo ? JSON.parse(salvo) : padrao;
   } catch {
-    return null;
+    return padrao;
   }
 }
 
-function gravarSessao(usuario) {
+function gravar(chave, valor) {
   try {
-    if (usuario) sessionStorage.setItem(CHAVE_SESSAO, JSON.stringify(usuario));
-    else sessionStorage.removeItem(CHAVE_SESSAO);
+    if (valor == null) sessionStorage.removeItem(chave);
+    else sessionStorage.setItem(chave, JSON.stringify(valor));
   } catch {
-    // Sem armazenamento disponível: a sessão vale só enquanto a página estiver aberta.
+    // Sem armazenamento disponível: os dados valem só enquanto a página estiver aberta.
   }
-}
-
-/* Provisório: o nome vem do e-mail até existirem os dados das contas. */
-function nomeDoEmail(email) {
-  const parte = email.split("@")[0];
-  return parte.charAt(0).toUpperCase() + parte.slice(1);
 }
 
 export function AuthProvider({ children }) {
-  const [usuario, setUsuario] = useState(lerSessao);
+  const [contas, setContas] = useState(() => ler(CHAVE_CONTAS, contasIniciais));
+  const [idSessao, setIdSessao] = useState(() => ler(CHAVE_SESSAO, null)?.id ?? null);
+  const contasRef = useRef(contas);
+
+  const guardarContas = useCallback((novas) => {
+    contasRef.current = novas;
+    gravar(CHAVE_CONTAS, novas);
+    setContas(novas);
+  }, []);
+
+  const abrirSessao = useCallback((id) => {
+    gravar(CHAVE_SESSAO, id == null ? null : { id });
+    setIdSessao(id);
+  }, []);
+
+  const conta = contas.find((item) => item.id === idSessao) ?? null;
+  const usuario = useMemo(
+    () => (conta ? { id: conta.id, nome: conta.nome, email: conta.email } : null),
+    [conta],
+  );
 
   /**
    * Autentica o usuário. Assíncrona para já ter o formato do back-end.
    * Resolve com { ok: true } ou { ok: false, motivo: "credenciais" | "conexao" }.
    */
-  const entrar = useCallback(async (email, senha) => {
-    const emailLimpo = email.trim();
-    if (!emailLimpo || !senha) return { ok: false, motivo: "credenciais" };
-    const novoUsuario = { email: emailLimpo, nome: nomeDoEmail(emailLimpo) };
-    gravarSessao(novoUsuario);
-    setUsuario(novoUsuario);
-    return { ok: true };
-  }, []);
+  const entrar = useCallback(
+    async (email, senha) => {
+      const encontrada = regras.autenticar(contasRef.current, email, senha);
+      if (!encontrada) return { ok: false, motivo: "credenciais" };
+      abrirSessao(encontrada.id);
+      return { ok: true };
+    },
+    [abrirSessao],
+  );
 
-  const sair = useCallback(() => {
-    gravarSessao(null);
-    setUsuario(null);
-  }, []);
+  const sair = useCallback(() => abrirSessao(null), [abrirSessao]);
 
-  const valor = useMemo(() => ({ usuario, entrar, sair }), [usuario, entrar, sair]);
+  const cadastrarConta = useCallback(
+    (dados) => {
+      const resultado = regras.cadastrarConta(contasRef.current, dados);
+      if (!resultado.erros) guardarContas(resultado.contas);
+      return { erros: resultado.erros, conta: resultado.conta };
+    },
+    [guardarContas],
+  );
+
+  const atualizarConta = useCallback(
+    (dados) => {
+      const resultado = regras.atualizarConta(contasRef.current, idSessao, dados);
+      if (!resultado.erros) guardarContas(resultado.contas);
+      return { erros: resultado.erros };
+    },
+    [guardarContas, idSessao],
+  );
+
+  const excluirConta = useCallback(
+    (senhaAtual) => {
+      const resultado = regras.excluirConta(contasRef.current, idSessao, senhaAtual);
+      if (resultado.erro) return { erro: resultado.erro };
+      guardarContas(resultado.contas);
+      abrirSessao(null);
+      return {};
+    },
+    [guardarContas, abrirSessao, idSessao],
+  );
+
+  const valor = useMemo(
+    () => ({ usuario, entrar, sair, cadastrarConta, atualizarConta, excluirConta }),
+    [usuario, entrar, sair, cadastrarConta, atualizarConta, excluirConta],
+  );
 
   return <AuthContext.Provider value={valor}>{children}</AuthContext.Provider>;
 }

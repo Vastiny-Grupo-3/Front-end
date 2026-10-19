@@ -36,6 +36,10 @@ body.modal-aberto {
   max-width: var(--modal-medio);
 }
 
+.modal--largo {
+  max-width: var(--modal-largo);
+}
+
 .modal--grande {
   max-width: var(--modal-grande);
 }
@@ -53,6 +57,12 @@ body.modal-aberto {
 
 .modal__titulo {
   font: var(--texto-h3);
+}
+
+.modal__subtitulo {
+  margin: var(--espaco-4) 0 0;
+  font: var(--texto-corpo-pequeno);
+  color: var(--cor-texto-secundario);
 }
 
 .modal__titulo:focus {
@@ -93,6 +103,10 @@ body.modal-aberto {
   justify-content: space-between;
   gap: var(--espaco-8);
   margin-top: var(--espaco-8);
+}
+
+.modal__rodape--direita {
+  justify-content: flex-end;
 }
 
 @keyframes modal-surgir {
