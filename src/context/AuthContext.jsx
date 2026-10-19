@@ -37,13 +37,17 @@ function nomeDoEmail(email) {
 export function AuthProvider({ children }) {
   const [usuario, setUsuario] = useState(lerSessao);
 
-  const entrar = useCallback((email, senha) => {
+  /**
+   * Autentica o usuário. Assíncrona para já ter o formato do back-end.
+   * Resolve com { ok: true } ou { ok: false, motivo: "credenciais" | "conexao" }.
+   */
+  const entrar = useCallback(async (email, senha) => {
     const emailLimpo = email.trim();
-    if (!emailLimpo || !senha) return false;
+    if (!emailLimpo || !senha) return { ok: false, motivo: "credenciais" };
     const novoUsuario = { email: emailLimpo, nome: nomeDoEmail(emailLimpo) };
     gravarSessao(novoUsuario);
     setUsuario(novoUsuario);
-    return true;
+    return { ok: true };
   }, []);
 
   const sair = useCallback(() => {

@@ -43,3 +43,27 @@
 .login__entrar {
   width: 100%;
 }
+
+/* Erro de credenciais ou de conexão: cor-erro sobre cor-superficie, acima do botão */
+.login__erro {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--espaco-8);
+  margin: 0;
+  padding: var(--espaco-12) var(--espaco-16);
+  border: var(--borda-1) solid var(--cor-erro);
+  border-radius: var(--raio-8);
+  color: var(--cor-erro);
+}
+
+.login__icone-erro {
+  width: var(--tamanho-icone);
+  height: var(--tamanho-icone);
+  flex-shrink: 0;
+}
+
+@media (max-width: 767px) {
+  .login__cartao {
+    padding: var(--espaco-24);
+  }
+}

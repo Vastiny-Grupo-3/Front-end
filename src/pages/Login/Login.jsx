@@ -1,20 +1,29 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { AlertCircle } from "lucide-react";
 import Button from "../../components/Button/Button.jsx";
 import TextField from "../../components/TextField/TextField.jsx";
+import PasswordField from "../../components/PasswordField/PasswordField.jsx";
 import { useAuth } from "../../context/AuthContext.jsx";
 import "./Login.css";
 
-/**
- * TL18 Login — versão mínima para a autenticação simulada.
- * O layout completo (mostrar/ocultar senha e erros de credenciais) entra na Etapa 7.
- */
+const MENSAGENS = {
+  email: "Informe seu e-mail.",
+  senha: "Informe sua senha.",
+  credenciais: "E-mail ou senha incorretos. Confira os dados e tente novamente.",
+  conexao: "Não conseguimos entrar. Verifique sua conexão e tente novamente.",
+};
+
+/** TL18 Login: cartão central com e-mail, senha e "Entrar". Sucesso leva ao Catálogo. */
 export default function Login() {
   const { entrar } = useAuth();
   const navegar = useNavigate();
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
   const [erros, setErros] = useState({});
+  const [erroGeral, setErroGeral] = useState("");
+  const [entrando, setEntrando] = useState(false);
+  const [falhas, setFalhas] = useState(0);
   const emailRef = useRef(null);
   const senhaRef = useRef(null);
 
@@ -22,12 +31,30 @@ export default function Login() {
     document.title = "Vastiny";
   }, []);
 
-  function enviar(evento) {
+  // Após uma tentativa sem sucesso (campos já reativados), o foco volta ao e-mail.
+  useEffect(() => {
+    if (falhas > 0) emailRef.current?.focus();
+  }, [falhas]);
+
+  function mudarEmail(evento) {
+    setEmail(evento.target.value);
+    if (erros.email) setErros((atuais) => ({ ...atuais, email: undefined }));
+  }
+
+  function mudarSenha(evento) {
+    setSenha(evento.target.value);
+    if (erros.senha) setErros((atuais) => ({ ...atuais, senha: undefined }));
+  }
+
+  async function enviar(evento) {
     evento.preventDefault();
+    if (entrando) return;
+
     const novosErros = {};
-    if (!email.trim()) novosErros.email = "Informe seu e-mail.";
-    if (!senha) novosErros.senha = "Informe sua senha.";
+    if (!email.trim()) novosErros.email = MENSAGENS.email;
+    if (!senha) novosErros.senha = MENSAGENS.senha;
     setErros(novosErros);
+    setErroGeral("");
 
     if (novosErros.email) {
       emailRef.current?.focus();
@@ -37,7 +64,22 @@ export default function Login() {
       senhaRef.current?.focus();
       return;
     }
-    if (entrar(email, senha)) navegar("/", { replace: true });
+
+    setEntrando(true);
+    let resultado;
+    try {
+      resultado = await entrar(email, senha);
+    } catch {
+      resultado = { ok: false, motivo: "conexao" };
+    }
+
+    if (resultado.ok) {
+      navegar("/", { replace: true });
+      return;
+    }
+    setEntrando(false);
+    setErroGeral(resultado.motivo === "conexao" ? MENSAGENS.conexao : MENSAGENS.credenciais);
+    setFalhas((atual) => atual + 1);
   }
 
   return (
@@ -49,26 +91,34 @@ export default function Login() {
         </div>
         <form className="login__formulario" onSubmit={enviar} noValidate>
           <TextField
+            ref={emailRef}
             rotulo="E-mail"
             type="email"
             autoComplete="email"
+            inputMode="email"
             placeholder="exemplo@email.com"
             value={email}
-            onChange={(evento) => setEmail(evento.target.value)}
+            onChange={mudarEmail}
             erro={erros.email}
-            ref={emailRef}
+            disabled={entrando}
           />
-          <TextField
+          <PasswordField
+            ref={senhaRef}
             rotulo="Senha"
-            type="password"
             autoComplete="current-password"
             placeholder="Digite sua senha"
             value={senha}
-            onChange={(evento) => setSenha(evento.target.value)}
+            onChange={mudarSenha}
             erro={erros.senha}
-            ref={senhaRef}
+            disabled={entrando}
           />
-          <Button type="submit" className="login__entrar">
+          {erroGeral && (
+            <p className="login__erro" role="alert">
+              <AlertCircle className="login__icone-erro" aria-hidden="true" focusable="false" />
+              {erroGeral}
+            </p>
+          )}
+          <Button type="submit" className="login__entrar" carregando={entrando}>
             Entrar
           </Button>
         </form>
