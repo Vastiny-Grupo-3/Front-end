@@ -26,7 +26,8 @@ const CARDS_ESQUELETO = 6;
 export default function Catalogo() {
   const stock = useStock();
   const { produtos, categorias, status, recarregar } = stock;
-  const { carrinhoAtual, resumo, estaNoCarrinho, adicionarProduto, removerProduto } = useCart();
+  const { carrinhoAtual, resumo, estaNoCarrinho, adicionarProduto, removerProduto, abrirModal } =
+    useCart();
   const [pesquisa, setPesquisa] = useState("");
   const [filtros, setFiltros] = useState(FILTROS_PADRAO);
   const [filtrosAbertos, setFiltrosAbertos] = useState(false);
@@ -102,6 +103,7 @@ export default function Catalogo() {
         nome={carrinhoAtual.nome}
         valorTotal={resumo.totalFinal}
         quantidadeProdutos={resumo.quantidadeProdutos}
+        aoAlterar={abrirModal}
         carregando={carregando}
       />
 

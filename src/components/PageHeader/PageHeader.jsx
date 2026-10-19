@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { ShoppingCart } from "lucide-react";
 import Button from "../Button/Button.jsx";
 import SearchField from "../SearchField/SearchField.jsx";
+import { useCart } from "../../context/CartContext.jsx";
 import "./PageHeader.css";
 
 /**
@@ -9,10 +10,12 @@ import "./PageHeader.css";
  * botão-ícone de carrinho e ação principal, quando a tela tiver.
  *
  * pesquisa: { rotulo, placeholder, valor, aoMudar, aoPesquisar }
- * carrinho: { aoAbrir, ativo } — `ativo` preenche o ícone na tela do Carrinho.
+ * carrinho: { ativo } — o ícone sempre abre o modal do carrinho (TL02);
+ *   `ativo` preenche o ícone na tela do Carrinho.
  * acao: botão de ação principal (nó React).
  */
 export default function PageHeader({ titulo, subtitulo, pesquisa, carrinho, acao }) {
+  const { abrirModal } = useCart();
   useEffect(() => {
     document.title = `${titulo} | Vastiny`;
   }, [titulo]);
@@ -43,7 +46,7 @@ export default function PageHeader({ titulo, subtitulo, pesquisa, carrinho, acao
               icone={ShoppingCart}
               aria-label="Carrinho"
               aria-current={carrinho.ativo ? "page" : undefined}
-              onClick={carrinho.aoAbrir}
+              onClick={abrirModal}
             />
           )}
           {acao}

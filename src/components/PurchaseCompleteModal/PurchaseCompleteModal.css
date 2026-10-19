@@ -1,0 +1,48 @@
+.compra-finalizada__titulo {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--espaco-8);
+}
+
+.compra-finalizada__icone {
+  width: var(--espaco-24);
+  height: var(--espaco-24);
+  flex-shrink: 0;
+  color: var(--cor-sucesso);
+}
+
+.compra-finalizada__texto {
+  margin: 0;
+}
+
+.compra-finalizada__resumo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-8);
+  margin: 0;
+  padding: var(--espaco-16);
+  border: var(--borda-1) solid var(--cor-borda);
+  border-radius: var(--raio-12);
+}
+
+.compra-finalizada__resumo div {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--espaco-16);
+}
+
+.compra-finalizada__resumo dd {
+  margin: 0;
+  font-weight: 600;
+}
+
+/* bp-base: botões empilhados */
+@media (max-width: 767px) {
+  .modal:has(.compra-finalizada__titulo) .modal__rodape {
+    flex-direction: column-reverse;
+  }
+
+  .modal:has(.compra-finalizada__titulo) .modal__rodape .botao {
+    width: 100%;
+  }
+}

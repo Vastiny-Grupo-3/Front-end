@@ -37,6 +37,10 @@ export function CartProvider({ children }) {
   const { produtos, lerDados, registrarVenda } = stock;
   const [estado, setEstado] = useState(estadoInicial);
   const estadoRef = useRef(estado);
+  // Modal do carrinho (TL02): aberto pelo ícone do carrinho e por "Alterar carrinho".
+  const [modalAberto, setModalAberto] = useState(false);
+  const abrirModal = useCallback(() => setModalAberto(true), []);
+  const fecharModal = useCallback(() => setModalAberto(false), []);
 
   const guardar = useCallback((novo) => {
     estadoRef.current = novo;
@@ -131,9 +135,12 @@ export function CartProvider({ children }) {
       itens,
       resumo: carrinho.calcularTotais(itens),
       estaNoCarrinho: (produtoId) => Boolean(carrinho.encontrarItem(carrinhoAtual, produtoId)),
+      modalAberto,
+      abrirModal,
+      fecharModal,
       ...acoes,
     };
-  }, [estado.carrinhos, carrinhoAtual, produtos, acoes]);
+  }, [estado.carrinhos, carrinhoAtual, produtos, acoes, modalAberto, abrirModal, fecharModal]);
 
   return <CartContext.Provider value={valor}>{children}</CartContext.Provider>;
 }

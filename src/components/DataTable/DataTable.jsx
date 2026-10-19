@@ -17,10 +17,15 @@ function comparar(a, b) {
 
 const ARIA_SORT = { asc: "ascending", desc: "descending" };
 
+function rotuloDaCelula(coluna) {
+  return typeof coluna.titulo === "string" ? coluna.titulo : (coluna.rotulo ?? "");
+}
+
 /**
  * Tabela de dados. Em telas estreitas cada linha vira um cartão "rótulo: valor".
  *
- * colunas: [{ chave, titulo, renderizar?(linha), ordenavel?, valorOrdenacao?(linha), alinhamento? }]
+ * colunas: [{ chave, titulo, rotulo?, renderizar?(linha), ordenavel?, valorOrdenacao?(linha), alinhamento? }]
+ *   `rotulo` (texto) substitui `titulo` no modo cartão quando o título não é texto.
  * estado: "padrao" | "carregando" | "erro"
  * variante: "padrao" | "conteiner" (histórico, raio-16)
  * corFundo: cor do contêiner (ex.: "var(--cor-aba-vendas)")
@@ -112,7 +117,7 @@ export default function DataTable({
               Array.from({ length: LINHAS_ESQUELETO }, (_, indice) => (
                 <tr key={`esqueleto-${indice}`} className="tabela__linha">
                   {colunas.map((coluna) => (
-                    <td key={coluna.chave} data-rotulo={coluna.titulo}>
+                    <td key={coluna.chave} data-rotulo={rotuloDaCelula(coluna)}>
                       <span className="esqueleto tabela__esqueleto" />
                     </td>
                   ))}
@@ -153,7 +158,7 @@ export default function DataTable({
                     {colunas.map((coluna) => (
                       <td
                         key={coluna.chave}
-                        data-rotulo={coluna.titulo}
+                        data-rotulo={rotuloDaCelula(coluna)}
                         className={coluna.alinhamento === "direita" ? "tabela__celula--direita" : undefined}
                       >
                         {coluna.renderizar ? coluna.renderizar(linha) : linha[coluna.chave]}

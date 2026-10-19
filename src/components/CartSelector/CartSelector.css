@@ -1,0 +1,10 @@
+.seletor-carrinho {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--espaco-8);
+}
+
+.seletor-carrinho__lista {
+  width: auto;
+  min-width: calc(var(--largura-menu) - var(--espaco-48));
+}

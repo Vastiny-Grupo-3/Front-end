@@ -1,0 +1,72 @@
+.carrinho__itens {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-8);
+}
+
+.carrinho__titulo-lista {
+  font: var(--texto-h3);
+}
+
+.carrinho__fechamento {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--espaco-24);
+}
+
+.carrinho__fechamento .totais-carrinho {
+  flex: 1;
+}
+
+.carrinho__cliente {
+  width: auto;
+  min-width: var(--largura-menu);
+}
+
+.carrinho__erro {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--espaco-8);
+  margin: 0;
+  padding: var(--espaco-12) var(--espaco-16);
+  border: var(--borda-1) solid var(--cor-erro);
+  border-radius: var(--raio-8);
+  background: var(--cor-superficie);
+  color: var(--cor-erro);
+}
+
+.carrinho__icone-erro {
+  width: var(--tamanho-icone);
+  height: var(--tamanho-icone);
+  flex-shrink: 0;
+}
+
+/* 3 botões distribuídos: Excluir (esquerda), Continuar (centro), Finalizar (direita) */
+.carrinho__acoes {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--espaco-8);
+}
+
+/* bp-base: ações empilhadas com "Finalizar Compra" no topo */
+@media (max-width: 767px) {
+  .carrinho__acoes {
+    flex-direction: column;
+  }
+
+  .carrinho__acoes .botao {
+    width: 100%;
+  }
+
+  .carrinho__finalizar {
+    order: -1;
+  }
+
+  .carrinho__cliente {
+    width: 100%;
+    min-width: 0;
+  }
+}

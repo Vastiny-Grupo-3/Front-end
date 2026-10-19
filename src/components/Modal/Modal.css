@@ -47,6 +47,10 @@ body.modal-aberto {
   gap: var(--espaco-16);
 }
 
+.modal__cabecalho--sem-titulo {
+  justify-content: flex-end;
+}
+
 .modal__titulo {
   font: var(--texto-h3);
 }

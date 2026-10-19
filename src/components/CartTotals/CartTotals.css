@@ -1,0 +1,58 @@
+/* Linha divisória cor-borda acima do resumo, valores em uma linha */
+.totais-carrinho {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--espaco-16) var(--espaco-24);
+  margin: 0;
+  padding-top: var(--espaco-16);
+  border-top: var(--borda-1) solid var(--cor-borda);
+  font: var(--texto-corpo);
+  color: var(--cor-texto);
+}
+
+.totais-carrinho__item {
+  display: flex;
+  align-items: center;
+  gap: var(--espaco-8);
+}
+
+.totais-carrinho__item dd {
+  margin: 0;
+  font-weight: 600;
+}
+
+/* Divisor vertical entre Subtotal e Descontos */
+.totais-carrinho__item--descontos {
+  padding-left: var(--espaco-24);
+  border-left: var(--borda-1) solid var(--cor-borda);
+}
+
+/* Descontos é somente leitura: caixa sem interação, como no wireframe */
+.totais-carrinho__descontos {
+  padding: var(--espaco-8) var(--espaco-12);
+  border: var(--borda-1) solid var(--cor-texto-secundario);
+  border-radius: var(--raio-8);
+}
+
+.totais-carrinho__item--final {
+  font: var(--texto-h3);
+}
+
+/* bp-base: resumo empilha em 3 linhas */
+@media (max-width: 767px) {
+  .totais-carrinho {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .totais-carrinho__item {
+    justify-content: space-between;
+  }
+
+  .totais-carrinho__item--descontos {
+    padding-left: 0;
+    border-left: 0;
+  }
+}

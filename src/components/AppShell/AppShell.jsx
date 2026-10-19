@@ -3,6 +3,7 @@ import { Outlet, useLocation } from "react-router-dom";
 import { Menu, X } from "lucide-react";
 import Button from "../Button/Button.jsx";
 import SideNav from "../SideNav/SideNav.jsx";
+import CartModal from "../CartModal/CartModal.jsx";
 import "./AppShell.css";
 
 const ID_MENU = "menu-principal";
@@ -93,6 +94,8 @@ export default function AppShell() {
       >
         <Outlet />
       </main>
+
+      <CartModal />
     </div>
   );
 }

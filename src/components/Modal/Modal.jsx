@@ -15,6 +15,9 @@ const SELETOR_FOCAVEIS = [
 
 const SELETOR_CAMPOS = "input:not([disabled]):not([type='hidden']), select:not([disabled]), textarea:not([disabled])";
 
+/* Modais abertos, do mais antigo ao mais recente: só o do topo responde ao teclado. */
+const pilhaDeModais = [];
+
 function focaveis(elemento) {
   return [...elemento.querySelectorAll(SELETOR_FOCAVEIS)].filter(
     (item) => item.getClientRects().length > 0,
@@ -27,11 +30,13 @@ function focaveis(elemento) {
  *
  * tamanho: "pequeno" (~480 px) | "medio" (~640 px) | "grande" (~960 px)
  * focoInicial: "campo" (primeiro campo) | "titulo" (confirmações e detalhes)
+ * tituloOculto: o título só existe para leitores de tela (quando o wireframe não o mostra)
  */
 export default function Modal({
   aberto,
   aoFechar,
   titulo,
+  tituloOculto = false,
   tamanho = "medio",
   focoInicial = "campo",
   mostrarFechar = false,
@@ -43,6 +48,8 @@ export default function Modal({
   const painelRef = useRef(null);
   const tituloRef = useRef(null);
   const [container, setContainer] = useState(null);
+  const aoFecharRef = useRef(aoFechar);
+  aoFecharRef.current = aoFechar;
 
   // Cria o nó do portal no body enquanto o modal estiver aberto.
   useLayoutEffect(() => {
@@ -90,32 +97,51 @@ export default function Modal({
     (primeiroCampo ?? tituloRef.current)?.focus();
   }, [container, focoInicial]);
 
-  function teclar(evento) {
-    if (evento.key === "Escape") {
-      evento.stopPropagation();
-      aoFechar?.();
-      return;
-    }
-    if (evento.key !== "Tab") return;
+  // Teclado ouvido no documento: Esc e Tab funcionam mesmo se o elemento focado
+  // sair da tela (ex.: item removido) e o foco cair no body.
+  useEffect(() => {
+    if (!container) return undefined;
+    const identificador = {};
+    pilhaDeModais.push(identificador);
 
-    const itens = focaveis(painelRef.current);
-    if (itens.length === 0) {
-      evento.preventDefault();
-      tituloRef.current?.focus();
-      return;
-    }
-    const primeiro = itens[0];
-    const ultimo = itens[itens.length - 1];
-    const ativo = document.activeElement;
+    function teclar(evento) {
+      if (pilhaDeModais.at(-1) !== identificador || !painelRef.current) return;
+      if (evento.key === "Escape") {
+        evento.preventDefault();
+        aoFecharRef.current?.();
+        return;
+      }
+      if (evento.key !== "Tab") return;
 
-    if (evento.shiftKey && (ativo === primeiro || ativo === tituloRef.current)) {
-      evento.preventDefault();
-      ultimo.focus();
-    } else if (!evento.shiftKey && ativo === ultimo) {
-      evento.preventDefault();
-      primeiro.focus();
+      const itens = focaveis(painelRef.current);
+      const ativo = document.activeElement;
+      if (itens.length === 0) {
+        evento.preventDefault();
+        tituloRef.current?.focus();
+        return;
+      }
+      const primeiro = itens[0];
+      const ultimo = itens[itens.length - 1];
+      const dentro = painelRef.current.contains(ativo);
+
+      if (!dentro) {
+        evento.preventDefault();
+        (evento.shiftKey ? ultimo : primeiro).focus();
+      } else if (evento.shiftKey && (ativo === primeiro || ativo === tituloRef.current)) {
+        evento.preventDefault();
+        ultimo.focus();
+      } else if (!evento.shiftKey && ativo === ultimo) {
+        evento.preventDefault();
+        primeiro.focus();
+      }
     }
-  }
+
+    document.addEventListener("keydown", teclar);
+    return () => {
+      document.removeEventListener("keydown", teclar);
+      pilhaDeModais.splice(pilhaDeModais.indexOf(identificador), 1);
+    };
+  }, [container]);
 
   if (!aberto || !container) return null;
 
@@ -127,10 +153,14 @@ export default function Modal({
         role="dialog"
         aria-modal="true"
         aria-labelledby={idTitulo}
-        onKeyDown={teclar}
       >
-        <div className="modal__cabecalho">
-          <h2 id={idTitulo} ref={tituloRef} tabIndex={-1} className="modal__titulo">
+        <div className={`modal__cabecalho ${tituloOculto ? "modal__cabecalho--sem-titulo" : ""}`.trim()}>
+          <h2
+            id={idTitulo}
+            ref={tituloRef}
+            tabIndex={-1}
+            className={tituloOculto ? "sr-only" : "modal__titulo"}
+          >
             {titulo}
           </h2>
           {mostrarFechar && (

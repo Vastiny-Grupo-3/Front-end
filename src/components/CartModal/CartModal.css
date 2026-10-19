@@ -1,0 +1,7 @@
+/* Barra de ações: "Ir para Carrinho" à esquerda; troca de carrinho e "+" em seguida */
+.modal-carrinho__acoes {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--espaco-16) var(--espaco-24);
+}

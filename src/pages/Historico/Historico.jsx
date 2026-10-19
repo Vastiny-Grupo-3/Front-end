@@ -35,7 +35,7 @@ export default function Historico() {
 
   return (
     <>
-      <PageHeader titulo="Histórico" />
+      <PageHeader titulo="Histórico" carrinho={{}} />
       <Tabs rotulo="Histórico" abas={ABAS_HISTORICO} abaAtiva={abaAtiva} aoMudar={mudarAba}>
         <Outlet />
       </Tabs>
