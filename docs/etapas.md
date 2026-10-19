@@ -24,12 +24,11 @@ Para pedir uma etapa ao Claude Code, basta escrever: `Faça a Etapa N de docs/et
 | 14 | Configurações (TL15, TL16 e TL20) | Concluída | `feat: configurações, cadastro de conta e categorias` |
 | 15 | Revisão de acessibilidade | Concluída | `fix: ajustes de acessibilidade` |
 | 16 | Revisão visual contra os wireframes | Concluída | `fix: alinhamento com wireframes e especificação` |
-| 17 | Entrega | Pendente | `docs: README e build final` |
+| 17 | Entrega | Concluída | `docs: README e build final` |
 
 ## Observações
 
 - `lucide-react` (Etapa 4) e `react-router-dom` (Etapa 5) já estão instalados.
-- A página temporária `/componentes` (Etapa 4) é uma rota pública em `src/App.jsx`; removê-la quando as telas reais existirem.
 - Login (Etapa 7): `entrar` no AuthContext é assíncrona e devolve `{ ok, motivo }`. Desde a Etapa 14 o login confere as contas de `src/data/contas.js` (a conta de teste está nesse arquivo); o erro de conexão só aparece quando o back-end existir.
 - `PasswordField` (mostrar/ocultar senha) fica disponível para as senhas da Etapa 14.
 - Dados (Etapa 6): ficam em memória; recarregar a página volta aos mocks de `src/data/`. As regras estão em funções puras em `src/utils/carrinho.js` e `src/utils/estoque.js`; os contextos só guardam o estado.
@@ -46,9 +45,10 @@ Para pedir uma etapa ao Claude Code, basta escrever: `Faça a Etapa N de docs/et
 - Stepper: nos limites os botões usam `aria-disabled` (e não `disabled`) para não perder o foco do teclado.
 - Configurações (Etapa 14): regras de conta em `src/utils/contas.js`. Contas e sessão ficam no sessionStorage (somem ao fechar a aba). Excluir conta remove só a conta e o acesso dela; textos da TL15/TL20 ajustados (ver CLAUDE.md). "Informe o nome de usuário." foi criado porque a especificação não define mensagem para o nome vazio.
 - Acessibilidade (Etapa 15): auditoria automática (contraste, rótulos, nomes, títulos, tabelas, ids, alvos de 44 px e reflow em 320 px) em 13 telas e 21 modais, mais revisão manual de teclado e foco. "Excluir do Carrinho" e a lixeira não pedem confirmação porque a ação é reversível (o produto pode ser adicionado de novo).
+- Entrega (Etapa 17): página temporária `/componentes` removida; `vite.config.js` silencia só o aviso `"use client"` vindo de `react-router` e `lucide-react` em `node_modules` (diretiva de Server Components, sem efeito aqui). O build sai sem avisos. README com instalação, estrutura, tokens, rotas e o que falta ligar ao back-end.
 - Os filtros (`src/utils/filtros.js`, `FilterModal`, `FilterChips`) já aceitam as opções da Entrada e da Saída (`mostrarAbaixoMinimo`).
 - `status` do StockContext é sempre "pronto" com os mocks; os estados carregando e erro das telas aparecem quando o back-end alimentar esse valor.
-- O build mostra um aviso `"use client"` vindo de dentro do `lucide-react`; é inofensivo, mas precisa ser tratado na Etapa 17 (build sem avisos).
+
 
 ## Resultado da revisão visual (Etapa 16)
 

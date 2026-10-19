@@ -12,7 +12,6 @@ import Dashboard from "./pages/Dashboard/Dashboard.jsx";
 import Entrada from "./pages/Entrada/Entrada.jsx";
 import Saida from "./pages/Saida/Saida.jsx";
 import Configuracoes from "./pages/Configuracoes/Configuracoes.jsx";
-import Componentes from "./pages/Componentes/Componentes.jsx";
 
 /* Com sessão aberta, o Login leva direto ao Catálogo. */
 function RotaLogin() {
@@ -28,16 +27,6 @@ export default function App() {
       </a>
       <Routes>
         <Route path="/login" element={<RotaLogin />} />
-
-        {/* Página temporária da Etapa 4, sem login: remover quando as telas estiverem prontas. */}
-        <Route
-          path="/componentes"
-          element={
-            <main id="conteudo-principal" tabIndex={-1}>
-              <Componentes />
-            </main>
-          }
-        />
 
         <Route element={<ProtectedRoute />}>
           <Route element={<AppShell />}>
