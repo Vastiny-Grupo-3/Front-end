@@ -1,0 +1,1 @@
+- [Dados compartilhados entre contas](contas-dados-compartilhados.md) — Todas as contas da empresa acessam os mesmos dados.
