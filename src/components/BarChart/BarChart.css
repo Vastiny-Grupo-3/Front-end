@@ -1,0 +1,47 @@
+/* Em telas estreitas o gráfico rola na horizontal, sem rolar a página */
+.grafico-barras__rolagem {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.grafico-barras__svg {
+  display: block;
+}
+
+/* Grade recessiva: linha fina e sólida */
+.grafico-barras__grade {
+  stroke: var(--cor-borda);
+  stroke-width: var(--borda-1);
+}
+
+.grafico-barras__base {
+  stroke: var(--cor-texto-secundario);
+  stroke-width: var(--borda-1);
+}
+
+/* Texto sempre nas cores de texto, nunca na cor da série */
+.grafico-barras__eixo {
+  font: var(--texto-corpo-pequeno);
+  fill: var(--cor-texto-secundario);
+  text-anchor: end;
+}
+
+.grafico-barras__valor {
+  font: var(--texto-label);
+  fill: var(--cor-texto);
+  text-anchor: middle;
+}
+
+.grafico-barras__categoria {
+  font: var(--texto-corpo-pequeno);
+  fill: var(--cor-texto);
+  text-anchor: middle;
+}
+
+.grafico-barras__alvo {
+  fill: transparent;
+}
+
+.grafico-barras__item:hover .grafico-barras__alvo {
+  fill: var(--cor-fundo);
+}

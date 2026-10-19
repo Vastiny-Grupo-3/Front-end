@@ -1,0 +1,133 @@
+/* Filtros aplicados ficam visíveis (período e categorias) */
+.dashboard__filtros-ativos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espaco-4) var(--espaco-24);
+  margin: calc(-1 * var(--espaco-16)) 0 0;
+  font: var(--texto-corpo-pequeno);
+  color: var(--cor-texto-secundario);
+}
+
+/* 4 indicadores (3 colunas de 12 cada); 2×2 abaixo de 1024 px; 1 coluna em bp-base */
+.dashboard__indicadores {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--espaco-24);
+}
+
+/* Painéis de análise e de estoque: 2 lado a lado (6 colunas cada) */
+.dashboard__linha {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--espaco-24);
+  align-items: start;
+}
+
+.dashboard__painel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-16);
+  min-width: 0;
+  padding: var(--espaco-16);
+  border: var(--borda-1) solid var(--cor-borda);
+  border-radius: var(--raio-16);
+  background: var(--cor-superficie);
+}
+
+.dashboard__cabecalho-painel {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espaco-16);
+}
+
+.dashboard__titulo-painel {
+  font: var(--texto-h3);
+}
+
+/* Divisória tracejada separando vendas de estoque */
+.dashboard__divisoria {
+  width: 100%;
+  margin: 0;
+  border: 0;
+  border-top: var(--borda-2) dashed var(--cor-borda);
+}
+
+.dashboard__esqueleto {
+  height: calc(var(--largura-menu) + var(--espaco-24));
+}
+
+/* Tabelas compactas para caber em meio painel */
+.dashboard__tabela .tabela__tabela th {
+  padding-inline: var(--espaco-4);
+  white-space: normal;
+}
+
+.dashboard__tabela .tabela__linha td {
+  padding-inline: var(--espaco-8);
+}
+
+.dashboard__tabela .celula-produto__miniatura {
+  width: var(--espaco-32);
+  height: var(--espaco-32);
+}
+
+.dashboard__tabela .celula-produto__nome {
+  min-width: calc(var(--espaco-48) + var(--espaco-24));
+}
+
+/* Lista do filtro por categoria */
+.dashboard__categorias {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.dashboard__categoria {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espaco-16);
+  min-height: var(--alvo-toque);
+  font: var(--texto-corpo);
+  color: var(--cor-texto);
+  cursor: pointer;
+}
+
+.dashboard__categoria input {
+  order: 1;
+  width: var(--tamanho-icone);
+  height: var(--tamanho-icone);
+  margin: 0;
+  accent-color: var(--cor-primaria);
+  cursor: pointer;
+}
+
+.periodo__campos {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--espaco-16);
+}
+
+@media (max-width: 1023px) {
+  .dashboard__indicadores {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .dashboard__linha {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 767px) {
+  .dashboard__indicadores,
+  .periodo__campos {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .dashboard__painel {
+    padding: var(--espaco-16);
+  }
+}

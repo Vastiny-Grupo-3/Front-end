@@ -2,33 +2,6 @@
   outline: none;
 }
 
-.itens-carrinho__produto {
-  display: flex;
-  align-items: center;
-  gap: var(--espaco-8);
-}
-
-.itens-carrinho__miniatura {
-  flex-shrink: 0;
-  width: var(--alvo-toque);
-  height: var(--alvo-toque);
-  border: var(--borda-1) solid var(--cor-borda);
-  border-radius: var(--raio-8);
-  background: var(--cor-fundo);
-  object-fit: cover;
-}
-
-.itens-carrinho__nome {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-}
-
-.itens-carrinho__codigo {
-  font: var(--texto-corpo-pequeno);
-  color: var(--cor-texto-secundario);
-}
-
 .itens-carrinho__desconto {
   min-width: calc(var(--largura-menu) - var(--espaco-48));
 }
@@ -56,11 +29,6 @@
 }
 
 @media (max-width: 767px) {
-  .itens-carrinho__produto {
-    justify-content: flex-end;
-    text-align: right;
-  }
-
   .itens-carrinho__desconto {
     min-width: 0;
     flex: 1;

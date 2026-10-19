@@ -157,6 +157,8 @@ export function criarItensVenda(itensDetalhados, categorias) {
       produtoId: item.produto.id,
       codigo: item.produto.codigo,
       nome: item.produto.nome,
+      imagem: item.produto.imagem ?? "",
+      categoriaId: item.produto.categoriaId,
       categoria: categorias.find((categoria) => categoria.id === item.produto.categoriaId)?.nome ?? "",
       quantidade: item.quantidade,
       precoUnitario: item.produto.valorVenda,

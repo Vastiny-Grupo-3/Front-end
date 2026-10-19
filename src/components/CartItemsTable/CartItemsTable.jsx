@@ -4,6 +4,7 @@ import DataTable from "../DataTable/DataTable.jsx";
 import Stepper from "../Stepper/Stepper.jsx";
 import MoneyPercentField from "../MoneyPercentField/MoneyPercentField.jsx";
 import Button from "../Button/Button.jsx";
+import ProductCell from "../ProductCell/ProductCell.jsx";
 import { useCart } from "../../context/CartContext.jsx";
 import { useStock } from "../../context/StockContext.jsx";
 import { nomeCategoria } from "../../utils/estoque.js";
@@ -49,17 +50,11 @@ export default function CartItemsTable({ itens }) {
       chave: "produto",
       titulo: "Produto",
       renderizar: (linha) => (
-        <div className="itens-carrinho__produto">
-          {linha.produto.imagem ? (
-            <img className="itens-carrinho__miniatura" src={linha.produto.imagem} alt="" />
-          ) : (
-            <span className="itens-carrinho__miniatura" aria-hidden="true" />
-          )}
-          <span className="itens-carrinho__nome">
-            {linha.produto.nome}
-            <span className="itens-carrinho__codigo">{linha.produto.codigo}</span>
-          </span>
-        </div>
+        <ProductCell
+          nome={linha.produto.nome}
+          codigo={linha.produto.codigo}
+          imagem={linha.produto.imagem}
+        />
       ),
     },
     {

@@ -1,0 +1,68 @@
+.rosca {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: var(--espaco-24);
+}
+
+.rosca__svg {
+  flex-shrink: 0;
+}
+
+/* Espaço de 2 px na cor da superfície entre os setores */
+.rosca__setor {
+  stroke: var(--cor-superficie);
+  stroke-width: var(--borda-2);
+}
+
+/* "Médio" leva borda de 1 px cor-texto (contra o fundo tem só 1,6:1) */
+.rosca__setor--contorno {
+  stroke: var(--cor-texto);
+  stroke-width: var(--borda-1);
+}
+
+.rosca__vazio {
+  fill: none;
+  stroke: var(--cor-borda);
+  stroke-width: calc(var(--espaco-32) + var(--espaco-4) - var(--espaco-4) / 2);
+}
+
+.rosca__rotulo-centro {
+  font: var(--texto-corpo-pequeno);
+  fill: var(--cor-texto-secundario);
+  text-anchor: middle;
+}
+
+.rosca__total {
+  font: var(--texto-h2);
+  fill: var(--cor-texto);
+  text-anchor: middle;
+}
+
+.rosca__legenda {
+  display: grid;
+  grid-template-columns: auto auto auto auto;
+  align-items: center;
+  gap: var(--espaco-12) var(--espaco-8);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.rosca__item-legenda {
+  display: contents;
+  font: var(--texto-corpo);
+  color: var(--cor-texto);
+}
+
+.rosca__quantidade {
+  font-weight: 600;
+  text-align: right;
+}
+
+.rosca__percentual {
+  font: var(--texto-corpo-pequeno);
+  color: var(--cor-texto-secundario);
+  text-align: right;
+}
