@@ -20,7 +20,7 @@ Para pedir uma etapa ao Claude Code, basta escrever: `Faça a Etapa N de docs/et
 | 10 | Clientes (TL04 e TL05) | Concluída | `feat: clientes e modais de cliente` |
 | 11 | Histórico (TL06 a TL11) | Concluída | `feat: histórico com seis abas` |
 | 12 | Dashboard (TL12) | Concluída | `feat: dashboard` |
-| 13 | Entrada e Saída (TL13 e TL14) | Pendente | `feat: entrada e saída de estoque` |
+| 13 | Entrada e Saída (TL13 e TL14) | Concluída | `feat: entrada e saída de estoque` |
 | 14 | Configurações (TL15, TL16 e TL20) | Pendente | `feat: configurações, cadastro de conta e categorias` |
 | 15 | Revisão de acessibilidade | Pendente | `fix: ajustes de acessibilidade` |
 | 16 | Revisão visual contra os wireframes | Pendente | `fix: alinhamento com wireframes e especificação` |
@@ -43,6 +43,8 @@ Para pedir uma etapa ao Claude Code, basta escrever: `Faça a Etapa N de docs/et
 - Dashboard (Etapa 12): cálculos em `src/utils/dashboard.js`. Período padrão: da primeira venda até hoje. "Produtos ativos" = produtos cadastrados (nas categorias filtradas); a rosca conta produtos por estado. "Produtos mais Vendidos" mostra os 6 primeiros, como no wireframe. O filtro de categoria vale para indicadores e painéis de vendas; os de estoque mostram todos os produtos.
 - Datas do Filtro Temporal usam o campo de data nativo do navegador (com calendário próprio); o calendário mensal sempre aberto do wireframe não foi reproduzido.
 - Paleta dos gráficos: o validador de cores aponta `cor-grafico-4` (#C25100) e `cor-grafico-5` (#DE350B) como difíceis de distinguir (daltonismo protan e até visão normal). O gráfico compensa com o nome da categoria e o valor em cada barra, mas vale a equipe revisar essas cores.
+- Entrada e Saída (Etapa 13): `ProductBrowser` (filtros + etiquetas + grade) é usado por Catálogo, Entrada e Saída; `StockMovementModal` faz "Adicionar Quantidade" e "Diminuir Quantidade". Os modais "Novo Produto" e "Editar Produto" têm "Cancelar" à esquerda (anatomia padrão do Modal), embora o wireframe só mostre o botão principal. A imagem do produto fica em memória como data URL até existir back-end.
+- Stepper: nos limites os botões usam `aria-disabled` (e não `disabled`) para não perder o foco do teclado.
 - Os filtros (`src/utils/filtros.js`, `FilterModal`, `FilterChips`) já aceitam as opções da Entrada e da Saída (`mostrarAbaixoMinimo`).
 - `status` do StockContext é sempre "pronto" com os mocks; os estados carregando e erro das telas aparecem quando o back-end alimentar esse valor.
 - O build mostra um aviso `"use client"` vindo de dentro do `lucide-react`; é inofensivo, mas precisa ser tratado na Etapa 17 (build sem avisos).

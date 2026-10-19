@@ -1,0 +1,55 @@
+/* "[Código]" e "[Nome]", "Valor Compra" e "Valor Venda" em duas colunas, como no wireframe */
+.movimento__produto,
+.movimento__quantidades {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--espaco-8) var(--espaco-24);
+  margin: 0;
+}
+
+.movimento__produto dt {
+  font: var(--texto-label);
+  color: var(--cor-texto-secundario);
+}
+
+.movimento__produto dd {
+  margin: 0;
+  color: var(--cor-texto);
+  overflow-wrap: anywhere;
+}
+
+.movimento__quantidades div {
+  display: flex;
+  align-items: baseline;
+  gap: var(--espaco-8);
+}
+
+.movimento__quantidades dt {
+  font: var(--texto-h3);
+  font-weight: 400;
+}
+
+.movimento__quantidades dd {
+  margin: 0;
+  font: var(--texto-h3);
+}
+
+.movimento__passo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--espaco-8);
+}
+
+.movimento__passo .stepper {
+  flex-direction: row;
+  align-items: center;
+  gap: var(--espaco-16);
+}
+
+@media (max-width: 767px) {
+  .movimento__produto,
+  .movimento__quantidades {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

@@ -56,6 +56,9 @@ export default function Stepper({
   }
 
   const unitario = variante === "unitario";
+  // Nos limites o botão fica aria-disabled (e não disabled) para não perder o foco do teclado.
+  const noMinimo = valor <= min;
+  const noMaximo = valor >= max;
 
   return (
     <div className={`stepper ${className}`.trim()}>
@@ -67,8 +70,9 @@ export default function Stepper({
           variante="passo"
           icone={unitario ? undefined : Minus}
           aria-label={unitario ? undefined : "Diminuir quantidade"}
-          disabled={disabled || valor <= min}
-          onClick={() => aplicar(valor - 1)}
+          disabled={disabled}
+          aria-disabled={noMinimo || undefined}
+          onClick={() => !noMinimo && aplicar(valor - 1)}
         >
           {unitario && "-1"}
         </Button>
@@ -88,8 +92,9 @@ export default function Stepper({
           variante="passo"
           icone={unitario ? undefined : Plus}
           aria-label={unitario ? undefined : "Aumentar quantidade"}
-          disabled={disabled || valor >= max}
-          onClick={() => aplicar(valor + 1)}
+          disabled={disabled}
+          aria-disabled={noMaximo || undefined}
+          onClick={() => !noMaximo && aplicar(valor + 1)}
         >
           {unitario && "+1"}
         </Button>

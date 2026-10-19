@@ -1,4 +1,4 @@
-.catalogo__filtros {
+.produtos__filtros {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -6,7 +6,7 @@
 }
 
 /* 3 cards por linha a partir de 1024 px, 2 em bp-768, 1 em bp-base */
-.catalogo__grade {
+.produtos__grade {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: var(--espaco-24);
@@ -15,22 +15,22 @@
   list-style: none;
 }
 
-.catalogo__grade > li {
+.produtos__grade > li {
   display: flex;
 }
 
-.catalogo__grade > li > .produto {
+.produtos__grade > li > .produto {
   flex: 1;
 }
 
 @media (max-width: 1023px) {
-  .catalogo__grade {
+  .produtos__grade {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
 @media (max-width: 767px) {
-  .catalogo__grade {
+  .produtos__grade {
     grid-template-columns: 1fr;
   }
 }

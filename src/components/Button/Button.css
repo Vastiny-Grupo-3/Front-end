@@ -112,7 +112,10 @@
   background: color-mix(in srgb, var(--cor-erro) 80%, var(--cor-superficie));
 }
 
-/* Desabilitado (padrão universal) */
+/* Desabilitado (padrão universal); aria-disabled mantém o botão focável */
+.botao[aria-disabled="true"],
+.botao[aria-disabled="true"]:hover,
+.botao[aria-disabled="true"]:active,
 .botao:disabled:not(.botao--carregando) {
   border-color: var(--cor-borda);
   background: var(--cor-borda);

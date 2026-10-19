@@ -1,0 +1,70 @@
+.produto-formulario {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-16);
+}
+
+.produto-formulario__duas-colunas {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--espaco-16);
+}
+
+.produto-formulario__linha-imagem {
+  display: flex;
+  align-items: center;
+  gap: var(--espaco-16);
+}
+
+.produto-formulario__previa {
+  flex-shrink: 0;
+  width: calc(var(--alvo-toque) * 2);
+  height: calc(var(--alvo-toque) * 2);
+  border: var(--borda-1) solid var(--cor-borda);
+  border-radius: var(--raio-12);
+  background: var(--cor-fundo);
+  object-fit: cover;
+}
+
+.produto-formulario__arquivo {
+  min-width: 0;
+  min-height: var(--alvo-toque);
+  font: var(--texto-corpo);
+  color: var(--cor-texto);
+}
+
+.produto-formulario__arquivo::file-selector-button {
+  min-height: var(--alvo-toque);
+  margin-right: var(--espaco-12);
+  padding: var(--espaco-8) var(--espaco-16);
+  border: var(--borda-1) solid var(--cor-texto-secundario);
+  border-radius: var(--raio-8);
+  background: var(--cor-superficie);
+  color: var(--cor-texto);
+  font: var(--texto-botao);
+  cursor: pointer;
+}
+
+.produto-formulario__lucro {
+  display: flex;
+  align-items: center;
+  min-height: var(--alvo-toque);
+  padding: var(--espaco-12) var(--espaco-16);
+  border: var(--borda-1) solid var(--cor-borda);
+  border-radius: var(--raio-8);
+  background: var(--cor-fundo);
+  font: var(--texto-corpo);
+  font-weight: 600;
+  color: var(--cor-texto);
+}
+
+/* bp-base: "Cadastrar Novo Produto" em largura total sob o título */
+@media (max-width: 767px) {
+  .entrada__cadastrar {
+    width: 100%;
+  }
+
+  .produto-formulario__duas-colunas {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
