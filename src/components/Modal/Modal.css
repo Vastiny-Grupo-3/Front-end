@@ -126,4 +126,14 @@ body.modal-aberto {
     height: 100%;
     border-radius: 0;
   }
+
+  /* Rodapé fixo no fim da tela enquanto o conteúdo rola */
+  .modal__rodape {
+    position: sticky;
+    bottom: calc(-1 * var(--espaco-24));
+    margin: auto calc(-1 * var(--espaco-24)) calc(-1 * var(--espaco-24));
+    padding: var(--espaco-16) var(--espaco-24);
+    border-top: var(--borda-1) solid var(--cor-borda);
+    background: var(--cor-superficie);
+  }
 }

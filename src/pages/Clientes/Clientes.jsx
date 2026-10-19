@@ -39,13 +39,15 @@ export default function Clientes() {
     {
       chave: "nome",
       titulo: "Nome",
+      largura: `${(5 / 12) * 100}%`,
       renderizar: (linha) => <span id={`cliente-${linha.id}`}>{linha.nome}</span>,
     },
-    { chave: "telefone", titulo: "Telefone" },
-    { chave: "compras", titulo: "Qtd. Compras", alinhamento: "direita" },
+    { chave: "telefone", titulo: "Telefone", largura: `${(3 / 12) * 100}%` },
+    { chave: "compras", titulo: "Qtd. Compras", alinhamento: "direita", largura: `${(2 / 12) * 100}%` },
     {
       chave: "acoes",
       titulo: "Ações",
+      largura: `${(2 / 12) * 100}%`,
       renderizar: (linha) => (
         <div className="clientes__acoes">
           <Button

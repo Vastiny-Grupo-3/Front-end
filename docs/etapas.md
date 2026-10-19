@@ -23,7 +23,7 @@ Para pedir uma etapa ao Claude Code, basta escrever: `Faça a Etapa N de docs/et
 | 13 | Entrada e Saída (TL13 e TL14) | Concluída | `feat: entrada e saída de estoque` |
 | 14 | Configurações (TL15, TL16 e TL20) | Concluída | `feat: configurações, cadastro de conta e categorias` |
 | 15 | Revisão de acessibilidade | Concluída | `fix: ajustes de acessibilidade` |
-| 16 | Revisão visual contra os wireframes | Pendente | `fix: alinhamento com wireframes e especificação` |
+| 16 | Revisão visual contra os wireframes | Concluída | `fix: alinhamento com wireframes e especificação` |
 | 17 | Entrega | Pendente | `docs: README e build final` |
 
 ## Observações
@@ -49,6 +49,32 @@ Para pedir uma etapa ao Claude Code, basta escrever: `Faça a Etapa N de docs/et
 - Os filtros (`src/utils/filtros.js`, `FilterModal`, `FilterChips`) já aceitam as opções da Entrada e da Saída (`mostrarAbaixoMinimo`).
 - `status` do StockContext é sempre "pronto" com os mocks; os estados carregando e erro das telas aparecem quando o back-end alimentar esse valor.
 - O build mostra um aviso `"use client"` vindo de dentro do `lucide-react`; é inofensivo, mas precisa ser tratado na Etapa 17 (build sem avisos).
+
+## Resultado da revisão visual (Etapa 16)
+
+Textos: todos os textos entre aspas das seções "Copy" da especificação foram procurados automaticamente no código. Só o texto da TL15 sobre excluir conta não aparece, por decisão da equipe (ver CLAUDE.md).
+
+Corrigido nesta etapa:
+
+| Tela | Divergência | Correção |
+| --- | --- | --- |
+| TL04 | Colunas fora da proporção da especificação (Nome 5, Telefone 3, Qtd. Compras 2, Ações 2) | Larguras de coluna aplicadas (prop `largura` na DataTable) |
+| TL12 | Centro da rosca com "Total Produto" sem os dois-pontos da copy "Total Produto: [quantidade]" | Texto corrigido |
+| TL17 (e demais modais) | Em `bp-base` o rodapé rolava junto com o conteúdo; a especificação pede tela cheia com rodapé fixo | Rodapé fixo no fim da tela em `bp-base` |
+
+Mantido de propósito (diferença em relação ao wireframe ou à especificação):
+
+| Tela | Diferença | Motivo |
+| --- | --- | --- |
+| TL02 | "Trocar Carrinho" é uma lista suspensa (o wireframe mostra um botão) | Mostra o carrinho atual e permite trocar sem um passo extra; mesmo rótulo |
+| TL02, TL06–TL11 | Títulos dos modais só para leitores de tela | Os wireframes não mostram título |
+| TL02, TL17 | "X" e Esc voltam à tela que abriu o modal (a especificação diz TL01) | Regra confirmada no CLAUDE.md |
+| TL04 | Título "Todos os clientes" (wireframe: "Todos Clientes") | Especificação corrigiu (decisão 11) |
+| TL12 | Datas com o campo de data nativo, sem o calendário mensal sempre aberto | Componente nativo, acessível e com calendário próprio |
+| TL13 | "Cancelar" nos modais Novo Produto e Editar Produto | Anatomia padrão do Modal; sem ele não há como fechar com o mouse |
+| TL15, TL20 | Textos de excluir conta sem "e seus dados" | Decisão da equipe: só a conta e o acesso são removidos |
+| TL16 | Título "Cadastrar nova conta" (wireframe: "Dados da nova conta") e botão "X" | Especificação (decisão 11 e layout da TL16) |
+| TL05, TL13, TL15, TL16 | Estado "salvando" (botão em carregando) não aparece | Com os mocks as operações são instantâneas; o Button já tem o estado `carregando` para o back-end |
 
 ---
 

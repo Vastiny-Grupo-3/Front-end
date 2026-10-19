@@ -110,7 +110,7 @@ export default function DonutChart({ niveis, total, legendaTabela }) {
           </path>
         ))}
         <text className="rosca__rotulo-centro" x={CENTRO} y={CENTRO - 8}>
-          Total Produto
+          Total Produto:
         </text>
         <text className="rosca__total" x={CENTRO} y={CENTRO + 18}>
           {total}

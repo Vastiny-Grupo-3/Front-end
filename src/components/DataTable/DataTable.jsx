@@ -26,6 +26,7 @@ function rotuloDaCelula(coluna) {
  *
  * colunas: [{ chave, titulo, rotulo?, renderizar?(linha), ordenavel?, valorOrdenacao?(linha), alinhamento? }]
  *   `rotulo` (texto) substitui `titulo` no modo cartão quando o título não é texto.
+ *   `largura` (ex.: "25%") fixa a largura da coluna no modo tabela.
  * estado: "padrao" | "carregando" | "erro"
  * variante: "padrao" | "conteiner" (histórico, raio-16)
  * corFundo: cor do contêiner (ex.: "var(--cor-aba-vendas)")
@@ -94,6 +95,7 @@ export default function DataTable({
                     key={coluna.chave}
                     scope="col"
                     role="columnheader"
+                    style={coluna.largura ? { width: coluna.largura } : undefined}
                     className={coluna.alinhamento === "direita" ? "tabela__celula--direita" : undefined}
                     aria-sort={coluna.ordenavel ? (ativa ? ARIA_SORT[ordem.direcao] : "none") : undefined}
                   >
