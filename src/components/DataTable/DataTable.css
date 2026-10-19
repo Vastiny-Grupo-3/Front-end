@@ -1,0 +1,178 @@
+.tabela {
+  --tabela-fundo: transparent;
+  --tabela-texto-cabecalho: var(--cor-texto-secundario);
+  --tabela-texto-mensagem: var(--cor-texto-secundario);
+  width: 100%;
+}
+
+/* Variante histórico: contêiner com raio-16 */
+.tabela--conteiner {
+  --tabela-fundo: var(--cor-superficie);
+  padding: var(--espaco-16);
+  border: var(--borda-1) solid var(--cor-borda);
+  border-radius: var(--raio-16);
+  background: var(--tabela-fundo);
+}
+
+/* Sobre as cores de aba, cor-texto-secundario não tem contraste suficiente */
+.tabela--colorida {
+  --tabela-texto-cabecalho: var(--cor-texto);
+  --tabela-texto-mensagem: var(--cor-texto);
+  background: var(--tabela-fundo);
+}
+
+.tabela__rolagem {
+  overflow-x: auto;
+}
+
+.tabela__tabela {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0 var(--espaco-8);
+  font: var(--texto-corpo);
+  color: var(--cor-texto);
+}
+
+.tabela__legenda {
+  margin-bottom: var(--espaco-8);
+  font: var(--texto-h3);
+  text-align: left;
+}
+
+.tabela__tabela th {
+  padding: 0 var(--espaco-12);
+  font: var(--texto-label);
+  font-weight: 600;
+  color: var(--tabela-texto-cabecalho);
+  text-align: left;
+  white-space: nowrap;
+}
+
+.tabela__tabela .tabela__celula--direita {
+  text-align: right;
+}
+
+.tabela__ordenar {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--espaco-4);
+  min-height: var(--alvo-toque);
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.tabela__icone-ordem {
+  width: var(--espaco-16);
+  height: var(--espaco-16);
+}
+
+/* Linhas: cor-superficie, borda cor-borda, raio-8, altura mínima 48 px */
+.tabela__linha td {
+  height: var(--altura-linha-tabela);
+  padding: var(--espaco-4) var(--espaco-12);
+  border-block: var(--borda-1) solid var(--cor-borda);
+  background: var(--cor-superficie);
+  vertical-align: middle;
+}
+
+.tabela__linha td:first-child {
+  border-left: var(--borda-1) solid var(--cor-borda);
+  border-radius: var(--raio-8) 0 0 var(--raio-8);
+}
+
+.tabela__linha td:last-child {
+  border-right: var(--borda-1) solid var(--cor-borda);
+  border-radius: 0 var(--raio-8) var(--raio-8) 0;
+}
+
+.tabela__linha:hover td {
+  background: var(--cor-fundo);
+}
+
+.tabela__linha--selecionada td,
+.tabela__linha--selecionada td:first-child,
+.tabela__linha--selecionada td:last-child {
+  border-color: var(--cor-primaria-hover);
+  border-width: var(--borda-2);
+}
+
+.tabela__linha--selecionada td:not(:first-child) {
+  border-left-width: 0;
+}
+
+.tabela__linha--selecionada td:not(:last-child) {
+  border-right-width: 0;
+}
+
+.tabela__esqueleto {
+  width: 70%;
+  height: var(--espaco-16);
+}
+
+.tabela__mensagem .vazio__mensagem {
+  color: var(--tabela-texto-mensagem);
+}
+
+/* bp-base: cada linha vira um cartão empilhado "rótulo: valor" */
+@media (max-width: 767px) {
+  .tabela__tabela,
+  .tabela__tabela tbody,
+  .tabela__tabela tr,
+  .tabela__tabela td {
+    display: block;
+    width: 100%;
+  }
+
+  .tabela__tabela thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .tabela__tabela .tabela__legenda {
+    display: block;
+  }
+
+  .tabela__linha {
+    margin-bottom: var(--espaco-8);
+    padding: var(--espaco-8) 0;
+    border: var(--borda-1) solid var(--cor-borda);
+    border-radius: var(--raio-8);
+    background: var(--cor-superficie);
+  }
+
+  .tabela__linha--selecionada {
+    border: var(--borda-2) solid var(--cor-primaria-hover);
+  }
+
+  .tabela__linha td,
+  .tabela__linha td:first-child,
+  .tabela__linha td:last-child,
+  .tabela__linha--selecionada td {
+    display: flex;
+    gap: var(--espaco-8);
+    justify-content: space-between;
+    align-items: center;
+    height: auto;
+    min-height: var(--alvo-toque);
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    text-align: right;
+  }
+
+  .tabela__linha td::before {
+    content: attr(data-rotulo);
+    font: var(--texto-label);
+    font-weight: 600;
+    color: var(--cor-texto-secundario);
+    text-align: left;
+  }
+}

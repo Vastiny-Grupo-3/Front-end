@@ -1,0 +1,16 @@
+.pesquisa {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-8);
+  width: 100%;
+}
+
+.pesquisa__linha {
+  display: flex;
+  gap: var(--espaco-8);
+}
+
+.pesquisa__entrada {
+  flex: 1;
+  min-width: 0;
+}

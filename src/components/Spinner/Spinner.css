@@ -1,0 +1,12 @@
+.spinner {
+  width: var(--tamanho-icone);
+  height: var(--tamanho-icone);
+  flex-shrink: 0;
+  animation: spinner-girar 0.8s linear infinite;
+}
+
+@keyframes spinner-girar {
+  to {
+    transform: rotate(360deg);
+  }
+}

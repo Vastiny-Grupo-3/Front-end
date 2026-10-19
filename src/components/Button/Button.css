@@ -1,0 +1,125 @@
+.botao {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: var(--alvo-toque);
+  min-height: var(--alvo-toque);
+  padding: var(--espaco-12) var(--espaco-16);
+  border: var(--borda-1) solid transparent;
+  border-radius: var(--raio-8);
+  font: var(--texto-botao);
+  text-align: center;
+  cursor: pointer;
+  transition:
+    background-color var(--duracao-curta),
+    transform var(--duracao-curta);
+}
+
+.botao__conteudo {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--espaco-8);
+}
+
+.botao__icone {
+  width: var(--tamanho-icone);
+  height: var(--tamanho-icone);
+  flex-shrink: 0;
+}
+
+/* Carregando: o rótulo continua no DOM (nome acessível), mas fica invisível. */
+.botao--carregando .botao__conteudo {
+  opacity: 0;
+}
+
+.botao__indicador {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Primário */
+.botao--primario {
+  background: var(--cor-primaria);
+  color: var(--cor-superficie);
+}
+
+.botao--primario:hover:not(:disabled) {
+  background: var(--cor-primaria-hover);
+}
+
+.botao--primario:active:not(:disabled) {
+  background: var(--cor-primaria-hover);
+  transform: translateY(var(--borda-1));
+}
+
+/* Secundário, ícone e passo */
+.botao--secundario,
+.botao--icone,
+.botao--passo {
+  border-color: var(--cor-texto-secundario);
+  color: var(--cor-texto);
+}
+
+.botao--secundario,
+.botao--passo {
+  background: var(--cor-superficie);
+}
+
+.botao--icone {
+  width: var(--alvo-toque);
+  padding: 0;
+  background: transparent;
+}
+
+.botao--secundario:hover:not(:disabled),
+.botao--icone:hover:not(:disabled),
+.botao--passo:hover:not(:disabled) {
+  background: var(--cor-fundo);
+}
+
+.botao--secundario:active:not(:disabled),
+.botao--icone:active:not(:disabled),
+.botao--passo:active:not(:disabled) {
+  background: var(--cor-borda);
+}
+
+/* Botão-ícone "selecionado" (ex.: carrinho na tela do Carrinho) */
+.botao--icone[aria-current="page"] {
+  border-color: var(--cor-primaria);
+  background: var(--cor-primaria);
+  color: var(--cor-superficie);
+}
+
+.botao--icone[aria-current="page"]:hover:not(:disabled) {
+  background: var(--cor-primaria-hover);
+}
+
+/* Destrutivo */
+.botao--destrutivo {
+  background: var(--cor-erro);
+  color: var(--cor-superficie);
+}
+
+.botao--destrutivo:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--cor-erro) 90%, var(--cor-superficie));
+}
+
+.botao--destrutivo:active:not(:disabled) {
+  background: color-mix(in srgb, var(--cor-erro) 80%, var(--cor-superficie));
+}
+
+/* Desabilitado (padrão universal) */
+.botao:disabled:not(.botao--carregando) {
+  border-color: var(--cor-borda);
+  background: var(--cor-borda);
+  color: var(--cor-texto-secundario);
+  cursor: not-allowed;
+}
+
+.botao--carregando:disabled {
+  cursor: progress;
+}

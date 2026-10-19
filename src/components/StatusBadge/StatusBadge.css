@@ -1,0 +1,28 @@
+.selo {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--espaco-4) var(--espaco-12);
+  border-radius: var(--raio-total);
+  font: var(--texto-label);
+  white-space: nowrap;
+}
+
+.selo--critico {
+  background: var(--cor-erro);
+  color: var(--cor-superficie);
+}
+
+.selo--ruim {
+  background: var(--cor-alerta);
+  color: var(--cor-texto);
+}
+
+.selo--medio {
+  background: var(--cor-estado-medio);
+  color: var(--cor-texto);
+}
+
+.selo--bom {
+  background: var(--cor-sucesso);
+  color: var(--cor-superficie);
+}

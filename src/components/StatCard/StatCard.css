@@ -1,0 +1,31 @@
+.indicador {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-8);
+  margin: 0;
+  padding: var(--espaco-16);
+  border: var(--borda-1) solid var(--cor-borda);
+  border-radius: var(--raio-12);
+  background: var(--cor-superficie);
+}
+
+.indicador__rotulo {
+  font: var(--texto-label);
+  color: var(--cor-texto);
+}
+
+.indicador__valor {
+  margin: 0;
+  font: var(--texto-h2);
+  color: var(--cor-texto);
+}
+
+.indicador--vazio .indicador__valor,
+.indicador--erro .indicador__valor {
+  color: var(--cor-texto-secundario);
+}
+
+.indicador__esqueleto {
+  width: 60%;
+  height: var(--espaco-24);
+}

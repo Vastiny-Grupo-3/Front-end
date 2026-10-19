@@ -11,7 +11,7 @@ Para pedir uma etapa ao Claude Code, basta escrever: `Faça a Etapa N de docs/et
 | 1 | Arquivo CLAUDE.md | Concluída | `docs: especificação, wireframes e CLAUDE.md` |
 | 2 | Leitura e plano | Concluída no Replit (sem commit) | — |
 | 3 | Tokens e estilos globais | Concluída | `feat: tokens de design e estilos globais` |
-| 4 | Componentes base | Pendente | `feat: componentes base` |
+| 4 | Componentes base | Concluída | `feat: componentes base` |
 | 5 | Estrutura da aplicação, menu e rotas | Pendente | `feat: estrutura da aplicação, menu lateral e rotas` |
 | 6 | Dados mockados e contextos | Pendente | `feat: dados mockados e contextos de carrinho e estoque` |
 | 7 | Login (TL18) | Pendente | `feat: tela de login` |
@@ -28,7 +28,9 @@ Para pedir uma etapa ao Claude Code, basta escrever: `Faça a Etapa N de docs/et
 
 ## Observações
 
-- `react-router-dom` e `lucide-react` ainda não estão instalados. A Etapa 4 usa `lucide-react` e a Etapa 5 usa `react-router-dom`; instale cada um na etapa em que for usado (`npm install lucide-react`, `npm install react-router-dom`).
+- `lucide-react` foi instalado na Etapa 4. `react-router-dom` ainda não está instalado; entra na Etapa 5 (`npm install react-router-dom`).
+- A página temporária `/componentes` (Etapa 4) usa uma checagem simples de `window.location.pathname` em `src/App.jsx`; trocar por rota do react-router-dom na Etapa 5 e removê-la quando as telas reais existirem.
+- O build mostra um aviso `"use client"` vindo de dentro do `lucide-react`; é inofensivo, mas precisa ser tratado na Etapa 17 (build sem avisos).
 
 ---
 

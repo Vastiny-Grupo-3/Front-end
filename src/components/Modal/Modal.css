@@ -1,0 +1,111 @@
+body.modal-aberto {
+  overflow: hidden;
+}
+
+.modal-sobreposicao {
+  position: fixed;
+  z-index: var(--camada-modal);
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--espaco-24);
+  background: var(--cor-sobreposicao);
+  animation: modal-surgir var(--duracao-curta) ease-out;
+}
+
+.modal {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-16);
+  width: 100%;
+  max-height: 100%;
+  padding: var(--espaco-24);
+  overflow-y: auto;
+  border-radius: var(--raio-16);
+  background: var(--cor-superficie);
+  box-shadow: var(--sombra-modal);
+  color: var(--cor-texto);
+}
+
+.modal--pequeno {
+  max-width: var(--modal-pequeno);
+}
+
+.modal--medio {
+  max-width: var(--modal-medio);
+}
+
+.modal--grande {
+  max-width: var(--modal-grande);
+}
+
+.modal__cabecalho {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--espaco-16);
+}
+
+.modal__titulo {
+  font: var(--texto-h3);
+}
+
+.modal__titulo:focus {
+  outline: none;
+}
+
+.modal__titulo:focus-visible {
+  outline: var(--sombra-foco);
+}
+
+.modal__erro {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--espaco-8);
+  margin: 0;
+  padding: var(--espaco-12) var(--espaco-16);
+  border: var(--borda-1) solid var(--cor-erro);
+  border-radius: var(--raio-8);
+  color: var(--cor-erro);
+}
+
+.modal__icone-erro {
+  width: var(--tamanho-icone);
+  height: var(--tamanho-icone);
+  flex-shrink: 0;
+}
+
+.modal__conteudo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-16);
+}
+
+/* Cancelar à esquerda, ação principal à direita */
+.modal__rodape {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--espaco-8);
+  margin-top: var(--espaco-8);
+}
+
+@keyframes modal-surgir {
+  from {
+    opacity: 0;
+  }
+}
+
+/* bp-base: ocupa 100 % da largura e altura */
+@media (max-width: 767px) {
+  .modal-sobreposicao {
+    padding: 0;
+  }
+
+  .modal {
+    max-width: none;
+    height: 100%;
+    border-radius: 0;
+  }
+}

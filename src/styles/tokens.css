@@ -25,6 +25,8 @@
   --cor-grafico-5: #de350b;
   --cor-grafico-6: #008da6;
   --cor-grafico-7: #6b778c;
+  /* Sobreposição dos modais: cor-texto a 50 % de opacidade */
+  --cor-sobreposicao: color-mix(in srgb, var(--cor-texto) 50%, transparent);
 
   /* Tipografia */
   --fonte-familia: "Inter", system-ui, sans-serif;
@@ -56,6 +58,30 @@
   --sombra-nenhuma: none;
   --sombra-modal: 0 8px 24px rgba(23, 43, 77, 0.16);
   --sombra-foco: 2px solid var(--cor-primaria);
+  --foco-deslocamento: 2px;
+
+  /* Bordas */
+  --borda-1: 1px;
+  --borda-2: 2px;
+  --borda-4: 4px;
+
+  /* Tamanhos */
+  --alvo-toque: 44px;
+  --altura-linha-tabela: 48px;
+  --tamanho-icone: 20px;
+  --largura-menu: 256px;
+  --modal-pequeno: 480px;
+  --modal-medio: 640px;
+  --modal-grande: 960px;
+  --largura-toast: 360px;
+
+  /* Camadas */
+  --camada-modal: 100;
+  --camada-toast: 200;
+  --camada-pular-conteudo: 1000;
+
+  /* Movimento */
+  --duracao-curta: 150ms;
 
   /*
    * Breakpoints (valores para media queries; variáveis CSS não são aceitas

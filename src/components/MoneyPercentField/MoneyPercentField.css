@@ -1,0 +1,56 @@
+.desconto {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-8);
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.desconto legend {
+  padding: 0;
+  margin-bottom: var(--espaco-8);
+}
+
+.desconto__linha {
+  display: flex;
+  gap: var(--espaco-8);
+}
+
+.desconto__parte {
+  position: relative;
+  display: flex;
+  flex: 1;
+  min-width: 0;
+}
+
+.desconto__adorno {
+  position: absolute;
+  top: 50%;
+  left: var(--espaco-12);
+  font: var(--texto-corpo);
+  color: var(--cor-texto-secundario);
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.desconto__adorno--sufixo {
+  right: var(--espaco-12);
+  left: auto;
+}
+
+.desconto__entrada {
+  min-width: 0;
+  text-align: right;
+}
+
+.desconto__entrada--reais {
+  padding-left: calc(var(--espaco-12) + var(--espaco-24));
+  padding-right: var(--espaco-12);
+}
+
+.desconto__entrada--percentual {
+  padding-left: var(--espaco-12);
+  padding-right: calc(var(--espaco-12) + var(--espaco-16));
+}

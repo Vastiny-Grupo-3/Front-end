@@ -55,7 +55,24 @@ a {
 
 :focus-visible {
   outline: var(--sombra-foco);
-  outline-offset: 2px;
+  outline-offset: var(--foco-deslocamento);
+}
+
+/* Bloco de esqueleto (estado carregando) */
+.esqueleto {
+  display: block;
+  border-radius: var(--raio-8);
+  background: var(--cor-borda);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 
 .sr-only {
@@ -73,7 +90,7 @@ a {
 
 .skip-link {
   position: fixed;
-  z-index: 1000;
+  z-index: var(--camada-pular-conteudo);
   top: var(--espaco-8);
   left: var(--espaco-8);
   padding: var(--espaco-8) var(--espaco-16);

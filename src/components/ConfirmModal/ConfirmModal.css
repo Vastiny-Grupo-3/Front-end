@@ -1,0 +1,5 @@
+.confirmacao__mensagem {
+  margin: 0;
+  font: var(--texto-corpo);
+  color: var(--cor-texto);
+}
