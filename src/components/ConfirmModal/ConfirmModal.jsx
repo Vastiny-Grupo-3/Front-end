@@ -16,6 +16,7 @@ export default function ConfirmModal({
   rotuloCancelar = "Cancelar",
   destrutivo = false,
   carregando = false,
+  focoAoFechar,
   erro,
   children,
 }) {
@@ -26,6 +27,7 @@ export default function ConfirmModal({
       titulo={titulo}
       tamanho="pequeno"
       focoInicial="titulo"
+      focoAoFechar={focoAoFechar}
       erro={erro}
       rodape={
         <>

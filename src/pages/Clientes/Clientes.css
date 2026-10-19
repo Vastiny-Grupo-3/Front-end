@@ -1,0 +1,51 @@
+.clientes__lista:focus {
+  outline: none;
+}
+
+.clientes__acoes {
+  display: flex;
+  gap: var(--espaco-8);
+}
+
+/* "Excluir" com ícone em cor-erro */
+.clientes__excluir.botao--icone {
+  color: var(--cor-erro);
+}
+
+.cliente-formulario {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-16);
+}
+
+.cliente-detalhes__nome {
+  font: var(--texto-h3);
+}
+
+/* Painel com as informações do cliente */
+.cliente-detalhes {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-12);
+  margin: 0;
+  padding: var(--espaco-16);
+  border: var(--borda-1) solid var(--cor-borda);
+  border-radius: var(--raio-12);
+}
+
+.cliente-detalhes dt {
+  font: var(--texto-label);
+  color: var(--cor-texto-secundario);
+}
+
+.cliente-detalhes dd {
+  margin: var(--espaco-4) 0 0;
+  overflow-wrap: anywhere;
+}
+
+/* bp-base: botão em largura total sob o título; as 3 ações em linha no fim do cartão */
+@media (max-width: 767px) {
+  .clientes__cadastrar {
+    width: 100%;
+  }
+}

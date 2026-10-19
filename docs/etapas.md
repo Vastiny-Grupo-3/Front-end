@@ -17,7 +17,7 @@ Para pedir uma etapa ao Claude Code, basta escrever: `Faça a Etapa N de docs/et
 | 7 | Login (TL18) | Concluída | `feat: tela de login` |
 | 8 | Catálogo e filtros (TL01 e TL17) | Concluída | `feat: catálogo e modal de filtros` |
 | 9 | Carrinho (TL02, TL03 e TL19) | Concluída | `feat: carrinho, modal do carrinho e compra finalizada` |
-| 10 | Clientes (TL04 e TL05) | Pendente | `feat: clientes e modais de cliente` |
+| 10 | Clientes (TL04 e TL05) | Concluída | `feat: clientes e modais de cliente` |
 | 11 | Histórico (TL06 a TL11) | Pendente | `feat: histórico com seis abas` |
 | 12 | Dashboard (TL12) | Pendente | `feat: dashboard` |
 | 13 | Entrada e Saída (TL13 e TL14) | Pendente | `feat: entrada e saída de estoque` |
@@ -38,6 +38,7 @@ Para pedir uma etapa ao Claude Code, basta escrever: `Faça a Etapa N de docs/et
 - O campo `estado` do estoque não é recalculado no front: entradas, saídas e vendas não o alteram, e produto novo fica com `estado: null` até o back-end enviar o valor.
 - Lucro da venda = soma de (quantidade × lucro por unidade) − descontos dos itens.
 - Carrinho (Etapa 9): o modal TL02 fica no AppShell e abre pelo ícone do carrinho de qualquer `PageHeader` com `carrinho` e por "Alterar carrinho". A pesquisa do cabeçalho da TL03 filtra os itens do carrinho pelo nome. O título do TL02 é só para leitores de tela (o wireframe não mostra título).
+- Modal: a prop `focoAoFechar` define para onde vai o foco quando o botão que abriu o modal deixa de existir (ex.: linha excluída em Clientes).
 - Os filtros (`src/utils/filtros.js`, `FilterModal`, `FilterChips`) já aceitam as opções da Entrada e da Saída (`mostrarAbaixoMinimo`).
 - `status` do StockContext é sempre "pronto" com os mocks; os estados carregando e erro das telas aparecem quando o back-end alimentar esse valor.
 - O build mostra um aviso `"use client"` vindo de dentro do `lucide-react`; é inofensivo, mas precisa ser tratado na Etapa 17 (build sem avisos).

@@ -31,6 +31,7 @@ function focaveis(elemento) {
  * tamanho: "pequeno" (~480 px) | "medio" (~640 px) | "grande" (~960 px)
  * focoInicial: "campo" (primeiro campo) | "titulo" (confirmações e detalhes)
  * tituloOculto: o título só existe para leitores de tela (quando o wireframe não o mostra)
+ * focoAoFechar: ref do elemento que recebe o foco se o gatilho deixar de existir (ex.: item excluído)
  */
 export default function Modal({
   aberto,
@@ -40,6 +41,7 @@ export default function Modal({
   tamanho = "medio",
   focoInicial = "campo",
   mostrarFechar = false,
+  focoAoFechar,
   erro,
   rodape,
   children,
@@ -50,6 +52,8 @@ export default function Modal({
   const [container, setContainer] = useState(null);
   const aoFecharRef = useRef(aoFechar);
   aoFecharRef.current = aoFechar;
+  const focoAoFecharRef = useRef(focoAoFechar);
+  focoAoFecharRef.current = focoAoFechar;
 
   // Cria o nó do portal no body enquanto o modal estiver aberto.
   useLayoutEffect(() => {
@@ -86,6 +90,7 @@ export default function Modal({
         document.body.classList.remove("modal-aberto");
       }
       if (gatilho instanceof HTMLElement && gatilho.isConnected) gatilho.focus();
+      else focoAoFecharRef.current?.current?.focus();
     };
   }, [container]);
 
