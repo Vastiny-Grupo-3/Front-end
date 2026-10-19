@@ -38,3 +38,27 @@ export function lerDecimal(texto) {
 export function arredondar(valor) {
   return Math.round(valor * 100) / 100;
 }
+
+/** "2026-10-11" → "11/10/2026" */
+export function formatarData(dataIso) {
+  const [ano, mes, dia] = dataIso.slice(0, 10).split("-");
+  return `${dia}/${mes}/${ano}`;
+}
+
+/** 7 → "007" (ids de transação e de cliente); `digitos` define o tamanho. */
+export function formatarId(id, digitos = 3) {
+  return String(id).padStart(digitos, "0");
+}
+
+/** 1 → "1 unidade"; 3 → "3 unidades" */
+export function formatarUnidades(quantidade) {
+  return `${quantidade} ${quantidade === 1 ? "unidade" : "unidades"}`;
+}
+
+/** Data de hoje no formato ISO (aaaa-mm-dd), no fuso local. */
+export function hojeIso() {
+  const agora = new Date();
+  const mes = String(agora.getMonth() + 1).padStart(2, "0");
+  const dia = String(agora.getDate()).padStart(2, "0");
+  return `${agora.getFullYear()}-${mes}-${dia}`;
+}

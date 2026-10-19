@@ -13,7 +13,7 @@ Para pedir uma etapa ao Claude Code, basta escrever: `Faça a Etapa N de docs/et
 | 3 | Tokens e estilos globais | Concluída | `feat: tokens de design e estilos globais` |
 | 4 | Componentes base | Concluída | `feat: componentes base` |
 | 5 | Estrutura da aplicação, menu e rotas | Concluída | `feat: estrutura da aplicação, menu lateral e rotas` |
-| 6 | Dados mockados e contextos | Pendente | `feat: dados mockados e contextos de carrinho e estoque` |
+| 6 | Dados mockados e contextos | Concluída | `feat: dados mockados e contextos de carrinho e estoque` |
 | 7 | Login (TL18) | Pendente | `feat: tela de login` |
 | 8 | Catálogo e filtros (TL01 e TL17) | Pendente | `feat: catálogo e modal de filtros` |
 | 9 | Carrinho (TL02, TL03 e TL19) | Pendente | `feat: carrinho, modal do carrinho e compra finalizada` |
@@ -32,6 +32,10 @@ Para pedir uma etapa ao Claude Code, basta escrever: `Faça a Etapa N de docs/et
 - A página temporária `/componentes` (Etapa 4) é uma rota pública em `src/App.jsx`; removê-la quando as telas reais existirem.
 - O Login (Etapa 5) tem só o formulário mínimo para a autenticação simulada; a Etapa 7 completa a tela (mostrar/ocultar senha, erros de credenciais e de conexão).
 - O nome do usuário na saudação vem, por enquanto, da parte do e-mail antes do @; trocar pelo nome da conta quando existirem os dados das contas.
+- Dados (Etapa 6): ficam em memória; recarregar a página volta aos mocks de `src/data/`. As regras estão em funções puras em `src/utils/carrinho.js` e `src/utils/estoque.js`; os contextos só guardam o estado.
+- Produto guarda `categoriaId` (e não o nome) para que renomear uma categoria atualize os produtos; os registros do histórico guardam o nome da época.
+- O campo `estado` do estoque não é recalculado no front: entradas, saídas e vendas não o alteram, e produto novo fica com `estado: null` até o back-end enviar o valor.
+- Lucro da venda = soma de (quantidade × lucro por unidade) − descontos dos itens.
 - O build mostra um aviso `"use client"` vindo de dentro do `lucide-react`; é inofensivo, mas precisa ser tratado na Etapa 17 (build sem avisos).
 
 ---
