@@ -93,6 +93,7 @@ export default function Login() {
           <TextField
             ref={emailRef}
             rotulo="E-mail"
+            obrigatorio
             type="email"
             autoComplete="email"
             inputMode="email"
@@ -105,6 +106,7 @@ export default function Login() {
           <PasswordField
             ref={senhaRef}
             rotulo="Senha"
+            obrigatorio
             autoComplete="current-password"
             placeholder="Digite sua senha"
             value={senha}

@@ -76,8 +76,13 @@ export default function DonutChart({ niveis, total, legendaTabela }) {
     return { ...nivel, inicio, fim };
   });
 
+  const resumo = `${legendaTabela}: Total Produto ${total}; ${niveis
+    .map((nivel) => `${nivel.estado}, ${nivel.quantidade} (${formatarPercentual(nivel.percentual)}%)`)
+    .join("; ")}.`;
+
   return (
-    <div className="rosca">
+    <figure className="rosca">
+      <figcaption className="sr-only">{resumo}</figcaption>
       <svg
         className="rosca__svg"
         width={TAMANHO}
@@ -155,6 +160,6 @@ export default function DonutChart({ niveis, total, legendaTabela }) {
           </tr>
         </tbody>
       </table>
-    </div>
+    </figure>
   );
 }

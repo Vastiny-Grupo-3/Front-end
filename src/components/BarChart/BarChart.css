@@ -1,3 +1,7 @@
+.grafico-barras {
+  margin: 0;
+}
+
 /* Em telas estreitas o gráfico rola na horizontal, sem rolar a página */
 .grafico-barras__rolagem {
   width: 100%;

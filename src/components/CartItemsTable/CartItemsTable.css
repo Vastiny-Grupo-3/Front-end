@@ -3,16 +3,12 @@
 }
 
 .itens-carrinho__desconto {
-  min-width: calc(var(--largura-menu) - var(--espaco-48));
+  min-width: calc(var(--largura-menu) - var(--espaco-48) - var(--espaco-12));
 }
 
 /* Versão compacta para caber no modal grande (~960 px) */
 .itens-carrinho .tabela__tabela th {
   white-space: normal;
-}
-
-.itens-carrinho .stepper__linha {
-  gap: var(--espaco-4);
 }
 
 .itens-carrinho .stepper__valor {

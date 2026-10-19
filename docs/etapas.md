@@ -22,7 +22,7 @@ Para pedir uma etapa ao Claude Code, basta escrever: `Faça a Etapa N de docs/et
 | 12 | Dashboard (TL12) | Concluída | `feat: dashboard` |
 | 13 | Entrada e Saída (TL13 e TL14) | Concluída | `feat: entrada e saída de estoque` |
 | 14 | Configurações (TL15, TL16 e TL20) | Concluída | `feat: configurações, cadastro de conta e categorias` |
-| 15 | Revisão de acessibilidade | Pendente | `fix: ajustes de acessibilidade` |
+| 15 | Revisão de acessibilidade | Concluída | `fix: ajustes de acessibilidade` |
 | 16 | Revisão visual contra os wireframes | Pendente | `fix: alinhamento com wireframes e especificação` |
 | 17 | Entrega | Pendente | `docs: README e build final` |
 
@@ -45,6 +45,7 @@ Para pedir uma etapa ao Claude Code, basta escrever: `Faça a Etapa N de docs/et
 - Entrada e Saída (Etapa 13): `ProductBrowser` (filtros + etiquetas + grade) é usado por Catálogo, Entrada e Saída; `StockMovementModal` faz "Adicionar Quantidade" e "Diminuir Quantidade". Os modais "Novo Produto" e "Editar Produto" têm "Cancelar" à esquerda (anatomia padrão do Modal), embora o wireframe só mostre o botão principal. A imagem do produto fica em memória como data URL até existir back-end.
 - Stepper: nos limites os botões usam `aria-disabled` (e não `disabled`) para não perder o foco do teclado.
 - Configurações (Etapa 14): regras de conta em `src/utils/contas.js`. Contas e sessão ficam no sessionStorage (somem ao fechar a aba). Excluir conta remove só a conta e o acesso dela; textos da TL15/TL20 ajustados (ver CLAUDE.md). "Informe o nome de usuário." foi criado porque a especificação não define mensagem para o nome vazio.
+- Acessibilidade (Etapa 15): auditoria automática (contraste, rótulos, nomes, títulos, tabelas, ids, alvos de 44 px e reflow em 320 px) em 13 telas e 21 modais, mais revisão manual de teclado e foco. "Excluir do Carrinho" e a lixeira não pedem confirmação porque a ação é reversível (o produto pode ser adicionado de novo).
 - Os filtros (`src/utils/filtros.js`, `FilterModal`, `FilterChips`) já aceitam as opções da Entrada e da Saída (`mostrarAbaixoMinimo`).
 - `status` do StockContext é sempre "pronto" com os mocks; os estados carregando e erro das telas aparecem quando o back-end alimentar esse valor.
 - O build mostra um aviso `"use client"` vindo de dentro do `lucide-react`; é inofensivo, mas precisa ser tratado na Etapa 17 (build sem avisos).

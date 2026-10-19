@@ -81,10 +81,11 @@ export default function DataTable({
       aria-busy={estado === "carregando" || undefined}
     >
       <div className="tabela__rolagem">
-        <table className="tabela__tabela">
+        {/* Papéis explícitos: no modo cartão (display: block) a tabela continua sendo tabela */}
+        <table className="tabela__tabela" role="table">
           <caption className={legendaOculta ? "sr-only" : "tabela__legenda"}>{legenda}</caption>
-          <thead>
-            <tr>
+          <thead role="rowgroup">
+            <tr role="row">
               {colunas.map((coluna) => {
                 const ativa = ordem.chave === coluna.chave;
                 const IconeOrdem = !ativa ? ArrowUpDown : ordem.direcao === "asc" ? ArrowUp : ArrowDown;
@@ -92,6 +93,7 @@ export default function DataTable({
                   <th
                     key={coluna.chave}
                     scope="col"
+                    role="columnheader"
                     className={coluna.alinhamento === "direita" ? "tabela__celula--direita" : undefined}
                     aria-sort={coluna.ordenavel ? (ativa ? ARIA_SORT[ordem.direcao] : "none") : undefined}
                   >
@@ -112,12 +114,12 @@ export default function DataTable({
               })}
             </tr>
           </thead>
-          <tbody>
+          <tbody role="rowgroup">
             {estado === "carregando" &&
               Array.from({ length: LINHAS_ESQUELETO }, (_, indice) => (
-                <tr key={`esqueleto-${indice}`} className="tabela__linha">
+                <tr key={`esqueleto-${indice}`} className="tabela__linha" role="row">
                   {colunas.map((coluna) => (
-                    <td key={coluna.chave} data-rotulo={rotuloDaCelula(coluna)}>
+                    <td key={coluna.chave} role="cell" data-rotulo={rotuloDaCelula(coluna)}>
                       <span className="esqueleto tabela__esqueleto" />
                     </td>
                   ))}
@@ -125,8 +127,8 @@ export default function DataTable({
               ))}
 
             {estado === "erro" && (
-              <tr className="tabela__linha-mensagem">
-                <td colSpan={colunas.length}>
+              <tr className="tabela__linha-mensagem" role="row">
+                <td colSpan={colunas.length} role="cell">
                   <EmptyState mensagem={MENSAGEM_ERRO} className="tabela__mensagem">
                     {aoTentarNovamente && (
                       <Button variante="secundario" onClick={aoTentarNovamente}>
@@ -139,8 +141,8 @@ export default function DataTable({
             )}
 
             {estado === "padrao" && linhasOrdenadas.length === 0 && (
-              <tr className="tabela__linha-mensagem">
-                <td colSpan={colunas.length}>
+              <tr className="tabela__linha-mensagem" role="row">
+                <td colSpan={colunas.length} role="cell">
                   <EmptyState mensagem={mensagemVazio} className="tabela__mensagem" />
                 </td>
               </tr>
@@ -154,10 +156,12 @@ export default function DataTable({
                   <tr
                     key={chave}
                     className={`tabela__linha ${selecionada ? "tabela__linha--selecionada" : ""}`.trim()}
+                    role="row"
                   >
                     {colunas.map((coluna) => (
                       <td
                         key={coluna.chave}
+                        role="cell"
                         data-rotulo={rotuloDaCelula(coluna)}
                         className={coluna.alinhamento === "direita" ? "tabela__celula--direita" : undefined}
                       >

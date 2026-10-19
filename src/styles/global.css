@@ -89,6 +89,9 @@ a {
 }
 
 .skip-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--alvo-toque);
   position: fixed;
   z-index: var(--camada-pular-conteudo);
   top: var(--espaco-8);

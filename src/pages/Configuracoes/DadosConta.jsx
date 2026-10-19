@@ -66,6 +66,7 @@ export default function DadosConta({ aoCadastrarConta }) {
           <TextField
             ref={refs.nome}
             rotulo="Nome de usuário"
+            obrigatorio
             autoComplete="name"
             value={valores.nome}
             onChange={mudar("nome")}
@@ -74,6 +75,7 @@ export default function DadosConta({ aoCadastrarConta }) {
           <TextField
             ref={refs.email}
             rotulo="E-mail da conta"
+            obrigatorio
             type="email"
             autoComplete="email"
             value={valores.email}

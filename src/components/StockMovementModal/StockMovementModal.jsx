@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { AlertCircle } from "lucide-react";
 import Modal from "../Modal/Modal.jsx";
 import Button from "../Button/Button.jsx";
 import Stepper from "../Stepper/Stepper.jsx";
@@ -58,7 +59,6 @@ export default function StockMovementModal({ tipo, produto, aoFechar }) {
       aberto={Boolean(produto)}
       aoFechar={aoFechar}
       titulo={textos.titulo}
-      focoInicial="titulo"
       rodape={
         <>
           <Button variante="secundario" onClick={aoFechar}>
@@ -114,6 +114,7 @@ export default function StockMovementModal({ tipo, produto, aoFechar }) {
             />
             {erros.quantidade && (
               <p className="campo__mensagem-erro" role="alert">
+                <AlertCircle className="campo__icone-erro" aria-hidden="true" focusable="false" />
                 {erros.quantidade}
               </p>
             )}

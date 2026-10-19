@@ -86,8 +86,11 @@ export default function BarChart({ dados, legendaTabela }) {
   const marcas = Array.from({ length: Math.round(topoEixo / passo) + 1 }, (_, i) => i * passo);
   const caracteresPorLinha = Math.max(6, Math.floor(faixa / 7));
 
+  const resumo = `${legendaTabela}: ${dados.map((item) => `${item.nome}, ${formatarMoeda(item.valor)}`).join("; ")}.`;
+
   return (
-    <div className="grafico-barras">
+    <figure className="grafico-barras">
+      <figcaption className="sr-only">{resumo}</figcaption>
       <div ref={conteinerRef} className="grafico-barras__rolagem">
         {larguraConteiner > 0 && (
           <svg
@@ -170,6 +173,6 @@ export default function BarChart({ dados, legendaTabela }) {
           ))}
         </tbody>
       </table>
-    </div>
+    </figure>
   );
 }

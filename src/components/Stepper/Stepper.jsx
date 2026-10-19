@@ -69,7 +69,7 @@ export default function Stepper({
         <Button
           variante="passo"
           icone={unitario ? undefined : Minus}
-          aria-label={unitario ? undefined : "Diminuir quantidade"}
+          aria-label={unitario ? "Diminuir quantidade (-1)" : "Diminuir quantidade"}
           disabled={disabled}
           aria-disabled={noMinimo || undefined}
           onClick={() => !noMinimo && aplicar(valor - 1)}
@@ -91,7 +91,7 @@ export default function Stepper({
         <Button
           variante="passo"
           icone={unitario ? undefined : Plus}
-          aria-label={unitario ? undefined : "Aumentar quantidade"}
+          aria-label={unitario ? "Aumentar quantidade (+1)" : "Aumentar quantidade"}
           disabled={disabled}
           aria-disabled={noMaximo || undefined}
           onClick={() => !noMaximo && aplicar(valor + 1)}
