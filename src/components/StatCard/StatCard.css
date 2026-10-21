@@ -1,22 +1,61 @@
 .indicador {
+  position: relative;
   display: flex;
   flex-direction: column;
+  justify-content: space-between;
   gap: var(--espaco-8);
+  min-height: calc(var(--espaco-48) + var(--espaco-48));
   margin: 0;
-  padding: var(--espaco-16);
+  padding: var(--espaco-16) var(--espaco-16) var(--espaco-16) var(--espaco-24);
+  overflow: hidden;
   border: var(--borda-1) solid var(--cor-borda);
-  border-radius: var(--raio-12);
+  border-radius: var(--raio-16);
   background: var(--cor-superficie);
+  box-shadow: var(--sombra-cartao);
+}
+
+.indicador::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: var(--espaco-16);
+  bottom: var(--espaco-16);
+  width: var(--borda-4);
+  border-radius: var(--raio-total);
+  background: var(--cor-primaria);
+}
+
+.indicador__topo {
+  display: flex;
+  align-items: center;
+  gap: var(--espaco-8);
+}
+
+.indicador__icone {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: var(--espaco-32);
+  height: var(--espaco-32);
+  border-radius: var(--raio-12);
+  background: color-mix(in srgb, var(--cor-primaria) 14%, var(--cor-superficie));
+  color: var(--cor-primaria);
+}
+
+.indicador__icone svg {
+  width: var(--espaco-16);
+  height: var(--espaco-16);
 }
 
 .indicador__rotulo {
-  font: var(--texto-label);
-  color: var(--cor-texto);
+  font: var(--texto-corpo-pequeno);
+  color: var(--cor-texto-secundario);
 }
 
 .indicador__valor {
   margin: 0;
-  font: var(--texto-h2);
+  font: var(--texto-h1);
   color: var(--cor-texto);
 }
 

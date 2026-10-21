@@ -1,4 +1,5 @@
-import { useId } from "react";
+import { useId, useState } from "react";
+import { useAcessibilidade } from "../../context/AcessibilidadeContext.jsx";
 import { formatarPercentual } from "../../utils/formatadores.js";
 import "./DonutChart.css";
 
@@ -7,32 +8,27 @@ const RAIO_EXTERNO = 96;
 const RAIO_INTERNO = 62;
 const CENTRO = TAMANHO / 2;
 
-/*
- * Cada nível tem cor (token de estado) e um padrão de forma próprio, para
- * não depender só da cor. As formas usam cor-texto sobre fundos claros
- * (Médio, Ruim) e cor-superficie sobre fundos escuros (Bom, Crítico).
- */
+/* Cor de cada nível. As texturas seguem as barras e só entram com o modo para daltonismo. */
 const ESTILOS = {
-  Bom: { cor: "var(--cor-sucesso)", tinta: "var(--cor-superficie)", forma: "quadrado" },
-  Médio: { cor: "var(--cor-estado-medio)", tinta: "var(--cor-texto)", forma: "circulo" },
-  Ruim: { cor: "var(--cor-alerta)", tinta: "var(--cor-texto)", forma: "losango" },
-  Crítico: { cor: "var(--cor-erro)", tinta: "var(--cor-superficie)", forma: "triangulo" },
+  Bom: { cor: "var(--cor-estoque-bom)", tinta: "var(--cor-estoque-bom-tinta)", forma: "listra" },
+  Médio: { cor: "var(--cor-estoque-medio)", tinta: "var(--cor-estoque-medio-tinta)", forma: "circulo" },
+  Ruim: { cor: "var(--cor-estoque-ruim)", tinta: "var(--cor-estoque-ruim-tinta)", forma: "x" },
+  Crítico: { cor: "var(--cor-estoque-critico)", tinta: "var(--cor-estoque-critico-tinta)", forma: "triangulo" },
 };
 
-function Forma({ forma, tinta, x, y, r }) {
-  if (forma === "quadrado") return <rect x={x - r} y={y - r} width={r * 2} height={r * 2} fill={tinta} />;
-  if (forma === "circulo") return <circle cx={x} cy={y} r={r} fill={tinta} />;
-  if (forma === "losango") {
-    return <path d={`M${x},${y - r * 1.3} L${x + r * 1.3},${y} L${x},${y + r * 1.3} L${x - r * 1.3},${y} Z`} fill={tinta} />;
-  }
-  return <path d={`M${x},${y - r * 1.3} L${x + r * 1.3},${y + r} L${x - r * 1.3},${y + r} Z`} fill={tinta} />;
+/* Mesma marca do gráfico de barras, num tile de 8 px. */
+function Marca({ forma, tinta }) {
+  if (forma === "listra") return <path d="M0,8 L8,0 M-2,2 L2,-2 M6,10 L10,6" stroke={tinta} strokeWidth="1.6" />;
+  if (forma === "circulo") return <circle cx="4" cy="4" r="2.4" fill={tinta} />;
+  if (forma === "x") return <path d="M1.2,1.2 L6.8,6.8 M6.8,1.2 L1.2,6.8" stroke={tinta} strokeWidth="1.6" />;
+  return <path d="M4,1.2 L7.2,6.8 L0.8,6.8 Z" fill={tinta} />;
 }
 
 function Padrao({ id, estilo }) {
   return (
-    <pattern id={id} width="10" height="10" patternUnits="userSpaceOnUse">
-      <rect width="10" height="10" fill={estilo.cor} />
-      <Forma forma={estilo.forma} tinta={estilo.tinta} x={5} y={5} r={1.6} />
+    <pattern id={id} width="8" height="8" patternUnits="userSpaceOnUse">
+      <rect width="8" height="8" fill={estilo.cor} />
+      <Marca forma={estilo.forma} tinta={estilo.tinta} />
     </pattern>
   );
 }
@@ -61,10 +57,15 @@ function caminhoSetor(inicio, fim) {
  * Gráfico de rosca dos níveis de estoque, com "Total Produto" no centro e legenda
  * com quantidade e percentual. Tabela equivalente para leitores de tela.
  * niveis: [{ estado, quantidade, percentual }], total
+ * estadosSelecionados: níveis marcados no filtro (vazio = todos)
+ * aoEscolherEstado(estado): clique na legenda filtra o estoque
  */
-export default function DonutChart({ niveis, total, legendaTabela }) {
+export default function DonutChart({ niveis, total, legendaTabela, estadosSelecionados = [], aoEscolherEstado }) {
+  const { daltonismo } = useAcessibilidade();
+  const [destaque, setDestaque] = useState(null);
   const base = useId().replace(/:/g, "");
   const idPadrao = (estado) => `${base}-padrao-${ESTILOS[estado].forma}`;
+  const preenchimento = (estado) => (daltonismo ? `url(#${idPadrao(estado)})` : ESTILOS[estado].cor);
   const comValor = niveis.filter((nivel) => nivel.quantidade > 0);
 
   let acumulado = 0;
@@ -81,7 +82,10 @@ export default function DonutChart({ niveis, total, legendaTabela }) {
     .join("; ")}.`;
 
   return (
-    <figure className="rosca">
+    <figure
+      className="rosca"
+      onMouseLeave={() => setDestaque(null)}
+    >
       <figcaption className="sr-only">{resumo}</figcaption>
       <svg
         className="rosca__svg"
@@ -91,20 +95,24 @@ export default function DonutChart({ niveis, total, legendaTabela }) {
         aria-hidden="true"
         focusable="false"
       >
-        <defs>
-          {niveis.map((nivel) => (
-            <Padrao key={nivel.estado} id={idPadrao(nivel.estado)} estilo={ESTILOS[nivel.estado]} />
-          ))}
-        </defs>
+        {daltonismo && (
+          <defs>
+            {niveis.map((nivel) => (
+              <Padrao key={nivel.estado} id={idPadrao(nivel.estado)} estilo={ESTILOS[nivel.estado]} />
+            ))}
+          </defs>
+        )}
         {total === 0 && (
           <circle className="rosca__vazio" cx={CENTRO} cy={CENTRO} r={(RAIO_EXTERNO + RAIO_INTERNO) / 2} />
         )}
         {setores.map((setor) => (
           <path
             key={setor.estado}
-            className={`rosca__setor ${setor.estado === "Médio" ? "rosca__setor--contorno" : ""}`.trim()}
+            className={`rosca__setor ${destaque === setor.estado ? "rosca__setor--destaque" : ""}`.trim()}
             d={caminhoSetor(setor.inicio, setor.fim)}
-            fill={`url(#${idPadrao(setor.estado)})`}
+            fill={preenchimento(setor.estado)}
+            onMouseEnter={() => setDestaque(setor.estado)}
+            onClick={() => aoEscolherEstado?.(setor.estado)}
           >
             <title>{`${setor.estado}: ${setor.quantidade} (${formatarPercentual(setor.percentual)}%)`}</title>
           </path>
@@ -119,19 +127,21 @@ export default function DonutChart({ niveis, total, legendaTabela }) {
 
       <ul className="rosca__legenda">
         {niveis.map((nivel) => (
-          <li key={nivel.estado} className="rosca__item-legenda">
-            <svg className="rosca__amostra" width="20" height="20" viewBox="0 0 20 20" aria-hidden="true" focusable="false">
-              <rect
-                width="20"
-                height="20"
-                rx="4"
-                fill={`url(#${idPadrao(nivel.estado)})`}
-                className={nivel.estado === "Médio" ? "rosca__setor--contorno" : undefined}
-              />
-            </svg>
-            <span className="rosca__nivel">{nivel.estado}</span>
-            <span className="rosca__quantidade">{nivel.quantidade}</span>
-            <span className="rosca__percentual">{formatarPercentual(nivel.percentual)}%</span>
+          <li key={nivel.estado}>
+            <button
+              type="button"
+              className={`rosca__nivel-botao ${destaque === nivel.estado ? "rosca__nivel-botao--destaque" : ""}`.trim()}
+              aria-pressed={estadosSelecionados.includes(nivel.estado)}
+              onMouseEnter={() => setDestaque(nivel.estado)}
+              onClick={() => aoEscolherEstado?.(nivel.estado)}
+            >
+              <svg className="rosca__amostra" width="20" height="20" viewBox="0 0 20 20" aria-hidden="true" focusable="false">
+                <rect width="20" height="20" rx="4" fill={preenchimento(nivel.estado)} />
+              </svg>
+              <span className="rosca__nivel">{nivel.estado}</span>
+              <span className="rosca__quantidade">{nivel.quantidade}</span>
+              <span className="rosca__percentual">{formatarPercentual(nivel.percentual)}%</span>
+            </button>
           </li>
         ))}
       </ul>

@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Calendar, Filter } from "lucide-react";
+import { BadgeDollarSign, Calendar, Filter, Package, Receipt, ShoppingBag } from "lucide-react";
 import PageHeader from "../../components/PageHeader/PageHeader.jsx";
 import Button from "../../components/Button/Button.jsx";
 import StatCard from "../../components/StatCard/StatCard.jsx";
@@ -11,8 +11,10 @@ import BarChart from "../../components/BarChart/BarChart.jsx";
 import DonutChart from "../../components/DonutChart/DonutChart.jsx";
 import PeriodoModal from "./PeriodoModal.jsx";
 import CategoriaModal from "./CategoriaModal.jsx";
+import EstoqueFiltroModal from "./EstoqueFiltroModal.jsx";
 import { useStock } from "../../context/StockContext.jsx";
 import {
+  ESTADOS_ESTOQUE,
   MENSAGENS_DASHBOARD,
   calcularIndicadores,
   categoriasMaisVendidas,
@@ -48,24 +50,57 @@ export default function Dashboard() {
   const stock = useStock();
   const { vendas, produtos, categorias, status, recarregar } = stock;
   const [periodo, setPeriodo] = useState(() => periodoPadrao(vendas, hojeIso()));
-  const [categoriaIds, setCategoriaIds] = useState(() => categorias.map((categoria) => categoria.id));
-  const [modal, setModal] = useState(null); // "periodo" | "categoria" | null
+  const todas = () => categorias.map((categoria) => categoria.id);
+  const [categoriaIds, setCategoriaIds] = useState(todas);
+  const [categoriaEstoqueIds, setCategoriaEstoqueIds] = useState(todas);
+  const [estadoEstoque, setEstadoEstoque] = useState(ESTADOS_ESTOQUE);
+  const [modal, setModal] = useState(null); // "periodo" | "categoria" | "estoque" | null
 
-  const filtros = { ...periodo, categoriaIds };
-  const indicadores = calcularIndicadores({ vendas, produtos, ...filtros });
-  const barras = categoriasMaisVendidas({ vendas, categorias, ...filtros });
-  const maisVendidos = produtosMaisVendidos({ vendas, ...filtros });
+  const todasIds = categorias.map((categoria) => categoria.id);
+  const indicadores = calcularIndicadores({ vendas, produtos, ...periodo, categoriaIds });
+  const vendasNoPeriodo = calcularIndicadores({ vendas, produtos, ...periodo, categoriaIds: todasIds }).vendas;
+  const barras = categoriasMaisVendidas({ vendas, categorias, ...periodo, categoriaIds: todasIds });
+  const maisVendidos = produtosMaisVendidos({ vendas, ...periodo, categoriaIds });
+  const produtosEstoque = useMemo(
+    () =>
+      produtos.filter(
+        (produto) =>
+          categoriaEstoqueIds.includes(produto.categoriaId) && estadoEstoque.includes(produto.estado),
+      ),
+    [produtos, categoriaEstoqueIds, estadoEstoque],
+  );
   const estoque = useMemo(() => niveisDeEstoque(produtos), [produtos]);
 
   const carregando = status === "carregando";
   const comErro = status === "erro";
   const semVendas = indicadores.vendas === 0;
+  const semVendasNoPeriodo = vendasNoPeriodo === 0;
   const todasCategorias = categoriaIds.length === categorias.length;
+  const todoEstoque = categoriaEstoqueIds.length === categorias.length;
+  const todosEstados = estadoEstoque.length === ESTADOS_ESTOQUE.length;
+
+  function escolherCategoria(id) {
+    setCategoriaIds((atual) => (atual.length === 1 && atual[0] === id ? todasIds : [id]));
+    document.getElementById("painel-produtos")?.closest("section")?.scrollIntoView({
+      behavior: "smooth",
+      block: "nearest",
+    });
+  }
+
+  function escolherEstado(estado) {
+    setEstadoEstoque((atual) =>
+      atual.length === 1 && atual[0] === estado ? [...ESTADOS_ESTOQUE] : [estado],
+    );
+    document.getElementById("painel-estoque")?.closest("section")?.scrollIntoView({
+      behavior: "smooth",
+      block: "nearest",
+    });
+  }
 
   const estadoIndicador = carregando ? "carregando" : comErro ? "erro" : "padrao";
   const textoPeriodo = `${textoDiasFiltrados(diasNoPeriodo(periodo.inicio, periodo.fim))}: ${formatarData(periodo.inicio)} a ${formatarData(periodo.fim)}`;
 
-  function conteudoVendas(conteudo) {
+  function conteudoVendas(conteudo, { vazio = semVendas } = {}) {
     if (carregando) return <span className="esqueleto dashboard__esqueleto" aria-hidden="true" />;
     if (comErro) {
       return (
@@ -76,7 +111,7 @@ export default function Dashboard() {
         </EmptyState>
       );
     }
-    if (semVendas) return <EmptyState mensagem={MENSAGENS_DASHBOARD.semVendas} />;
+    if (vazio) return <EmptyState mensagem={MENSAGENS_DASHBOARD.semVendas} />;
     return conteudo;
   }
 
@@ -92,9 +127,9 @@ export default function Dashboard() {
       titulo: "Categoria",
       renderizar: (linha) => nomeCategoria(stock, linha.categoriaId) || linha.categoria,
     },
-    { chave: "quantidade", titulo: "Qtd. Vendidas", alinhamento: "direita" },
-    { chave: "faturado", titulo: "Faturado", alinhamento: "direita", renderizar: (l) => formatarMoeda(l.faturado) },
-    { chave: "lucro", titulo: "Lucro", alinhamento: "direita", renderizar: (l) => formatarMoeda(l.lucro) },
+    { chave: "quantidade", titulo: "Qtd. Vendidas" },
+    { chave: "faturado", titulo: "Faturado", renderizar: (l) => formatarMoeda(l.faturado) },
+    { chave: "lucro", titulo: "Lucro", renderizar: (l) => formatarMoeda(l.lucro) },
   ];
 
   const colunasEstoque = [
@@ -111,12 +146,11 @@ export default function Dashboard() {
       valorOrdenacao: (linha) => nomeCategoria(stock, linha.categoriaId),
       renderizar: (linha) => nomeCategoria(stock, linha.categoriaId),
     },
-    { chave: "quantidade", titulo: "Estoque atual", ordenavel: true, alinhamento: "direita" },
+    { chave: "quantidade", titulo: "Estoque atual", ordenavel: true },
     {
       chave: "estoqueMinimo",
       titulo: "Mínimo",
       ordenavel: true,
-      alinhamento: "direita",
       valorOrdenacao: (linha) => linha.estoqueMinimo ?? -1,
       renderizar: (linha) => linha.estoqueMinimo ?? "—",
     },
@@ -151,28 +185,78 @@ export default function Dashboard() {
               : "—"}
           </span>
         )}
+        {!todoEstoque && (
+          <span>
+            Estoque:{" "}
+            {categoriaEstoqueIds.length > 0
+              ? categorias.filter((c) => categoriaEstoqueIds.includes(c.id)).map((c) => c.nome).join(", ")
+              : "—"}
+          </span>
+        )}
+        {!todosEstados && (
+          <span>
+            Estado:{" "}
+            {ESTADOS_ESTOQUE.filter((estado) => estadoEstoque.includes(estado)).join(", ") || "—"}
+          </span>
+        )}
       </p>
 
       <div className="dashboard__indicadores">
-        <StatCard rotulo="Vendas no período" valor={indicadores.vendas} estado={estadoIndicador} />
+        <StatCard
+          rotulo="Vendas no período"
+          valor={indicadores.vendas}
+          icone={ShoppingBag}
+          estado={estadoIndicador}
+        />
         <StatCard
           rotulo="Faturamento do período"
           valor={formatarMoeda(indicadores.faturamento)}
+          icone={BadgeDollarSign}
           estado={estadoIndicador}
         />
         <StatCard
           rotulo="Preço médio das vendas"
           valor={indicadores.precoMedio != null ? formatarMoeda(indicadores.precoMedio) : null}
+          icone={Receipt}
           estado={estadoIndicador === "padrao" && indicadores.precoMedio == null ? "vazio" : estadoIndicador}
         />
-        <StatCard rotulo="Produtos ativos" valor={indicadores.produtosAtivos} estado={estadoIndicador} />
+        <StatCard
+          rotulo="Produtos ativos"
+          valor={indicadores.produtosAtivos}
+          icone={Package}
+          estado={estadoIndicador}
+        />
       </div>
 
       <div className="dashboard__linha">
         <Painel id="painel-categorias" titulo="Categorias mais vendidas">
-          {conteudoVendas(<BarChart dados={barras} legendaTabela="Categorias mais vendidas" />)}
+          {conteudoVendas(
+            <BarChart
+              dados={barras}
+              legendaTabela="Categorias mais vendidas"
+              selecionadas={todasCategorias ? [] : categoriaIds}
+              aoEscolher={escolherCategoria}
+            />,
+            { vazio: semVendasNoPeriodo },
+          )}
         </Painel>
 
+        <Painel id="painel-niveis" className="dashboard__painel--centro" titulo="Níveis de Estoque Atual">
+          {carregando ? (
+            <span className="esqueleto dashboard__esqueleto" aria-hidden="true" />
+          ) : (
+            <DonutChart
+              niveis={estoque.niveis}
+              total={estoque.total}
+              legendaTabela="Níveis de Estoque Atual"
+              estadosSelecionados={todosEstados ? [] : estadoEstoque}
+              aoEscolherEstado={escolherEstado}
+            />
+          )}
+        </Painel>
+      </div>
+
+      <div className="dashboard__linha">
         <Painel
           id="painel-produtos"
           titulo="Produtos mais Vendidos"
@@ -191,31 +275,41 @@ export default function Dashboard() {
               legenda="Produtos mais Vendidos"
               colunas={colunasMaisVendidos}
               linhas={maisVendidos.map((linha, indice) => ({ ...linha, posicao: indice + 1 }))}
+              mensagemVazio={
+                todasCategorias
+                  ? "Nenhum registro por aqui ainda."
+                  : "Nenhum produto encontrado com esses filtros. Tente remover algum deles."
+              }
             />,
+            { vazio: semVendasNoPeriodo },
           )}
         </Painel>
-      </div>
 
-      <hr className="dashboard__divisoria" />
-
-      <div className="dashboard__linha">
-        <Painel id="painel-estoque" titulo="Estoque">
+        <Painel
+          id="painel-estoque"
+          titulo="Estoque"
+          acao={
+            <Button
+              variante="icone"
+              icone={Filter}
+              aria-label="Filtrar estoque"
+              onClick={() => setModal("estoque")}
+            />
+          }
+        >
           <DataTable
             className="dashboard__tabela"
             legenda="Estoque"
             colunas={colunasEstoque}
-            linhas={produtos}
+            linhas={produtosEstoque}
             estado={carregando || comErro ? status : "padrao"}
             aoTentarNovamente={recarregar}
+            mensagemVazio={
+              todoEstoque && todosEstados
+                ? "Nenhum registro por aqui ainda."
+                : "Nenhum produto encontrado com esses filtros. Tente remover algum deles."
+            }
           />
-        </Painel>
-
-        <Painel id="painel-niveis" titulo="Níveis de Estoque Atual">
-          {carregando ? (
-            <span className="esqueleto dashboard__esqueleto" aria-hidden="true" />
-          ) : (
-            <DonutChart niveis={estoque.niveis} total={estoque.total} legendaTabela="Níveis de Estoque Atual" />
-          )}
         </Painel>
       </div>
 
@@ -230,6 +324,15 @@ export default function Dashboard() {
         categorias={categorias}
         selecionadas={categoriaIds}
         aoMudar={setCategoriaIds}
+        aoFechar={() => setModal(null)}
+      />
+      <EstoqueFiltroModal
+        aberto={modal === "estoque"}
+        categorias={categorias}
+        categoriasSelecionadas={categoriaEstoqueIds}
+        aoMudarCategorias={setCategoriaEstoqueIds}
+        estadosSelecionados={estadoEstoque}
+        aoMudarEstados={setEstadoEstoque}
         aoFechar={() => setModal(null)}
       />
     </>

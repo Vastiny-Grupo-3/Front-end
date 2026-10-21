@@ -14,9 +14,19 @@
 .casca__lateral {
   position: sticky;
   top: 0;
+  display: flex;
+  flex-direction: column;
   height: 100vh;
-  border-right: var(--borda-1) solid var(--cor-borda);
-  background: var(--cor-superficie);
+  border-right: var(--borda-1) solid var(--cor-menu);
+  background: linear-gradient(
+    165deg,
+    color-mix(in srgb, var(--cor-primaria) 58%, var(--cor-menu)),
+    var(--cor-menu) 46%
+  );
+}
+
+.casca__lateral :focus-visible {
+  outline: var(--sombra-foco-claro);
 }
 
 .casca__conteudo {
@@ -54,9 +64,19 @@
     background: var(--cor-superficie);
   }
 
-  .casca__marca {
-    font: var(--texto-h3);
-    color: var(--cor-texto);
+  .casca__logo {
+    height: var(--espaco-32);
+    width: auto;
+  }
+
+  .casca__fechar-gaveta .botao--icone {
+    border-color: var(--cor-menu-borda);
+    background: transparent;
+    color: var(--cor-menu-texto);
+  }
+
+  .casca__fechar-gaveta .botao--icone:hover:not(:disabled) {
+    background: var(--cor-menu-elevado);
   }
 
   .casca__lateral {

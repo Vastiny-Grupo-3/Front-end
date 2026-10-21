@@ -7,7 +7,7 @@
   min-height: var(--alvo-toque);
   padding: var(--espaco-12) var(--espaco-16);
   border: var(--borda-1) solid transparent;
-  border-radius: var(--raio-8);
+  border-radius: var(--raio-12);
   font: var(--texto-botao);
   text-align: center;
   cursor: pointer;
@@ -45,6 +45,7 @@
 .botao--primario {
   background: var(--cor-primaria);
   color: var(--cor-superficie);
+  box-shadow: var(--sombra-botao);
 }
 
 .botao--primario:hover:not(:disabled) {
@@ -98,6 +99,38 @@
   background: var(--cor-primaria-hover);
 }
 
+/* Ícone de tabela: o clique continua em 44 px, o desenho fica menor */
+.botao--icone.botao--leve {
+  border-color: transparent;
+  background: transparent;
+}
+
+.botao--icone.botao--leve::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: var(--espaco-32);
+  height: var(--espaco-32);
+  border-radius: var(--raio-total);
+  background: var(--cor-fundo);
+  transform: translate(-50%, -50%);
+}
+
+.botao--icone.botao--leve .botao__conteudo {
+  position: relative;
+  z-index: 1;
+}
+
+.botao--icone.botao--leve .botao__icone {
+  width: var(--espaco-16);
+  height: var(--espaco-16);
+}
+
+.botao--icone.botao--leve:hover:not(:disabled)::before {
+  background: var(--cor-borda);
+}
+
 /* Destrutivo */
 .botao--destrutivo {
   background: var(--cor-erro);
@@ -120,6 +153,7 @@
   border-color: var(--cor-borda);
   background: var(--cor-borda);
   color: var(--cor-texto-secundario);
+  box-shadow: var(--sombra-nenhuma);
   cursor: not-allowed;
 }
 

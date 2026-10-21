@@ -4,7 +4,7 @@
 
 .clientes__acoes {
   display: flex;
-  gap: var(--espaco-8);
+  gap: 0;
 }
 
 /* "Excluir" com ícone em cor-erro */

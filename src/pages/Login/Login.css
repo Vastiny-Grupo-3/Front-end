@@ -4,7 +4,13 @@
   justify-content: center;
   min-height: 100vh;
   padding: var(--espaco-16);
-  background: var(--cor-fundo);
+  background:
+    radial-gradient(
+      900px 420px at 0% 0%,
+      color-mix(in srgb, var(--cor-acento) 42%, transparent),
+      transparent 70%
+    ),
+    linear-gradient(155deg, var(--cor-menu), var(--cor-primaria));
 }
 
 .login:focus {
@@ -18,6 +24,7 @@
   width: 100%;
   max-width: var(--largura-login);
   padding: var(--espaco-32);
+  border-top: var(--borda-4) solid var(--cor-acento);
   border-radius: var(--raio-16);
   background: var(--cor-superficie);
   box-shadow: var(--sombra-modal);
@@ -26,7 +33,19 @@
 .login__marca {
   display: flex;
   flex-direction: column;
+  align-items: center;
   gap: var(--espaco-8);
+  text-align: center;
+}
+
+.login__titulo {
+  width: 100%;
+  margin: 0;
+}
+
+.login__logo {
+  width: 100%;
+  height: auto;
 }
 
 .login__frase {
@@ -42,6 +61,50 @@
 
 .login__entrar {
   width: 100%;
+}
+
+.login__esqueci,
+.login__voltar {
+  align-self: flex-end;
+  min-height: var(--alvo-toque);
+  padding: 0 var(--espaco-4);
+  border: 0;
+  border-radius: var(--raio-8);
+  background: none;
+  color: var(--cor-primaria);
+  font: var(--texto-link);
+  cursor: pointer;
+}
+
+.login__voltar {
+  align-self: center;
+}
+
+.login__esqueci:hover,
+.login__voltar:hover {
+  text-decoration: underline;
+}
+
+.login__simulacao {
+  margin: 0;
+  padding: var(--espaco-12) var(--espaco-16);
+  border: var(--borda-1) solid var(--cor-borda);
+  border-radius: var(--raio-8);
+  background: var(--cor-fundo);
+  color: var(--cor-texto);
+  font: var(--texto-corpo-pequeno);
+}
+
+.login__codigo {
+  font-weight: 700;
+}
+
+.login__aviso {
+  margin: 0;
+  padding: var(--espaco-12) var(--espaco-16);
+  border: var(--borda-1) solid var(--cor-sucesso);
+  border-radius: var(--raio-8);
+  color: var(--cor-sucesso);
 }
 
 /* Erro de credenciais ou de conexão: cor-erro sobre cor-superficie, acima do botão */

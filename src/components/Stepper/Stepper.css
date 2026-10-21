@@ -15,3 +15,59 @@
   padding-inline: var(--espaco-8);
   text-align: center;
 }
+
+/* − e + menores no carrinho e no card; a área de clique segue em 44 px */
+.stepper--compacto .botao--passo {
+  width: var(--alvo-toque);
+  min-width: var(--alvo-toque);
+  height: var(--alvo-toque);
+  min-height: var(--alvo-toque);
+  padding: 0;
+  border-color: transparent;
+  background: transparent;
+}
+
+.stepper--compacto .botao--passo::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: var(--espaco-32);
+  height: var(--espaco-32);
+  border: var(--borda-1) solid var(--cor-texto-secundario);
+  border-radius: var(--raio-total);
+  background: var(--cor-superficie);
+  transform: translate(-50%, -50%);
+}
+
+.stepper--compacto .botao__conteudo {
+  position: relative;
+  z-index: 1;
+}
+
+.stepper--compacto .botao--passo:hover:not(:disabled):not([aria-disabled="true"]),
+.stepper--compacto .botao--passo:active:not(:disabled):not([aria-disabled="true"]) {
+  background: transparent;
+}
+
+.stepper--compacto .botao--passo:hover:not(:disabled):not([aria-disabled="true"])::before {
+  background: var(--cor-fundo);
+}
+
+.stepper--compacto .botao--passo:disabled,
+.stepper--compacto .botao--passo[aria-disabled="true"] {
+  border-color: transparent;
+  background: transparent;
+}
+
+.stepper--compacto .botao--passo:disabled::before,
+.stepper--compacto .botao--passo[aria-disabled="true"]::before {
+  border-color: var(--cor-borda);
+  background: var(--cor-fundo);
+}
+
+.stepper--compacto .stepper__valor {
+  width: var(--espaco-48);
+  min-height: var(--espaco-32);
+  padding-block: var(--espaco-4);
+}

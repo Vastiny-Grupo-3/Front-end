@@ -7,11 +7,12 @@ const COLUNAS_PRODUTOS = [
   { chave: "preco", titulo: "Preço na época", alinhamento: "direita" },
   { chave: "lucro", titulo: "Lucro na época", alinhamento: "direita" },
   { chave: "unidades", titulo: "Unidades compradas", alinhamento: "direita" },
+  { chave: "valorTotal", titulo: "Valor total", alinhamento: "direita" },
 ];
 
 /**
  * Painel de detalhes do Histórico (aberto pelo "…"), com "X" e Esc.
- * detalhes: { campos: [[rotulo, valor]], vendas?: [{ id, titulo, produtos }] }
+ * detalhes: { campos: [[rotulo, valor]], vendas?: [{ id, titulo, produtos, total? }] }
  */
 export default function HistoryDetailsModal({ titulo, detalhes, aoFechar }) {
   return (
@@ -43,6 +44,12 @@ export default function HistoryDetailsModal({ titulo, detalhes, aoFechar }) {
                 colunas={COLUNAS_PRODUTOS}
                 linhas={venda.produtos}
               />
+              {venda.titulo && venda.total && (
+                <p className="detalhes-historico__total">
+                  <span>Total da venda</span>
+                  <strong>{venda.total}</strong>
+                </p>
+              )}
             </section>
           ))}
         </div>

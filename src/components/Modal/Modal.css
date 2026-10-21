@@ -22,6 +22,7 @@ body.modal-aberto {
   max-height: 100%;
   padding: var(--espaco-24);
   overflow-y: auto;
+  border-top: var(--borda-4) solid var(--cor-acento);
   border-radius: var(--raio-16);
   background: var(--cor-superficie);
   box-shadow: var(--sombra-modal);

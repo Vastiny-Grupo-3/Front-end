@@ -1,32 +1,68 @@
 import { useId } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { LogOut } from "lucide-react";
+import {
+  ArrowDownToLine,
+  ArrowUpFromLine,
+  History,
+  LayoutDashboard,
+  LayoutGrid,
+  LogOut,
+  Settings,
+  Users,
+} from "lucide-react";
 import { useAuth } from "../../context/AuthContext.jsx";
 import "./SideNav.css";
 
 /* Em TL02 e TL03 (fluxo de venda) o item ativo é "Catálogo". */
 const ITENS_TOPO = [
-  { rotulo: "Catálogo", para: "/", ativo: (caminho) => caminho === "/" || caminho.startsWith("/carrinho") },
-  { rotulo: "Clientes", para: "/clientes", ativo: (caminho) => caminho.startsWith("/clientes") },
-  { rotulo: "Histórico", para: "/historico", ativo: (caminho) => caminho.startsWith("/historico") },
+  {
+    rotulo: "Catálogo",
+    para: "/",
+    icone: LayoutGrid,
+    ativo: (caminho) => caminho === "/" || caminho.startsWith("/carrinho"),
+  },
+  { rotulo: "Clientes", para: "/clientes", icone: Users, ativo: (caminho) => caminho.startsWith("/clientes") },
+  {
+    rotulo: "Histórico",
+    para: "/historico",
+    icone: History,
+    ativo: (caminho) => caminho.startsWith("/historico"),
+  },
 ];
 
 const ITENS_OPERACOES = [
-  { rotulo: "Entrada", para: "/entrada", ativo: (caminho) => caminho.startsWith("/entrada") },
-  { rotulo: "Saída", para: "/saida", ativo: (caminho) => caminho.startsWith("/saida") },
+  {
+    rotulo: "Entrada",
+    para: "/entrada",
+    icone: ArrowDownToLine,
+    ativo: (caminho) => caminho.startsWith("/entrada"),
+  },
+  { rotulo: "Saída", para: "/saida", icone: ArrowUpFromLine, ativo: (caminho) => caminho.startsWith("/saida") },
 ];
 
 const ITENS_BASE = [
-  { rotulo: "Dashboard", para: "/dashboard", ativo: (caminho) => caminho.startsWith("/dashboard") },
+  {
+    rotulo: "Dashboard",
+    para: "/dashboard",
+    icone: LayoutDashboard,
+    ativo: (caminho) => caminho.startsWith("/dashboard"),
+  },
   {
     rotulo: "Configurações",
     para: "/configuracoes",
+    icone: Settings,
     ativo: (caminho) => caminho.startsWith("/configuracoes"),
   },
 ];
 
+function inicialDe(nome) {
+  const letra = nome?.trim()?.[0];
+  return letra ? letra.toLocaleUpperCase("pt-BR") : "?";
+}
+
 function Item({ item, caminho, aoNavegar }) {
   const ativo = item.ativo(caminho);
+  const Icone = item.icone;
   return (
     <li>
       <Link
@@ -35,7 +71,8 @@ function Item({ item, caminho, aoNavegar }) {
         aria-current={ativo ? "page" : undefined}
         onClick={aoNavegar}
       >
-        {item.rotulo}
+        <Icone className="menu__icone" aria-hidden="true" focusable="false" />
+        <span>{item.rotulo}</span>
       </Link>
     </li>
   );
@@ -55,9 +92,18 @@ export default function SideNav({ id, aoNavegar }) {
 
   return (
     <nav id={id} className="menu" aria-label="Menu principal">
-      <div className="menu__saudacao">
-        <p className="menu__saudacao-linha">Bem-vindo!</p>
-        <p className="menu__saudacao-linha">{usuario?.nome}</p>
+      <div className="menu__topo">
+        <img className="menu__logo" src="/logo-dmc.png" alt="DMC Eletropeças" />
+      </div>
+
+      <div className="menu__usuario">
+        <span className="menu__avatar" aria-hidden="true">
+          {inicialDe(usuario?.nome)}
+        </span>
+        <div className="menu__saudacao">
+          <p className="menu__saudacao-linha">Bem-vindo!</p>
+          <p className="menu__nome">{usuario?.nome}</p>
+        </div>
       </div>
 
       <ul className="menu__lista">
@@ -79,10 +125,12 @@ export default function SideNav({ id, aoNavegar }) {
         ))}
       </ul>
 
-      <button type="button" className="menu__item menu__sair" onClick={encerrarSessao}>
-        <LogOut className="menu__icone" aria-hidden="true" focusable="false" />
-        Sair
-      </button>
+      <div className="menu__rodape">
+        <button type="button" className="menu__item menu__sair" onClick={encerrarSessao}>
+          <LogOut className="menu__icone" aria-hidden="true" focusable="false" />
+          <span>Sair</span>
+        </button>
+      </div>
     </nav>
   );
 }

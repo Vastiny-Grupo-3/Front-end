@@ -1,57 +1,191 @@
 .produto {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-content: start;
+  height: 100%;
   gap: var(--espaco-8);
-  padding: var(--espaco-16);
+  padding: 0 0 var(--espaco-16);
+  overflow: hidden;
   border: var(--borda-1) solid var(--cor-borda);
-  border-radius: var(--raio-12);
+  border-radius: var(--raio-16);
   background: var(--cor-superficie);
   color: var(--cor-texto);
+  box-shadow: var(--sombra-cartao);
+  container-type: inline-size;
+  container-name: produto;
+  transition:
+    border-color var(--duracao-curta),
+    box-shadow var(--duracao-curta);
+}
+
+.produto:not(.produto--carregando) {
+  grid-template-rows: auto auto 1fr auto;
+  align-content: stretch;
 }
 
 .produto:not(.produto--carregando):hover {
-  border-color: var(--cor-texto-secundario);
+  border-color: var(--cor-primaria);
+  box-shadow: var(--sombra-cartao-hover);
 }
 
 .produto__imagem {
+  grid-column: 1;
+  grid-row: 1;
   width: 100%;
-  aspect-ratio: 5 / 4;
-  border-radius: var(--raio-12);
+  aspect-ratio: 4 / 3;
   object-fit: cover;
 }
 
 .produto__imagem--vazia {
-  border: var(--borda-1) solid var(--cor-borda);
-  background: var(--cor-fundo);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background:
+    radial-gradient(circle at 20% 0%, color-mix(in srgb, var(--cor-acento) 28%, transparent), transparent 42%),
+    linear-gradient(165deg, var(--cor-superficie), var(--cor-fundo));
+  color: var(--cor-primaria);
+}
+
+.produto__icone-vazio {
+  width: var(--espaco-48);
+  height: var(--espaco-48);
 }
 
 .produto__categoria {
+  grid-column: 1;
+  grid-row: 1;
+  align-self: end;
+  justify-self: start;
+  margin: var(--espaco-12);
+  padding: var(--espaco-4) var(--espaco-12);
+  border-radius: var(--raio-total);
+  background: var(--cor-superficie);
+  box-shadow: var(--sombra-cartao);
+  font: var(--texto-corpo-pequeno);
+  font-weight: 700;
+  color: var(--cor-primaria);
+}
+
+.produto__valores,
+.produto__nome,
+.produto__acoes,
+.produto__esqueleto-linha,
+.produto__esqueleto-botao {
+  margin-inline: var(--espaco-16);
+}
+
+.produto__valores {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  align-content: start;
+  gap: var(--espaco-12);
+  margin-top: 0;
+}
+
+.produto__preco,
+.produto__estoque {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-4);
   margin: 0;
+}
+
+.produto__estoque {
+  align-items: flex-end;
+  text-align: right;
+}
+
+.produto__valor-rotulo {
   font: var(--texto-corpo-pequeno);
   color: var(--cor-texto-secundario);
 }
 
-.produto__preco {
-  margin: 0;
-  font: var(--texto-corpo);
+.produto__preco .produto__valor {
+  font: var(--texto-h3);
+  color: var(--cor-primaria);
+}
+
+.produto__estoque .produto__valor {
+  font: var(--texto-h3);
+}
+
+.produto__estoque--vazio .produto__valor {
+  color: var(--cor-erro);
 }
 
 .produto__nome {
-  margin: 0;
+  align-self: start;
+  margin-top: var(--espaco-12);
+  margin-bottom: 0;
   font: var(--texto-corpo);
+  font-size: var(--espaco-16);
   font-weight: 600;
 }
 
 .produto__acoes {
   display: flex;
   flex-wrap: wrap;
+  align-items: flex-end;
   gap: var(--espaco-8);
-  margin-top: auto;
   padding-top: var(--espaco-8);
+}
+
+.produto__no-carrinho {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--espaco-8);
+  width: 100%;
+}
+
+.produto__no-carrinho .stepper {
+  align-self: center;
+}
+
+.produto__indisponivel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: var(--alvo-toque);
+  margin: 0;
+  padding: var(--espaco-8) var(--espaco-12);
+  border-radius: var(--raio-12);
+  background: var(--cor-fundo);
+  color: var(--cor-texto-secundario);
+  font: var(--texto-corpo-pequeno);
+  font-weight: 600;
+  text-align: center;
 }
 
 .produto__acoes .botao {
   flex: 1;
+}
+
+/* Entrada: os dois botões ficam da mesma altura. Lado a lado só quando o texto cabe. */
+.produto--entrada .produto__acoes {
+  flex-direction: column;
+  flex-wrap: nowrap;
+  align-items: stretch;
+}
+
+.produto--entrada .produto__acoes .botao {
+  flex: none;
+  width: 100%;
+  white-space: nowrap;
+}
+
+@container produto (min-width: 360px) {
+  .produto--entrada .produto__acoes {
+    flex-direction: row;
+  }
+
+  .produto--entrada .produto__acoes .botao {
+    flex: 1 1 0;
+    width: auto;
+    min-width: 0;
+  }
 }
 
 .produto__esqueleto-linha {

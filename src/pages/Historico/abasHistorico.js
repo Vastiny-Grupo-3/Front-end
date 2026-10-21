@@ -1,5 +1,6 @@
 import { resumirVendasPorCliente } from "../../utils/estoque.js";
 import {
+  arredondar,
   formatarData,
   formatarId,
   formatarMoeda,
@@ -21,6 +22,33 @@ const ID_CURTO = 3;
 
 const SEM_CLIENTE = "Sem Cliente";
 
+/** Primeiro clique: nomes de A a Z; números, datas e ids do maior para o menor. */
+function direcaoInicial(coluna) {
+  if (
+    coluna.chave === "id" ||
+    coluna.chave === "data" ||
+    coluna.chave === "valor" ||
+    coluna.chave === "lucro" ||
+    coluna.chave === "valorTotal" ||
+    coluna.chave === "lucroTotal" ||
+    coluna.chave.endsWith("Id") ||
+    coluna.chave.startsWith("quantidade")
+  ) {
+    return "desc";
+  }
+  return "asc";
+}
+
+/** Cabeçalho clicável. `valor` é o dado cru, não o texto já formatado. */
+function ordenavel(coluna, valor = (linha) => linha[coluna.chave]) {
+  return { ...coluna, ordenavel: true, valorOrdenacao: valor, primeiraDirecao: direcaoInicial(coluna) };
+}
+
+/** No mesmo dia, o id maior é o registro mais recente. */
+function recencia(linha) {
+  return `${linha.data}-${String(linha.id).padStart(6, "0")}`;
+}
+
 /* Produtos de uma venda com preço e lucro da época. */
 function produtosDaVenda(venda) {
   return venda.itens.map((item) => ({
@@ -29,25 +57,28 @@ function produtosDaVenda(venda) {
     preco: formatarMoeda(item.precoUnitario),
     lucro: formatarMoeda(item.lucroUnitario),
     unidades: item.quantidade,
+    valorTotal: formatarMoeda(item.valorLinha),
   }));
 }
 
 function vendaDetalhada(venda) {
+  const total = arredondar(venda.itens.reduce((soma, item) => soma + item.valorLinha, 0));
   return {
     id: venda.id,
     titulo: `Transação: ${formatarId(venda.id, ID_CURTO)} · Data da Venda: ${formatarData(venda.data)}`,
     produtos: produtosDaVenda(venda),
+    total: formatarMoeda(total),
   };
 }
 
 const colunasMovimentacao = (rotuloQuantidade, rotuloData) => [
-  { chave: "produtoId", titulo: "Id", renderizar: (l) => formatarId(l.produtoId, ID_PRODUTO) },
-  { chave: "nome", titulo: "Nome" },
-  { chave: "categoria", titulo: "Categoria" },
-  { chave: "quantidadeAntes", titulo: "Qtd. Antes", alinhamento: "direita" },
-  { chave: "quantidadeDepois", titulo: "Qtd. Depois", alinhamento: "direita" },
-  { chave: "quantidade", titulo: rotuloQuantidade, alinhamento: "direita" },
-  { chave: "data", titulo: rotuloData, renderizar: (l) => formatarData(l.data) },
+  ordenavel({ chave: "produtoId", titulo: "Id", renderizar: (l) => formatarId(l.produtoId, ID_PRODUTO) }),
+  ordenavel({ chave: "nome", titulo: "Nome" }),
+  ordenavel({ chave: "categoria", titulo: "Categoria" }),
+  ordenavel({ chave: "quantidadeAntes", titulo: "Qtd. Antes" }),
+  ordenavel({ chave: "quantidadeDepois", titulo: "Qtd. Depois" }),
+  ordenavel({ chave: "quantidade", titulo: rotuloQuantidade }),
+  ordenavel({ chave: "data", titulo: rotuloData, renderizar: (l) => formatarData(l.data) }, recencia),
 ];
 
 export const ABAS_HISTORICO = [
@@ -56,18 +87,26 @@ export const ABAS_HISTORICO = [
     rotulo: "Vendas",
     cor: "var(--cor-aba-vendas)",
     caminho: "/historico",
+    ordemInicial: "id",
     linhas: (dados) => dados.vendas,
     colunas: [
-      { chave: "id", titulo: "Transação", renderizar: (l) => formatarId(l.id, ID_CURTO) },
-      { chave: "cliente", titulo: "Cliente", renderizar: (l) => l.clienteNome ?? SEM_CLIENTE },
-      { chave: "valor", titulo: "Valor", alinhamento: "direita", renderizar: (l) => formatarMoeda(l.valor) },
-      { chave: "lucro", titulo: "Lucro", alinhamento: "direita", renderizar: (l) => formatarMoeda(l.lucro) },
-      {
+      ordenavel({ chave: "id", titulo: "Transação", renderizar: (l) => formatarId(l.id, ID_CURTO) }),
+      ordenavel(
+        { chave: "cliente", titulo: "Cliente", renderizar: (l) => l.clienteNome ?? SEM_CLIENTE },
+        (l) => l.clienteNome ?? SEM_CLIENTE,
+      ),
+      ordenavel(
+        { chave: "valor", titulo: "Valor", renderizar: (l) => formatarMoeda(l.valor) },
+      ),
+      ordenavel(
+        { chave: "lucro", titulo: "Lucro", renderizar: (l) => formatarMoeda(l.lucro) },
+      ),
+      ordenavel({
         chave: "quantidadeProdutos",
         titulo: "Qtd. Produtos",
         renderizar: (l) => formatarUnidades(l.quantidadeProdutos),
-      },
-      { chave: "data", titulo: "Dt. Venda", renderizar: (l) => formatarData(l.data) },
+      }),
+      ordenavel({ chave: "data", titulo: "Dt. Venda", renderizar: (l) => formatarData(l.data) }),
     ],
     identificador: (l) => `Transação ${formatarId(l.id, ID_CURTO)}`,
     textoPesquisa: (l) => [formatarId(l.id, ID_CURTO), l.clienteNome ?? SEM_CLIENTE].join(" "),
@@ -88,23 +127,26 @@ export const ABAS_HISTORICO = [
     rotulo: "Clientes",
     cor: "var(--cor-aba-clientes)",
     caminho: "/historico/clientes",
+    ordemInicial: "clienteId",
     linhas: (dados) => resumirVendasPorCliente(dados).map((l) => ({ ...l, id: l.clienteId })),
     colunas: [
-      { chave: "clienteId", titulo: "Id Cliente", renderizar: (l) => formatarId(l.clienteId, ID_CURTO) },
-      { chave: "nome", titulo: "Nome" },
-      { chave: "quantidadeVendas", titulo: "Qtd. Vendas", alinhamento: "direita" },
-      {
+      ordenavel({
+        chave: "clienteId",
+        titulo: "Id Cliente",
+        renderizar: (l) => formatarId(l.clienteId, ID_CURTO),
+      }),
+      ordenavel({ chave: "nome", titulo: "Nome" }),
+      ordenavel({ chave: "quantidadeVendas", titulo: "Qtd. Vendas" }),
+      ordenavel({
         chave: "valorTotal",
         titulo: "Valor Total",
-        alinhamento: "direita",
         renderizar: (l) => formatarMoeda(l.valorTotal),
-      },
-      {
+      }),
+      ordenavel({
         chave: "lucroTotal",
         titulo: "Lucro Total",
-        alinhamento: "direita",
         renderizar: (l) => formatarMoeda(l.lucroTotal),
-      },
+      }),
     ],
     identificador: (l) => l.nome,
     textoPesquisa: (l) => [formatarId(l.clienteId, ID_CURTO), l.nome].join(" "),
@@ -124,6 +166,7 @@ export const ABAS_HISTORICO = [
     rotulo: "Entrada",
     cor: "var(--cor-aba-entrada)",
     caminho: "/historico/entrada",
+    ordemInicial: "data",
     linhas: (dados) => dados.entradas,
     colunas: colunasMovimentacao("Entrou", "Dt. Entrada"),
     identificador: (l) => l.nome,
@@ -145,6 +188,7 @@ export const ABAS_HISTORICO = [
     rotulo: "Saída",
     cor: "var(--cor-aba-saida)",
     caminho: "/historico/saida",
+    ordemInicial: "data",
     linhas: (dados) => dados.saidas,
     colunas: colunasMovimentacao("Saiu", "Dt. Saída"),
     identificador: (l) => l.nome,
@@ -167,15 +211,16 @@ export const ABAS_HISTORICO = [
     rotulo: "Cadastro de Produtos",
     cor: "var(--cor-aba-cadastro-produtos)",
     caminho: "/historico/cadastro-produtos",
+    ordemInicial: "produtoId",
     linhas: (dados) => dados.cadastrosProdutos,
     colunas: [
-      { chave: "produtoId", titulo: "Id", renderizar: (l) => formatarId(l.produtoId, ID_PRODUTO) },
-      { chave: "nome", titulo: "Nome" },
-      { chave: "categoria", titulo: "Categoria" },
-      { chave: "quantidadeInicial", titulo: "Qtd. Inicial", alinhamento: "direita" },
-      { chave: "valor", titulo: "Valor", alinhamento: "direita", renderizar: (l) => formatarMoeda(l.valor) },
-      { chave: "lucro", titulo: "Lucro", alinhamento: "direita", renderizar: (l) => formatarMoeda(l.lucro) },
-      { chave: "data", titulo: "Dt. Cadastro", renderizar: (l) => formatarData(l.data) },
+      ordenavel({ chave: "produtoId", titulo: "Id", renderizar: (l) => formatarId(l.produtoId, ID_PRODUTO) }),
+      ordenavel({ chave: "nome", titulo: "Nome" }),
+      ordenavel({ chave: "categoria", titulo: "Categoria" }),
+      ordenavel({ chave: "quantidadeInicial", titulo: "Qtd. Inicial" }),
+      ordenavel({ chave: "valor", titulo: "Valor", renderizar: (l) => formatarMoeda(l.valor) }),
+      ordenavel({ chave: "lucro", titulo: "Lucro", renderizar: (l) => formatarMoeda(l.lucro) }),
+      ordenavel({ chave: "data", titulo: "Dt. Cadastro", renderizar: (l) => formatarData(l.data) }, recencia),
     ],
     identificador: (l) => l.nome,
     textoPesquisa: (l) => [formatarId(l.produtoId, ID_PRODUTO), l.nome].join(" "),
@@ -196,12 +241,13 @@ export const ABAS_HISTORICO = [
     rotulo: "Cadastro de Clientes",
     cor: "var(--cor-aba-cadastro-clientes)",
     caminho: "/historico/cadastro-clientes",
+    ordemInicial: "clienteId",
     linhas: (dados) => dados.cadastrosClientes,
     colunas: [
-      { chave: "clienteId", titulo: "Id", renderizar: (l) => formatarId(l.clienteId, ID_PRODUTO) },
-      { chave: "nome", titulo: "Nome" },
-      { chave: "telefone", titulo: "Telefone" },
-      { chave: "data", titulo: "Dt. Cadastro", renderizar: (l) => formatarData(l.data) },
+      ordenavel({ chave: "clienteId", titulo: "Id", renderizar: (l) => formatarId(l.clienteId, ID_PRODUTO) }),
+      ordenavel({ chave: "nome", titulo: "Nome" }),
+      ordenavel({ chave: "telefone", titulo: "Telefone" }),
+      ordenavel({ chave: "data", titulo: "Dt. Cadastro", renderizar: (l) => formatarData(l.data) }, recencia),
     ],
     identificador: (l) => l.nome,
     textoPesquisa: (l) => [formatarId(l.clienteId, ID_PRODUTO), l.nome].join(" "),

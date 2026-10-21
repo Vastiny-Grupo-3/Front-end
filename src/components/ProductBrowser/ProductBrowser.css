@@ -5,11 +5,11 @@
   gap: var(--espaco-8) var(--espaco-16);
 }
 
-/* 3 cards por linha a partir de 1024 px, 2 em bp-768, 1 em bp-base */
+/* 4 cards a partir de 1280 px, 3 até 1024, 2 em bp-768, 1 em bp-base */
 .produtos__grade {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: var(--espaco-24);
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--espaco-16);
   margin: 0;
   padding: 0;
   list-style: none;
@@ -21,6 +21,12 @@
 
 .produtos__grade > li > .produto {
   flex: 1;
+}
+
+@media (max-width: 1279px) {
+  .produtos__grade {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
 }
 
 @media (max-width: 1023px) {

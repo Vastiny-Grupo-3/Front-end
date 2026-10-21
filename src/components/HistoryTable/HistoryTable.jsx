@@ -37,6 +37,7 @@ export default function HistoryTable({ aba, linhas, estado = "padrao", aoTentarN
       renderizar: (linha) => (
         <Button
           variante="icone"
+          className="botao--leve"
           icone={MoreHorizontal}
           aria-label="Ver detalhes"
           aria-describedby={idIdentificador(linha)}
@@ -59,6 +60,7 @@ export default function HistoryTable({ aba, linhas, estado = "padrao", aoTentarN
         variante="conteiner"
         corFundo={aba.cor}
         linhaSelecionada={selecionada?.id}
+        ordemInicial={{ chave: aba.ordemInicial, direcao: "desc" }}
       />
       <HistoryDetailsModal
         titulo={selecionada ? `Detalhes: ${aba.identificador(selecionada)}` : ""}

@@ -2,10 +2,17 @@
 .dashboard__filtros-ativos {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--espaco-4) var(--espaco-24);
+  gap: var(--espaco-8);
   margin: calc(-1 * var(--espaco-16)) 0 0;
   font: var(--texto-corpo-pequeno);
   color: var(--cor-texto-secundario);
+}
+
+.dashboard__filtros-ativos span {
+  padding: var(--espaco-4) var(--espaco-12);
+  border-radius: var(--raio-total);
+  background: var(--cor-superficie);
+  box-shadow: var(--sombra-cartao);
 }
 
 /* 4 indicadores (3 colunas de 12 cada); 2×2 abaixo de 1024 px; 1 coluna em bp-base */
@@ -13,6 +20,57 @@
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: var(--espaco-24);
+}
+
+.dashboard__indicadores .indicador::before {
+  display: none;
+}
+
+.dashboard__indicadores .indicador:nth-child(1) {
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--cor-primaria) 10%, var(--cor-superficie)),
+    var(--cor-superficie) 58%
+  );
+}
+
+.dashboard__indicadores .indicador:nth-child(2) {
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--cor-acento) 16%, var(--cor-superficie)),
+    var(--cor-superficie) 58%
+  );
+}
+
+.dashboard__indicadores .indicador:nth-child(2) .indicador__icone {
+  background: color-mix(in srgb, var(--cor-acento) 22%, var(--cor-superficie));
+  color: var(--cor-texto);
+}
+
+.dashboard__indicadores .indicador:nth-child(3) {
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--cor-sucesso) 12%, var(--cor-superficie)),
+    var(--cor-superficie) 58%
+  );
+}
+
+.dashboard__indicadores .indicador:nth-child(3) .indicador__icone {
+  background: color-mix(in srgb, var(--cor-sucesso) 16%, var(--cor-superficie));
+  color: var(--cor-sucesso);
+}
+
+.dashboard__indicadores .indicador:nth-child(4) {
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--cor-grafico-6) 14%, var(--cor-superficie)),
+    var(--cor-superficie) 58%
+  );
+}
+
+.dashboard__indicadores .indicador:nth-child(4) .indicador__icone {
+  background: color-mix(in srgb, var(--cor-grafico-6) 16%, var(--cor-superficie));
+  color: var(--cor-grafico-6);
 }
 
 /* Painéis de análise e de estoque: 2 lado a lado (6 colunas cada) */
@@ -28,10 +86,16 @@
   flex-direction: column;
   gap: var(--espaco-16);
   min-width: 0;
+  height: 100%;
   padding: var(--espaco-16);
   border: var(--borda-1) solid var(--cor-borda);
   border-radius: var(--raio-16);
   background: var(--cor-superficie);
+  box-shadow: var(--sombra-cartao);
+}
+
+.dashboard__painel--centro .rosca {
+  flex: 1;
 }
 
 .dashboard__cabecalho-painel {
@@ -39,18 +103,15 @@
   align-items: center;
   justify-content: space-between;
   gap: var(--espaco-16);
+  margin: calc(-1 * var(--espaco-16)) calc(-1 * var(--espaco-16)) 0;
+  padding: var(--espaco-12) var(--espaco-16);
+  border-bottom: var(--borda-1) solid var(--cor-borda);
+  border-radius: calc(var(--raio-16) - var(--borda-1)) calc(var(--raio-16) - var(--borda-1)) 0 0;
+  background: color-mix(in srgb, var(--cor-primaria) 6%, var(--cor-superficie));
 }
 
 .dashboard__titulo-painel {
   font: var(--texto-h3);
-}
-
-/* Divisória tracejada separando vendas de estoque */
-.dashboard__divisoria {
-  width: 100%;
-  margin: 0;
-  border: 0;
-  border-top: var(--borda-2) dashed var(--cor-borda);
 }
 
 .dashboard__esqueleto {
@@ -74,6 +135,26 @@
 
 .dashboard__tabela .celula-produto__nome {
   min-width: calc(var(--espaco-48) + var(--espaco-24));
+}
+
+.dashboard__filtro-grupo {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.dashboard__filtro-grupo + .dashboard__filtro-grupo {
+  margin-top: var(--espaco-16);
+  padding-top: var(--espaco-16);
+  border-top: var(--borda-1) solid var(--cor-borda);
+}
+
+.dashboard__filtro-grupo legend {
+  margin-bottom: var(--espaco-8);
+  font: var(--texto-label);
+  color: var(--cor-texto);
 }
 
 /* Lista do filtro por categoria */

@@ -71,7 +71,7 @@ export default function AppShell() {
           aria-controls={ID_MENU}
           onClick={() => setGavetaAberta(true)}
         />
-        <span className="casca__marca">Vastiny</span>
+        <img className="casca__logo" src="/logo-dmc.png" alt="DMC Eletropeças" />
       </div>
 
       <div className="casca__lateral" ref={gavetaRef}>

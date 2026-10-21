@@ -1,9 +1,11 @@
+import { BadgeDollarSign, Package, ShoppingCart } from "lucide-react";
+import Button from "../Button/Button.jsx";
 import { formatarMoeda } from "../../utils/formatadores.js";
 import "./CartSummary.css";
 
 /**
  * Faixa de resumo do carrinho (Catálogo): carrinho atual, valor total,
- * quantidade de produtos e "Alterar carrinho" alinhado à direita.
+ * quantidade de produtos e "Alterar carrinho".
  */
 export default function CartSummary({ nome, valorTotal, quantidadeProdutos, aoAlterar, carregando = false }) {
   if (carregando) {
@@ -20,21 +22,36 @@ export default function CartSummary({ nome, valorTotal, quantidadeProdutos, aoAl
     <section className="resumo-carrinho" aria-label="Resumo do carrinho">
       <dl className="resumo-carrinho__dados">
         <div className="resumo-carrinho__item">
-          <dt>Carrinho Atual:</dt>
-          <dd>{nome}</dd>
+          <span className="resumo-carrinho__icone" aria-hidden="true">
+            <ShoppingCart />
+          </span>
+          <div>
+            <dt>Carrinho Atual</dt>
+            <dd>{nome}</dd>
+          </div>
+        </div>
+        <div className="resumo-carrinho__item resumo-carrinho__item--total">
+          <span className="resumo-carrinho__icone" aria-hidden="true">
+            <BadgeDollarSign />
+          </span>
+          <div>
+            <dt>Valor Total</dt>
+            <dd>{formatarMoeda(valorTotal)}</dd>
+          </div>
         </div>
         <div className="resumo-carrinho__item">
-          <dt>Valor Total:</dt>
-          <dd>{formatarMoeda(valorTotal)}</dd>
-        </div>
-        <div className="resumo-carrinho__item">
-          <dt>Quantidade de Produtos:</dt>
-          <dd>{quantidadeProdutos}</dd>
+          <span className="resumo-carrinho__icone" aria-hidden="true">
+            <Package />
+          </span>
+          <div>
+            <dt>Quantidade de Produtos</dt>
+            <dd>{quantidadeProdutos}</dd>
+          </div>
         </div>
       </dl>
-      <button type="button" className="resumo-carrinho__alterar" onClick={aoAlterar}>
+      <Button variante="secundario" onClick={aoAlterar}>
         Alterar carrinho
-      </button>
+      </Button>
     </section>
   );
 }

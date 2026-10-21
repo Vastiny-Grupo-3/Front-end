@@ -99,7 +99,6 @@ export default function Categorias() {
     {
       chave: "associados",
       titulo: "Produtos associados",
-      alinhamento: "direita",
       renderizar: (linha) => contarProdutosDaCategoria(stock, linha.id),
     },
     {
@@ -109,6 +108,7 @@ export default function Categorias() {
         <div className="secao__acoes-linha">
           <Button
             variante="icone"
+            className="botao--leve"
             icone={Pencil}
             aria-label="Editar"
             aria-describedby={`categoria-${linha.id}`}
@@ -117,7 +117,7 @@ export default function Categorias() {
           <Button
             variante="icone"
             icone={Trash2}
-            className="secao__excluir"
+            className="secao__excluir botao--leve"
             aria-label="Excluir"
             aria-describedby={`categoria-${linha.id}`}
             onClick={() => setModal({ tipo: "excluir", categoria: linha })}
