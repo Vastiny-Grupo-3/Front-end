@@ -67,6 +67,7 @@ export default function CartItemsTable({ itens }) {
       titulo: "Quantidade",
       renderizar: (linha) => (
         <Stepper
+          className="stepper--compacto"
           rotulo={`Quantidade de ${linha.produto.nome}`}
           rotuloOculto
           valor={linha.quantidade}
@@ -110,7 +111,7 @@ export default function CartItemsTable({ itens }) {
         <Button
           variante="icone"
           icone={Trash2}
-          className="itens-carrinho__remover"
+          className="itens-carrinho__remover botao--leve"
           aria-label={`Remover ${linha.produto.nome} do carrinho`}
           onClick={() => remover(linha)}
         />

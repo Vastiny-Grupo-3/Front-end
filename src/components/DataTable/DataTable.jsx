@@ -30,6 +30,7 @@ function rotuloDaCelula(coluna) {
  * estado: "padrao" | "carregando" | "erro"
  * variante: "padrao" | "conteiner" (histórico, raio-16)
  * corFundo: cor do contêiner (ex.: "var(--cor-aba-vendas)")
+ * ordemInicial: { chave, direcao: "asc" | "desc" } aplicada ao abrir a tabela
  */
 export default function DataTable({
   legenda,
@@ -44,8 +45,9 @@ export default function DataTable({
   variante = "padrao",
   corFundo,
   className = "",
+  ordemInicial = { chave: null, direcao: "asc" },
 }) {
-  const [ordem, setOrdem] = useState({ chave: null, direcao: "asc" });
+  const [ordem, setOrdem] = useState(ordemInicial);
 
   const linhasOrdenadas = useMemo(() => {
     const coluna = colunas.find((item) => item.chave === ordem.chave);
@@ -56,10 +58,13 @@ export default function DataTable({
   }, [linhas, colunas, ordem]);
 
   function ordenarPor(chave) {
-    setOrdem((atual) => ({
-      chave,
-      direcao: atual.chave === chave && atual.direcao === "asc" ? "desc" : "asc",
-    }));
+    setOrdem((atual) => {
+      if (atual.chave === chave) {
+        return { chave, direcao: atual.direcao === "asc" ? "desc" : "asc" };
+      }
+      const coluna = colunas.find((item) => item.chave === chave);
+      return { chave, direcao: coluna?.primeiraDirecao ?? "asc" };
+    });
   }
 
   function chaveDe(linha) {

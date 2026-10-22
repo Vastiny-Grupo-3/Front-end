@@ -8,21 +8,60 @@
 }
 
 .selo--critico {
-  background: var(--cor-erro);
-  color: var(--cor-superficie);
+  background: var(--cor-estoque-critico);
+  color: var(--cor-estoque-critico-tinta);
 }
 
 .selo--ruim {
-  background: var(--cor-alerta);
-  color: var(--cor-texto);
+  background: var(--cor-estoque-ruim);
+  color: var(--cor-estoque-ruim-tinta);
 }
 
 .selo--medio {
-  background: var(--cor-estado-medio);
-  color: var(--cor-texto);
+  background: var(--cor-estoque-medio);
+  color: var(--cor-estoque-medio-tinta);
 }
 
 .selo--bom {
-  background: var(--cor-sucesso);
-  color: var(--cor-superficie);
+  background: var(--cor-estoque-bom);
+  color: var(--cor-estoque-bom-tinta);
+}
+
+/* Texturas iguais às da rosca, só com o modo para daltonismo. */
+html[data-daltonismo="ativo"] .selo {
+  gap: var(--espaco-8);
+}
+
+html[data-daltonismo="ativo"] .selo::before {
+  content: "";
+  flex-shrink: 0;
+  width: var(--espaco-12);
+  height: var(--espaco-12);
+  background: currentColor;
+}
+
+html[data-daltonismo="ativo"] .selo--bom::before {
+  background: repeating-linear-gradient(
+    -45deg,
+    currentColor 0 var(--borda-2),
+    transparent var(--borda-2) var(--espaco-4)
+  );
+}
+
+html[data-daltonismo="ativo"] .selo--medio::before {
+  border-radius: var(--raio-total);
+}
+
+html[data-daltonismo="ativo"] .selo--ruim::before {
+  background:
+    linear-gradient(45deg, transparent calc(50% - var(--borda-2)), currentColor calc(50% - var(--borda-2)) calc(50% + var(--borda-2)), transparent calc(50% + var(--borda-2))),
+    linear-gradient(-45deg, transparent calc(50% - var(--borda-2)), currentColor calc(50% - var(--borda-2)) calc(50% + var(--borda-2)), transparent calc(50% + var(--borda-2)));
+}
+
+html[data-daltonismo="ativo"] .selo--critico::before {
+  width: 0;
+  height: 0;
+  background: transparent;
+  border-inline: var(--espaco-4) solid transparent;
+  border-bottom: var(--espaco-8) solid currentColor;
 }

@@ -15,6 +15,8 @@ export const MENSAGENS_CONTA = {
   senhasDiferentes: "As senhas não são iguais. Digite novamente.",
   senhaAtual: "A senha atual não confere.",
   erroSalvar: "Não conseguimos salvar. Verifique os campos destacados e tente novamente.",
+  emailObrigatorio: "Informe seu e-mail.",
+  emailNaoEncontrado: "Não encontramos uma conta com esse e-mail.",
 };
 
 const TAMANHO_MINIMO_SENHA = 8;
@@ -46,6 +48,32 @@ function proximoId(contas) {
 
 function emailEmUso(contas, email, idIgnorado) {
   return contas.some((conta) => conta.id !== idIgnorado && mesmoEmail(conta.email, email));
+}
+
+/** Localiza a conta pelo e-mail, sem devolver a senha. */
+export function localizarConta(contas, email) {
+  if (!texto(email)) return { erro: MENSAGENS_CONTA.emailObrigatorio };
+  if (!emailValido(email)) return { erro: MENSAGENS_CONTA.emailInvalido };
+  const conta = contas.find((item) => mesmoEmail(item.email, email));
+  if (!conta) return { erro: MENSAGENS_CONTA.emailNaoEncontrado };
+  return { email: conta.email };
+}
+
+/**
+ * Redefine a senha de uma conta já existente (fluxo "Esqueceu sua senha?").
+ * Retorna { contas } ou { contas, erros }.
+ */
+export function redefinirSenha(contas, { email, senha, confirmacao }) {
+  const localizada = localizarConta(contas, email);
+  const erros = {};
+  if (localizada.erro) erros.email = localizada.erro;
+  if (!senhaValida(senha)) erros.senha = MENSAGENS_CONTA.senhaRequisitos;
+  if (senha !== confirmacao) erros.confirmacao = MENSAGENS_CONTA.senhasDiferentes;
+  if (Object.keys(erros).length > 0) return { contas, erros };
+
+  return {
+    contas: contas.map((conta) => (mesmoEmail(conta.email, email) ? { ...conta, senha } : conta)),
+  };
 }
 
 /** Conta com e-mail e senha informados, ou null (sem dizer qual campo está errado). */

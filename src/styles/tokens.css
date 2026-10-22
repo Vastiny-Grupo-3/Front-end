@@ -1,32 +1,50 @@
 :root {
-  /* Cores */
-  --cor-primaria: #0052cc;
-  --cor-primaria-hover: #0747a6;
-  --cor-secundaria: #5243aa;
-  --cor-fundo: #fafbfc;
+  /* Cores — identidade DMC Eletropeças */
+  --cor-primaria: #075998;
+  --cor-primaria-hover: #064d86;
+  --cor-acento: #f58220;
+  --cor-acento-hover: #e07010;
+  --cor-secundaria: #082644;
+  --cor-fundo: #eef5f8;
   --cor-superficie: #ffffff;
-  --cor-texto: #172b4d;
-  --cor-texto-secundario: #5e6c84;
-  --cor-borda: #dfe1e6;
+  --cor-texto: #082644;
+  --cor-texto-secundario: #475569;
+  --cor-borda: #c8d8e1;
   --cor-sucesso: #00875a;
   --cor-alerta: #ff991f;
   --cor-erro: #de350b;
   --cor-estado-medio: #ffc400;
-  --cor-aba-vendas: #f3e3dc;
+  /* Estados de estoque. No modo daltonismo viram uma paleta que não depende de verde/vermelho. */
+  --cor-estoque-bom: var(--cor-sucesso);
+  --cor-estoque-bom-tinta: var(--cor-superficie);
+  --cor-estoque-medio: var(--cor-estado-medio);
+  --cor-estoque-medio-tinta: var(--cor-texto);
+  --cor-estoque-ruim: var(--cor-alerta);
+  --cor-estoque-ruim-tinta: var(--cor-texto);
+  --cor-estoque-critico: var(--cor-erro);
+  --cor-estoque-critico-tinta: var(--cor-superficie);
+  --cor-aba-vendas: #ffe8d2;
   --cor-aba-clientes: #fff3c4;
-  --cor-aba-entrada: #e6deff;
-  --cor-aba-saida: #f9ddf9;
-  --cor-aba-cadastro-produtos: #d3f5dc;
-  --cor-aba-cadastro-clientes: #d0f0f7;
-  --cor-grafico-1: #0052cc;
-  --cor-grafico-2: #5243aa;
+  --cor-aba-entrada: #dceaf7;
+  --cor-aba-saida: #f8e4f6;
+  --cor-aba-cadastro-produtos: #d8f3e3;
+  --cor-aba-cadastro-clientes: #d6eef6;
+  --cor-grafico-1: #075998;
+  --cor-grafico-2: #f58220;
   --cor-grafico-3: #00875a;
-  --cor-grafico-4: #c25100;
-  --cor-grafico-5: #de350b;
+  --cor-grafico-4: #6b3fa0;
+  --cor-grafico-5: #c40025;
   --cor-grafico-6: #008da6;
-  --cor-grafico-7: #6b778c;
+  --cor-grafico-7: #5e6c84;
   /* Sobreposição dos modais: cor-texto a 50 % de opacidade */
   --cor-sobreposicao: color-mix(in srgb, var(--cor-texto) 50%, transparent);
+
+  /* Menu lateral sobre o azul-marinho */
+  --cor-menu: #082644;
+  --cor-menu-elevado: color-mix(in srgb, var(--cor-superficie) 12%, transparent);
+  --cor-menu-texto: var(--cor-superficie);
+  --cor-menu-texto-suave: #dcebf4;
+  --cor-menu-borda: color-mix(in srgb, var(--cor-superficie) 32%, transparent);
 
   /* Tipografia */
   --fonte-familia: "Inter", system-ui, sans-serif;
@@ -56,8 +74,12 @@
 
   /* Sombras e foco */
   --sombra-nenhuma: none;
-  --sombra-modal: 0 8px 24px rgba(23, 43, 77, 0.16);
+  --sombra-cartao: 0 10px 24px color-mix(in srgb, var(--cor-menu) 8%, transparent);
+  --sombra-cartao-hover: 0 16px 32px color-mix(in srgb, var(--cor-menu) 14%, transparent);
+  --sombra-botao: 0 8px 16px color-mix(in srgb, var(--cor-primaria) 28%, transparent);
+  --sombra-modal: 0 16px 40px color-mix(in srgb, var(--cor-menu) 22%, transparent);
   --sombra-foco: 2px solid var(--cor-primaria);
+  --sombra-foco-claro: 2px solid var(--cor-superficie);
   --foco-deslocamento: 2px;
 
   /* Bordas */
@@ -91,4 +113,16 @@
    * em @media): base 0–767px, bp-768 ≥768px, bp-1024 ≥1024px,
    * bp-1440 ≥1440px.
    */
+}
+
+/*
+ * Modo para daltonismo: azul no lugar do verde de confirmação, e os quatro
+ * níveis de estoque em azul, amarelo, âmbar e roxo (com texto que passa contraste).
+ */
+html[data-daltonismo="ativo"] {
+  --cor-sucesso: #0072b2;
+  --cor-estoque-bom: #0072b2;
+  --cor-estoque-medio: #f0e442;
+  --cor-estoque-ruim: #e69f00;
+  --cor-estoque-critico: #6b3fa0;
 }

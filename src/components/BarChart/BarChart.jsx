@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
+import { useAcessibilidade } from "../../context/AcessibilidadeContext.jsx";
 import { formatarMoeda } from "../../utils/formatadores.js";
 import "./BarChart.css";
 
@@ -9,6 +10,36 @@ const LARGURA_BARRA = 24;
 const RAIO = 4;
 const LARGURA_MINIMA_POR_BARRA = 68;
 const MARCAS_EIXO = 4;
+
+/* Paleta que separa azul, âmbar e roxo. A forma muda em cada barra. */
+const SERIES_DALTONISMO = [
+  { cor: "#0072b2", tinta: "var(--cor-superficie)", forma: "quadrado" },
+  { cor: "#e69f00", tinta: "var(--cor-texto)", forma: "circulo", claro: true },
+  { cor: "#075998", tinta: "var(--cor-superficie)", forma: "listra" },
+  { cor: "#6b3fa0", tinta: "var(--cor-superficie)", forma: "ponto" },
+  { cor: "#c44000", tinta: "var(--cor-superficie)", forma: "x" },
+  { cor: "#1a6a99", tinta: "var(--cor-superficie)", forma: "triangulo" },
+  { cor: "#332288", tinta: "var(--cor-superficie)", forma: "losango" },
+];
+
+function Marca({ forma, tinta }) {
+  if (forma === "quadrado") return <rect x="1.5" y="1.5" width="5" height="5" fill={tinta} />;
+  if (forma === "circulo") return <circle cx="4" cy="4" r="2.2" fill={tinta} />;
+  if (forma === "listra") return <path d="M0,8 L8,0 M-2,2 L2,-2 M6,10 L10,6" stroke={tinta} strokeWidth="1.4" />;
+  if (forma === "ponto") return <circle cx="4" cy="4" r="1.3" fill={tinta} />;
+  if (forma === "x") return <path d="M1.5,1.5 L6.5,6.5 M6.5,1.5 L1.5,6.5" stroke={tinta} strokeWidth="1.4" />;
+  if (forma === "triangulo") return <path d="M4,1.4 L7,6.6 L1,6.6 Z" fill={tinta} />;
+  return <path d="M4,1 L7,4 L4,7 L1,4 Z" fill={tinta} />;
+}
+
+function PadraoBarra({ id, serie }) {
+  return (
+    <pattern id={id} width="8" height="8" patternUnits="userSpaceOnUse">
+      <rect width="8" height="8" fill={serie.cor} />
+      <Marca forma={serie.forma} tinta={serie.tinta} />
+    </pattern>
+  );
+}
 
 const formatoEixo = new Intl.NumberFormat("pt-BR", {
   style: "currency",
@@ -67,9 +98,14 @@ function useLargura() {
 /**
  * Gráfico de barras verticais (valor em reais sobre cada barra, categoria no eixo).
  * dados: [{ id, nome, valor, indiceCor }] — cor = `--cor-grafico-{indiceCor}`.
+ * selecionadas: ids em destaque quando o filtro de produtos está ativo.
+ * aoEscolher(id): clique na barra aplica esse filtro.
  * O SVG é decorativo para leitores de tela: a tabela equivalente fica ao lado.
  */
-export default function BarChart({ dados, legendaTabela }) {
+export default function BarChart({ dados, legendaTabela, selecionadas = [], aoEscolher }) {
+  const { daltonismo } = useAcessibilidade();
+  const [destaque, setDestaque] = useState(null);
+  const base = useId().replace(/:/g, "");
   const [conteinerRef, larguraConteiner] = useLargura();
   const largura = Math.max(
     larguraConteiner,
@@ -89,7 +125,10 @@ export default function BarChart({ dados, legendaTabela }) {
   const resumo = `${legendaTabela}: ${dados.map((item) => `${item.nome}, ${formatarMoeda(item.valor)}`).join("; ")}.`;
 
   return (
-    <figure className="grafico-barras">
+    <figure
+      className={`grafico-barras ${selecionadas.length > 0 ? "grafico-barras--filtrado" : ""}`.trim()}
+      onMouseLeave={() => setDestaque(null)}
+    >
       <figcaption className="sr-only">{resumo}</figcaption>
       <div ref={conteinerRef} className="grafico-barras__rolagem">
         {larguraConteiner > 0 && (
@@ -101,6 +140,13 @@ export default function BarChart({ dados, legendaTabela }) {
             aria-hidden="true"
             focusable="false"
           >
+            {daltonismo && (
+              <defs>
+                {SERIES_DALTONISMO.map((serie, indice) => (
+                  <PadraoBarra key={serie.forma} id={`${base}-serie-${indice + 1}`} serie={serie} />
+                ))}
+              </defs>
+            )}
             {marcas.map((marca) => (
               <g key={marca}>
                 <line
@@ -120,8 +166,21 @@ export default function BarChart({ dados, legendaTabela }) {
               const centro = MARGEM.esquerda + faixa * indice + faixa / 2;
               const topo = y(item.valor);
               const altura = MARGEM.topo + alturaUtil - topo;
+              const serie = SERIES_DALTONISMO[item.indiceCor - 1];
+              const escolhida = selecionadas.includes(item.id);
               return (
-                <g key={item.id} className="grafico-barras__item">
+                <g
+                  key={item.id}
+                  className={[
+                    "grafico-barras__item",
+                    destaque === item.id ? "grafico-barras__item--destaque" : "",
+                    escolhida ? "grafico-barras__item--selecionado" : "",
+                  ]
+                    .filter(Boolean)
+                    .join(" ")}
+                  onMouseEnter={() => setDestaque(item.id)}
+                  onClick={() => item.id !== "outros" && aoEscolher?.(item.id)}
+                >
                   <title>{`${item.nome}: ${formatarMoeda(item.valor)}`}</title>
                   {/* Área de hover maior que a barra */}
                   <rect
@@ -133,7 +192,9 @@ export default function BarChart({ dados, legendaTabela }) {
                   />
                   <path
                     className="grafico-barras__barra"
-                    style={{ fill: `var(--cor-grafico-${item.indiceCor})` }}
+                    style={{ fill: daltonismo ? `url(#${base}-serie-${item.indiceCor})` : `var(--cor-grafico-${item.indiceCor})` }}
+                    stroke={daltonismo && serie?.claro ? "var(--cor-texto)" : undefined}
+                    strokeWidth={daltonismo && serie?.claro ? 1 : undefined}
                     d={caminhoBarra(centro - LARGURA_BARRA / 2, topo, LARGURA_BARRA, altura)}
                   />
                   <text className="grafico-barras__valor" x={centro} y={topo - 8}>

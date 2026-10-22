@@ -8,8 +8,15 @@ import { useCart } from "../../context/CartContext.jsx";
 /** TL01 Catálogo: produtos disponíveis para adicionar ao carrinho. */
 export default function Catalogo() {
   const { status } = useStock();
-  const { carrinhoAtual, resumo, estaNoCarrinho, adicionarProduto, removerProduto, abrirModal } =
-    useCart();
+  const {
+    carrinhoAtual,
+    resumo,
+    estaNoCarrinho,
+    adicionarProduto,
+    removerProduto,
+    alterarQuantidade,
+    abrirModal,
+  } = useCart();
   const [pesquisa, setPesquisa] = useState("");
 
   return (
@@ -40,8 +47,11 @@ export default function Catalogo() {
         estaNoCarrinho={estaNoCarrinho}
         propsDoCard={(produto) => ({
           noCarrinho: estaNoCarrinho(produto.id),
+          quantidadeNoCarrinho:
+            carrinhoAtual.itens.find((item) => item.produtoId === produto.id)?.quantidade ?? 0,
           aoAdicionar: () => adicionarProduto(produto.id),
           aoRemover: () => removerProduto(produto.id),
+          aoAlterarQuantidade: (quantidade) => alterarQuantidade(produto.id, quantidade),
         })}
       />
     </>

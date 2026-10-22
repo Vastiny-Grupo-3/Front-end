@@ -9,37 +9,41 @@
   display: grid;
   grid-auto-columns: minmax(max-content, 1fr);
   grid-auto-flow: column;
-  gap: var(--espaco-8);
+  gap: var(--espaco-4);
   /* Folga para o anel de foco (2 px + 2 px de afastamento) não ser cortado pela rolagem */
   padding: var(--espaco-4);
   margin: calc(-1 * var(--espaco-4));
   overflow-x: auto;
+  border-radius: var(--raio-16);
+  background: var(--cor-superficie);
+  box-shadow: var(--sombra-cartao);
 }
 
 .abas__aba {
   --aba-cor: var(--cor-superficie);
   min-height: var(--alvo-toque);
   padding: var(--espaco-8) var(--espaco-16);
-  border: var(--borda-1) solid var(--cor-texto-secundario);
-  border-radius: var(--raio-8);
-  background: var(--cor-superficie);
-  color: var(--cor-texto);
+  border: 0;
+  border-radius: var(--raio-12);
+  background: transparent;
+  color: var(--cor-texto-secundario);
   font: var(--texto-corpo);
+  font-weight: 600;
   white-space: nowrap;
   cursor: pointer;
 }
 
 .abas__aba:hover {
   background: var(--cor-fundo);
+  color: var(--cor-texto);
 }
 
-/* Ativa: cor própria da aba, borda 2 px cor-texto e peso 600 (sem deslocar o layout) */
+/* Ativa: só a cor da aba. A faixa laranja fica no cartão de login. */
 .abas__aba[aria-selected="true"],
 .abas__aba[aria-selected="true"]:hover {
-  border-color: var(--cor-texto);
   background: var(--aba-cor);
-  box-shadow: inset 0 0 0 var(--borda-1) var(--cor-texto);
-  font-weight: 600;
+  color: var(--cor-texto);
+  font-weight: 700;
 }
 
 .abas__painel:focus-visible {

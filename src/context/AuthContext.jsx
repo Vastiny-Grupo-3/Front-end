@@ -57,6 +57,17 @@ export function AuthProvider({ children }) {
    * Autentica o usuário. Assíncrona para já ter o formato do back-end.
    * Resolve com { ok: true } ou { ok: false, motivo: "credenciais" | "conexao" }.
    */
+  const localizarConta = useCallback((email) => regras.localizarConta(contasRef.current, email), []);
+
+  const redefinirSenha = useCallback(
+    (email, senha, confirmacao) => {
+      const resultado = regras.redefinirSenha(contasRef.current, { email, senha, confirmacao });
+      if (!resultado.erros) guardarContas(resultado.contas);
+      return { erros: resultado.erros };
+    },
+    [guardarContas],
+  );
+
   const entrar = useCallback(
     async (email, senha) => {
       const encontrada = regras.autenticar(contasRef.current, email, senha);
@@ -99,8 +110,17 @@ export function AuthProvider({ children }) {
   );
 
   const valor = useMemo(
-    () => ({ usuario, entrar, sair, cadastrarConta, atualizarConta, excluirConta }),
-    [usuario, entrar, sair, cadastrarConta, atualizarConta, excluirConta],
+    () => ({
+      usuario,
+      entrar,
+      sair,
+      cadastrarConta,
+      atualizarConta,
+      excluirConta,
+      localizarConta,
+      redefinirSenha,
+    }),
+    [usuario, entrar, sair, cadastrarConta, atualizarConta, excluirConta, localizarConta, redefinirSenha],
   );
 
   return <AuthContext.Provider value={valor}>{children}</AuthContext.Provider>;

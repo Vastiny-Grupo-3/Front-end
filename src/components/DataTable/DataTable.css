@@ -12,6 +12,7 @@
   border: var(--borda-1) solid var(--cor-borda);
   border-radius: var(--raio-16);
   background: var(--tabela-fundo);
+  box-shadow: var(--sombra-cartao);
 }
 
 /* Sobre as cores de aba, cor-texto-secundario não tem contraste suficiente */
@@ -55,14 +56,22 @@
 .tabela__ordenar {
   display: inline-flex;
   align-items: center;
+  justify-content: flex-start;
   gap: var(--espaco-4);
+  width: 100%;
   min-height: var(--alvo-toque);
   padding: 0;
   border: 0;
   background: none;
   color: inherit;
   font: inherit;
+  text-align: left;
   cursor: pointer;
+}
+
+.tabela__celula--direita .tabela__ordenar {
+  justify-content: flex-end;
+  text-align: right;
 }
 
 .tabela__icone-ordem {
@@ -174,5 +183,41 @@
     font-weight: 600;
     color: var(--cor-texto-secundario);
     text-align: left;
+  }
+}
+
+/* No desktop as linhas viram uma lista contínua, com a faixa laranja na selecionada */
+@media (min-width: 768px) {
+  .tabela__tabela {
+    border-spacing: 0;
+  }
+
+  .tabela__linha td,
+  .tabela__linha td:first-child,
+  .tabela__linha td:last-child {
+    border: 0;
+    border-bottom: var(--borda-1) solid var(--cor-borda);
+    border-radius: 0;
+    background: transparent;
+  }
+
+  .tabela__linha td:first-child {
+    border-left: var(--borda-4) solid transparent;
+  }
+
+  .tabela__linha:hover td {
+    background: color-mix(in srgb, var(--cor-superficie) 62%, transparent);
+  }
+
+  .tabela__linha--selecionada td,
+  .tabela__linha--selecionada td:first-child,
+  .tabela__linha--selecionada td:last-child {
+    border-width: 0 0 var(--borda-1) 0;
+    border-bottom: var(--borda-1) solid var(--cor-borda);
+    background: color-mix(in srgb, var(--cor-primaria) 8%, var(--cor-superficie));
+  }
+
+  .tabela__linha--selecionada td:first-child {
+    border-left: var(--borda-4) solid var(--cor-acento);
   }
 }

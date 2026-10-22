@@ -11,6 +11,15 @@ import { contarComprasDoCliente } from "../../utils/estoque.js";
 import "./Clientes.css";
 
 const VAZIO = "Nenhum cliente cadastrado. Use “Cadastrar Novo Cliente” para começar.";
+const VAZIO_PESQUISA = "Nenhum cliente encontrado. Tente buscar por outro nome.";
+
+function normalizar(texto) {
+  return String(texto ?? "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim();
+}
 
 /** TL04 Clientes: lista com Detalhes, Editar e Excluir (modais da TL05). */
 export default function Clientes() {
@@ -18,6 +27,7 @@ export default function Clientes() {
   const { clientes, status, recarregar, excluirCliente } = stock;
   // modal: { tipo: "cadastrar" | "editar" | "detalhes" | "excluir", cliente? } | null
   const [modal, setModal] = useState(null);
+  const [pesquisa, setPesquisa] = useState("");
   // Depois de excluir, o botão que abriu o modal some: o foco vai para a lista.
   const listaRef = useRef(null);
 
@@ -30,20 +40,34 @@ export default function Clientes() {
     setModal(null);
   }
 
-  const linhas = clientes.map((cliente) => ({
-    ...cliente,
-    compras: contarComprasDoCliente(stock, cliente.id),
-  }));
+  const termo = normalizar(pesquisa);
+  const linhas = clientes
+    .map((cliente) => ({
+      ...cliente,
+      compras: contarComprasDoCliente(stock, cliente.id),
+    }))
+    .filter((cliente) => {
+      if (!termo) return true;
+      return normalizar(`${cliente.nome} ${cliente.telefone}`).includes(termo);
+    });
 
   const colunas = [
     {
       chave: "nome",
       titulo: "Nome",
+      ordenavel: true,
+      primeiraDirecao: "asc",
       largura: `${(5 / 12) * 100}%`,
       renderizar: (linha) => <span id={`cliente-${linha.id}`}>{linha.nome}</span>,
     },
-    { chave: "telefone", titulo: "Telefone", largura: `${(3 / 12) * 100}%` },
-    { chave: "compras", titulo: "Qtd. Compras", alinhamento: "direita", largura: `${(2 / 12) * 100}%` },
+    { chave: "telefone", titulo: "Telefone", ordenavel: true, largura: `${(3 / 12) * 100}%` },
+    {
+      chave: "compras",
+      titulo: "Qtd. Compras",
+      ordenavel: true,
+      primeiraDirecao: "desc",
+      largura: `${(2 / 12) * 100}%`,
+    },
     {
       chave: "acoes",
       titulo: "Ações",
@@ -52,6 +76,7 @@ export default function Clientes() {
         <div className="clientes__acoes">
           <Button
             variante="icone"
+            className="botao--leve"
             icone={Eye}
             aria-label="Detalhes"
             aria-describedby={`cliente-${linha.id}`}
@@ -59,6 +84,7 @@ export default function Clientes() {
           />
           <Button
             variante="icone"
+            className="botao--leve"
             icone={Pencil}
             aria-label="Editar"
             aria-describedby={`cliente-${linha.id}`}
@@ -67,7 +93,7 @@ export default function Clientes() {
           <Button
             variante="icone"
             icone={Trash2}
-            className="clientes__excluir"
+            className="clientes__excluir botao--leve"
             aria-label="Excluir"
             aria-describedby={`cliente-${linha.id}`}
             onClick={() => setModal({ tipo: "excluir", cliente: linha })}
@@ -81,6 +107,12 @@ export default function Clientes() {
     <>
       <PageHeader
         titulo="Todos os clientes"
+        pesquisa={{
+          rotulo: "Pesquisar clientes",
+          placeholder: "Pesquisar clientes",
+          valor: pesquisa,
+          aoMudar: setPesquisa,
+        }}
         acao={
           <Button className="clientes__cadastrar" onClick={() => setModal({ tipo: "cadastrar" })}>
             Cadastrar Novo Cliente
@@ -95,7 +127,8 @@ export default function Clientes() {
           linhas={linhas}
           estado={status === "carregando" || status === "erro" ? status : "padrao"}
           aoTentarNovamente={recarregar}
-          mensagemVazio={VAZIO}
+          mensagemVazio={termo ? VAZIO_PESQUISA : VAZIO}
+          ordemInicial={{ chave: "nome", direcao: "asc" }}
         />
       </div>
 

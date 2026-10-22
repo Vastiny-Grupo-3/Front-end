@@ -1,56 +1,68 @@
-/* Contêiner com borda cor-texto-secundario, raio-12, cor-superficie */
 .resumo-carrinho {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: var(--espaco-8) var(--espaco-16);
-  padding: var(--espaco-8) var(--espaco-16);
-  border: var(--borda-1) solid var(--cor-texto-secundario);
-  border-radius: var(--raio-12);
-  background: var(--cor-superficie);
+  gap: var(--espaco-12) var(--espaco-16);
+  padding: var(--espaco-12) var(--espaco-16);
+  border: var(--borda-1) solid var(--cor-borda);
+  border-radius: var(--raio-16);
+  background:
+    linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--cor-primaria) 8%, var(--cor-superficie)),
+      var(--cor-superficie) 32%
+    );
+  box-shadow: var(--sombra-cartao);
 }
 
 .resumo-carrinho__dados {
   display: flex;
+  flex: 1;
   flex-wrap: wrap;
-  gap: var(--espaco-8);
+  align-items: center;
+  gap: var(--espaco-8) var(--espaco-24);
   margin: 0;
 }
 
 .resumo-carrinho__item {
   display: flex;
-  gap: var(--espaco-4);
-  padding: var(--espaco-8) var(--espaco-12);
-  border: var(--borda-1) solid var(--cor-texto-secundario);
-  border-radius: var(--raio-8);
+  flex: 1 1 auto;
+  align-items: center;
+  gap: var(--espaco-12);
+  min-height: var(--alvo-toque);
   font: var(--texto-corpo);
   color: var(--cor-texto);
 }
 
+.resumo-carrinho__icone {
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: var(--espaco-32);
+  height: var(--espaco-32);
+  border-radius: var(--raio-12);
+  background: color-mix(in srgb, var(--cor-primaria) 14%, var(--cor-superficie));
+  color: var(--cor-primaria);
+}
+
+.resumo-carrinho__icone svg {
+  width: var(--espaco-16);
+  height: var(--espaco-16);
+}
+
 .resumo-carrinho__item dt {
-  font-weight: 400;
+  font: var(--texto-corpo-pequeno);
+  color: var(--cor-texto-secundario);
 }
 
 .resumo-carrinho__item dd {
   margin: 0;
-  font-weight: 600;
+  font: var(--texto-h3);
 }
 
-/* "Alterar carrinho" com aparência de link (texto-link, sublinhado no hover) */
-.resumo-carrinho__alterar {
-  min-height: var(--alvo-toque);
-  padding: 0 var(--espaco-8);
-  border: 0;
-  border-radius: var(--raio-8);
-  background: none;
+.resumo-carrinho__item--total dd {
   color: var(--cor-primaria);
-  font: var(--texto-link);
-  cursor: pointer;
-}
-
-.resumo-carrinho__alterar:hover {
-  text-decoration: underline;
 }
 
 .resumo-carrinho__esqueleto {
@@ -58,7 +70,6 @@
   height: var(--espaco-24);
 }
 
-/* bp-base: os 3 indicadores empilham e "Alterar carrinho" vai para a última linha */
 @media (max-width: 767px) {
   .resumo-carrinho,
   .resumo-carrinho__dados {
@@ -66,7 +77,7 @@
     align-items: stretch;
   }
 
-  .resumo-carrinho__alterar {
-    align-self: flex-start;
+  .resumo-carrinho .botao {
+    width: 100%;
   }
 }

@@ -46,6 +46,31 @@
   fill: transparent;
 }
 
-.grafico-barras__item:hover .grafico-barras__alvo {
+.grafico-barras__item {
+  cursor: pointer;
+}
+
+.grafico-barras__barra {
+  transition: opacity var(--duracao-curta);
+}
+
+.grafico-barras__item:hover .grafico-barras__alvo,
+.grafico-barras__item--destaque .grafico-barras__alvo {
   fill: var(--cor-fundo);
+}
+
+.grafico-barras--filtrado .grafico-barras__barra {
+  opacity: 0.4;
+}
+
+.grafico-barras--filtrado .grafico-barras__item--selecionado .grafico-barras__barra {
+  opacity: 1;
+}
+
+.grafico-barras:has(.grafico-barras__item--destaque) .grafico-barras__barra {
+  opacity: 0.4;
+}
+
+.grafico-barras:has(.grafico-barras__item--destaque) .grafico-barras__item--destaque .grafico-barras__barra {
+  opacity: 1;
 }

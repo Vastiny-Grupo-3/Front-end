@@ -16,7 +16,7 @@
   padding-left: var(--espaco-12);
   border: var(--borda-1) solid var(--cor-texto-secundario);
   border-radius: var(--raio-total);
-  background: var(--cor-fundo);
+  background: var(--cor-superficie);
   font: var(--texto-label);
   color: var(--cor-texto);
 }

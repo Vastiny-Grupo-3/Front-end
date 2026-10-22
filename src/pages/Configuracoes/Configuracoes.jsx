@@ -2,6 +2,7 @@ import { useState } from "react";
 import PageHeader from "../../components/PageHeader/PageHeader.jsx";
 import DadosConta from "./DadosConta.jsx";
 import Categorias from "./Categorias.jsx";
+import Acessibilidade from "./Acessibilidade.jsx";
 import AcoesConta from "./AcoesConta.jsx";
 import CadastroContaModal from "./CadastroContaModal.jsx";
 import "./Configuracoes.css";
@@ -18,6 +19,7 @@ export default function Configuracoes() {
       />
       <DadosConta aoCadastrarConta={() => setCadastrandoConta(true)} />
       <Categorias />
+      <Acessibilidade />
       <AcoesConta />
       <CadastroContaModal aberto={cadastrandoConta} aoFechar={() => setCadastrandoConta(false)} />
     </>

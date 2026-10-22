@@ -35,3 +35,24 @@
 .detalhes-historico__titulo-venda {
   font: var(--texto-h3);
 }
+
+.detalhes-historico__total {
+  display: flex;
+  justify-content: flex-end;
+  align-items: baseline;
+  gap: var(--espaco-24);
+  margin: 0;
+  padding-top: var(--espaco-12);
+  border-top: var(--borda-1) solid var(--cor-borda);
+  font: var(--texto-corpo);
+  color: var(--cor-texto);
+}
+
+.detalhes-historico__total span {
+  font: var(--texto-label);
+  color: var(--cor-texto-secundario);
+}
+
+.detalhes-historico__total strong {
+  font-weight: 700;
+}
