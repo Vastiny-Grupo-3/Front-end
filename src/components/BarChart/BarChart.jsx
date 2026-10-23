@@ -83,16 +83,21 @@ function linhasDoRotulo(texto, maximoCaracteres) {
   return resto ? [primeira.join(" "), resto.length > maximoCaracteres ? `${resto.slice(0, maximoCaracteres - 1)}…` : resto] : [primeira.join(" ")];
 }
 
-function useLargura() {
+function useTamanho() {
   const ref = useRef(null);
-  const [largura, setLargura] = useState(0);
+  const [tamanho, setTamanho] = useState({ largura: 0, altura: 0 });
   useEffect(() => {
     if (!ref.current) return undefined;
-    const observador = new ResizeObserver(([entrada]) => setLargura(entrada.contentRect.width));
+    const observador = new ResizeObserver(([entrada]) => {
+      setTamanho({
+        largura: entrada.contentRect.width,
+        altura: entrada.contentRect.height,
+      });
+    });
     observador.observe(ref.current);
     return () => observador.disconnect();
   }, []);
-  return [ref, largura];
+  return [ref, tamanho];
 }
 
 /**
@@ -106,16 +111,18 @@ export default function BarChart({ dados, legendaTabela, selecionadas = [], aoEs
   const { daltonismo } = useAcessibilidade();
   const [destaque, setDestaque] = useState(null);
   const base = useId().replace(/:/g, "");
-  const [conteinerRef, larguraConteiner] = useLargura();
+  const [conteinerRef, tamanho] = useTamanho();
+  const larguraConteiner = tamanho.largura;
   const largura = Math.max(
     larguraConteiner,
     MARGEM.esquerda + MARGEM.direita + dados.length * LARGURA_MINIMA_POR_BARRA,
   );
+  const alturaSvg = tamanho.altura > 0 ? tamanho.altura : ALTURA;
 
   const maximo = Math.max(...dados.map((item) => item.valor), 0);
   const passo = maximo > 0 ? passoRedondo(maximo) : 1;
   const topoEixo = passo * Math.max(1, Math.ceil(maximo / passo));
-  const alturaUtil = ALTURA - MARGEM.topo - MARGEM.base;
+  const alturaUtil = Math.max(alturaSvg - MARGEM.topo - MARGEM.base, 0);
   const larguraUtil = largura - MARGEM.esquerda - MARGEM.direita;
   const faixa = larguraUtil / Math.max(dados.length, 1);
   const y = (valor) => MARGEM.topo + alturaUtil - (valor / topoEixo) * alturaUtil;
@@ -135,8 +142,8 @@ export default function BarChart({ dados, legendaTabela, selecionadas = [], aoEs
           <svg
             className="grafico-barras__svg"
             width={largura}
-            height={ALTURA}
-            viewBox={`0 0 ${largura} ${ALTURA}`}
+            height={alturaSvg}
+            viewBox={`0 0 ${largura} ${alturaSvg}`}
             aria-hidden="true"
             focusable="false"
           >
@@ -205,7 +212,7 @@ export default function BarChart({ dados, legendaTabela, selecionadas = [], aoEs
                       key={linha}
                       className="grafico-barras__categoria"
                       x={centro}
-                      y={ALTURA - MARGEM.base + 18 + i * 16}
+                      y={alturaSvg - MARGEM.base + 18 + i * 16}
                     >
                       {linha}
                     </text>

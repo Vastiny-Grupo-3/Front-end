@@ -92,6 +92,8 @@
   --altura-linha-tabela: 48px;
   --tamanho-icone: 20px;
   --largura-menu: 256px;
+  /* Trilho só com ícones (alvo de 44 px + respiro), já com a borda da barra. */
+  --largura-menu-fechado: calc(var(--alvo-toque) + var(--espaco-16) * 2 + var(--borda-1));
   --modal-pequeno: 480px;
   --modal-medio: 640px;
   --modal-largo: 720px;
@@ -101,12 +103,15 @@
   --largura-login: 420px;
 
   /* Camadas */
+  --camada-menu: 10;
   --camada-modal: 100;
   --camada-toast: 200;
   --camada-pular-conteudo: 1000;
 
   /* Movimento */
   --duracao-curta: 150ms;
+  --duracao-media: 400ms;
+  --curva-suave: cubic-bezier(0.4, 0, 0.2, 1);
 
   /*
    * Breakpoints (valores para media queries; variáveis CSS não são aceitas

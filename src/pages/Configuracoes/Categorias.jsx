@@ -8,28 +8,57 @@ import TextField from "../../components/TextField/TextField.jsx";
 import SectionCard from "./SectionCard.jsx";
 import { useStock } from "../../context/StockContext.jsx";
 import { useToast } from "../../context/ToastContext.jsx";
-import { MENSAGENS_ESTOQUE, contarProdutosDaCategoria } from "../../utils/estoque.js";
+import { MENSAGENS_ESTOQUE, contarProdutosDaCategoria, textoCriterios } from "../../utils/estoque.js";
 
-/** TL20 — "Nova categoria" / "Editar categoria" (modal pequeno com "Nome da categoria"). */
+const CAMPOS_CRITERIO = [
+  ["bom", "Estoque mínimo para Bom"],
+  ["medio", "Estoque mínimo para Médio"],
+  ["ruim", "Estoque mínimo para Ruim"],
+  ["critico", "Estoque mínimo para Crítico"],
+];
+
+const CRITERIOS_VAZIOS = { bom: "", medio: "", ruim: "", critico: "" };
+
+/** "Nova categoria" / "Editar categoria", com os mínimos de Bom, Médio, Ruim e Crítico. */
 function CategoriaFormModal({ aberto, categoria, aoFechar }) {
   const { criarCategoria, editarCategoria } = useStock();
   const { mostrarToast } = useToast();
   const [nome, setNome] = useState("");
-  const [erro, setErro] = useState("");
+  const [criterios, setCriterios] = useState(CRITERIOS_VAZIOS);
+  const [erros, setErros] = useState({});
   const nomeRef = useRef(null);
 
   useEffect(() => {
     if (!aberto) return;
     setNome(categoria?.nome ?? "");
-    setErro("");
+    setCriterios(
+      categoria?.criterios
+        ? {
+            bom: String(categoria.criterios.bom),
+            medio: String(categoria.criterios.medio),
+            ruim: String(categoria.criterios.ruim),
+            critico: String(categoria.criterios.critico),
+          }
+        : CRITERIOS_VAZIOS,
+    );
+    setErros({});
   }, [aberto, categoria]);
+
+  function alterarCriterio(chave, valor) {
+    setCriterios((atual) => ({ ...atual, [chave]: valor }));
+    setErros((atual) => ({ ...atual, [chave]: "" }));
+  }
 
   function salvar(evento) {
     evento.preventDefault();
-    const resultado = categoria ? editarCategoria(categoria.id, nome) : criarCategoria(nome);
-    if (resultado.erro) {
-      setErro(resultado.erro);
-      nomeRef.current?.focus();
+    const entrada = { nome, ...criterios };
+    const resultado = categoria ? editarCategoria(categoria.id, entrada) : criarCategoria(entrada);
+    if (resultado.erros || resultado.erro) {
+      const mapa = resultado.erros ?? { nome: resultado.erro };
+      setErros(mapa);
+      const primeiro = ["nome", "bom", "medio", "ruim", "critico"].find((chave) => mapa[chave]);
+      if (primeiro === "nome") nomeRef.current?.focus();
+      else document.getElementById(`categoria-${primeiro}`)?.focus();
       return;
     }
     aoFechar();
@@ -41,7 +70,7 @@ function CategoriaFormModal({ aberto, categoria, aoFechar }) {
       aberto={aberto}
       aoFechar={aoFechar}
       titulo={categoria ? "Editar categoria" : "Nova categoria"}
-      tamanho="pequeno"
+      tamanho="medio"
       rodape={
         <>
           <Button variante="secundario" onClick={aoFechar}>
@@ -53,19 +82,37 @@ function CategoriaFormModal({ aberto, categoria, aoFechar }) {
         </>
       }
     >
-      <form id="formulario-categoria" onSubmit={salvar} noValidate>
+      <form id="formulario-categoria" className="secao__formulario" onSubmit={salvar} noValidate>
         <TextField
           ref={nomeRef}
+          id="categoria-nome"
           rotulo="Nome da categoria"
           obrigatorio
           autoComplete="off"
           value={nome}
           onChange={(evento) => {
             setNome(evento.target.value);
-            setErro("");
+            setErros((atual) => ({ ...atual, nome: "" }));
           }}
-          erro={erro}
+          erro={erros.nome}
         />
+        <div className="secao__duas-colunas">
+          {CAMPOS_CRITERIO.map(([chave, rotulo]) => (
+            <TextField
+              key={chave}
+              id={`categoria-${chave}`}
+              rotulo={rotulo}
+              type="number"
+              inputMode="numeric"
+              min="0"
+              step="1"
+              obrigatorio
+              value={criterios[chave]}
+              onChange={(evento) => alterarCriterio(chave, evento.target.value)}
+              erro={erros[chave]}
+            />
+          ))}
+        </div>
       </form>
     </Modal>
   );
@@ -95,6 +142,11 @@ export default function Categorias() {
       chave: "nome",
       titulo: "Categoria",
       renderizar: (linha) => <span id={`categoria-${linha.id}`}>{linha.nome}</span>,
+    },
+    {
+      chave: "criterios",
+      titulo: "Estoque mínimo",
+      renderizar: (linha) => textoCriterios(linha.criterios),
     },
     {
       chave: "associados",

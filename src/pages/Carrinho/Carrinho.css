@@ -12,12 +12,12 @@
   display: flex;
   flex-wrap: wrap;
   align-items: flex-end;
-  justify-content: space-between;
+  justify-content: flex-start;
   gap: var(--espaco-24);
 }
 
 .carrinho__fechamento .totais-carrinho {
-  flex: 1;
+  flex: 0 1 auto;
 }
 
 .carrinho__cliente {

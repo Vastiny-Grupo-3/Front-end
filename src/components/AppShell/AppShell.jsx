@@ -14,8 +14,9 @@ function secaoDe(caminho) {
 }
 
 /**
- * Casca da aplicação (TL01–TL15): navegação lateral fixa a partir de 1024 px
- * e gaveta aberta por botão em telas menores.
+ * Casca da aplicação (TL01–TL15): a partir de 1024 px, com mouse, a navegação
+ * lateral fica recolhida (só ícones) e abre ao passar o mouse ou ao receber foco.
+ * Em toque ela permanece aberta. Abaixo de 1024 px vira gaveta aberta por botão.
  */
 export default function AppShell() {
   const { pathname } = useLocation();

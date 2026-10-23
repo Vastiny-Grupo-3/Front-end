@@ -8,6 +8,7 @@ import ClienteFormModal from "./ClienteFormModal.jsx";
 import ClienteDetalhesModal from "./ClienteDetalhesModal.jsx";
 import { useStock } from "../../context/StockContext.jsx";
 import { contarComprasDoCliente } from "../../utils/estoque.js";
+import { formatarData, formatarId } from "../../utils/formatadores.js";
 import "./Clientes.css";
 
 const VAZIO = "Nenhum cliente cadastrado. Use “Cadastrar Novo Cliente” para começar.";
@@ -24,7 +25,7 @@ function normalizar(texto) {
 /** TL04 Clientes: lista com Detalhes, Editar e Excluir (modais da TL05). */
 export default function Clientes() {
   const stock = useStock();
-  const { clientes, status, recarregar, excluirCliente } = stock;
+  const { clientes, cadastrosClientes, status, recarregar, excluirCliente } = stock;
   // modal: { tipo: "cadastrar" | "editar" | "detalhes" | "excluir", cliente? } | null
   const [modal, setModal] = useState(null);
   const [pesquisa, setPesquisa] = useState("");
@@ -45,33 +46,55 @@ export default function Clientes() {
     .map((cliente) => ({
       ...cliente,
       compras: contarComprasDoCliente(stock, cliente.id),
+      dataCadastro:
+        cadastrosClientes.find((cadastro) => cadastro.clienteId === cliente.id)?.dataCadastro ??
+        cadastrosClientes.find((cadastro) => cadastro.clienteId === cliente.id)?.data ??
+        null,
     }))
     .filter((cliente) => {
       if (!termo) return true;
-      return normalizar(`${cliente.nome} ${cliente.telefone}`).includes(termo);
+      return normalizar(`${formatarId(cliente.id)} ${cliente.id} ${cliente.nome} ${cliente.telefone}`).includes(termo);
     });
 
   const colunas = [
+    {
+      chave: "id",
+      titulo: "Id Cliente",
+      ordenavel: true,
+      primeiraDirecao: "asc",
+      largura: "14%",
+      renderizar: (linha) => formatarId(linha.id),
+    },
     {
       chave: "nome",
       titulo: "Nome",
       ordenavel: true,
       primeiraDirecao: "asc",
-      largura: `${(5 / 12) * 100}%`,
+      largura: "26%",
       renderizar: (linha) => <span id={`cliente-${linha.id}`}>{linha.nome}</span>,
     },
-    { chave: "telefone", titulo: "Telefone", ordenavel: true, largura: `${(3 / 12) * 100}%` },
+    { chave: "telefone", titulo: "Telefone", ordenavel: true, largura: "20%" },
+    {
+      chave: "dataCadastro",
+      titulo: "Dt. Cadastro",
+      ordenavel: true,
+      primeiraDirecao: "desc",
+      largura: "16%",
+      valorOrdenacao: (linha) => linha.dataCadastro ?? "",
+      renderizar: (linha) => (linha.dataCadastro ? formatarData(linha.dataCadastro) : "—"),
+    },
     {
       chave: "compras",
       titulo: "Qtd. Compras",
       ordenavel: true,
       primeiraDirecao: "desc",
-      largura: `${(2 / 12) * 100}%`,
+      largura: "12%",
+      renderizar: (linha) => linha.compras,
     },
     {
       chave: "acoes",
       titulo: "Ações",
-      largura: `${(2 / 12) * 100}%`,
+      largura: "12%",
       renderizar: (linha) => (
         <div className="clientes__acoes">
           <Button

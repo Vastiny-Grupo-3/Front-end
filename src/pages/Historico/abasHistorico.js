@@ -27,6 +27,7 @@ function direcaoInicial(coluna) {
   if (
     coluna.chave === "id" ||
     coluna.chave === "data" ||
+    coluna.chave.startsWith("data") ||
     coluna.chave === "valor" ||
     coluna.chave === "lucro" ||
     coluna.chave === "valorTotal" ||
@@ -55,9 +56,9 @@ function produtosDaVenda(venda) {
     id: item.produtoId,
     nome: item.nome,
     preco: formatarMoeda(item.precoUnitario),
-    lucro: formatarMoeda(item.lucroUnitario),
     unidades: item.quantidade,
     valorTotal: formatarMoeda(item.valorLinha),
+    lucro: formatarMoeda(item.lucro),
   }));
 }
 
@@ -238,26 +239,53 @@ export const ABAS_HISTORICO = [
   },
   {
     id: "cadastro-clientes",
-    rotulo: "Cadastro de Clientes",
+    rotulo: "Alteração de Clientes",
     cor: "var(--cor-aba-cadastro-clientes)",
     caminho: "/historico/cadastro-clientes",
-    ordemInicial: "clienteId",
-    linhas: (dados) => dados.cadastrosClientes,
+    ordemInicial: "id",
+    linhas: (dados) =>
+      dados.cadastrosClientes.map((registro) => {
+        const doCliente = dados.cadastrosClientes.filter((item) => item.clienteId === registro.clienteId);
+        const dataCadastro = doCliente.reduce((menor, item) => {
+          const atual = item.dataCadastro ?? item.data;
+          return atual < menor ? atual : menor;
+        }, doCliente[0].dataCadastro ?? doCliente[0].data);
+        const cliente = dados.clientes.find((item) => item.id === registro.clienteId) ?? null;
+        return {
+          ...registro,
+          dataCadastro: registro.dataCadastro ?? dataCadastro,
+          clienteAtual: cliente,
+          historico: [...doCliente].sort((a, b) => b.id - a.id),
+        };
+      }),
     colunas: [
-      ordenavel({ chave: "clienteId", titulo: "Id", renderizar: (l) => formatarId(l.clienteId, ID_PRODUTO) }),
+      ordenavel({ chave: "id", titulo: "Id Alteração", renderizar: (l) => formatarId(l.id) }),
+      ordenavel({ chave: "clienteId", titulo: "Id Cliente", renderizar: (l) => formatarId(l.clienteId) }),
       ordenavel({ chave: "nome", titulo: "Nome" }),
       ordenavel({ chave: "telefone", titulo: "Telefone" }),
-      ordenavel({ chave: "data", titulo: "Dt. Cadastro", renderizar: (l) => formatarData(l.data) }, recencia),
+      ordenavel(
+        { chave: "dataCadastro", titulo: "Dt. Cadastro", renderizar: (l) => formatarData(l.dataCadastro) },
+      ),
+      ordenavel({ chave: "data", titulo: "Dt. Alteração", renderizar: (l) => formatarData(l.data) }, recencia),
     ],
-    identificador: (l) => l.nome,
-    textoPesquisa: (l) => [formatarId(l.clienteId, ID_PRODUTO), l.nome].join(" "),
+    identificador: (l) => l.clienteAtual?.nome ?? l.nome,
+    textoPesquisa: (l) =>
+      [formatarId(l.id), formatarId(l.clienteId), l.nome, l.telefone].join(" "),
     detalhes: (l) => ({
       campos: [
-        ["Id do Cliente", formatarId(l.clienteId, ID_PRODUTO)],
-        ["Nome do Cliente", l.nome],
-        ["Telefone do Cliente", l.telefone],
-        ["Data do cadastro", formatarData(l.data)],
+        ["Id do Cliente", formatarId(l.clienteId)],
+        ["Nome do Cliente", l.clienteAtual?.nome ?? l.nome],
+        ["Telefone do Cliente", l.clienteAtual?.telefone ?? l.telefone],
+        ["Data do cadastro", formatarData(l.dataCadastro)],
+        ["Descrição", (l.clienteAtual?.descricao ?? l.descricao) || "—"],
       ],
+      alteracoes: l.historico.map((item) => ({
+        id: item.id,
+        titulo: `Alteração: ${formatarId(item.id)}`,
+        nome: item.nome,
+        telefone: item.telefone,
+        descricao: item.descricao || "—",
+      })),
     }),
   },
 ];

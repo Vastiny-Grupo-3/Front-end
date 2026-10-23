@@ -190,3 +190,111 @@
 .menu__sair:hover .menu__icone {
   color: var(--cor-menu-texto);
 }
+
+/* Recolhida: some o texto e ficam logo, avatar e ícones alinhados. */
+@media (min-width: 1024px) and (hover: hover) {
+  .casca__lateral .menu {
+    min-width: 0;
+  }
+
+  .casca__lateral .menu__logo,
+  .casca__lateral .menu__topo::after,
+  .casca__lateral .menu__usuario,
+  .casca__lateral .menu__saudacao,
+  .casca__lateral .menu__item,
+  .casca__lateral .menu__item > span,
+  .casca__lateral .menu__grupo,
+  .casca__lateral .menu__grupo-rotulo,
+  .casca__lateral .menu__lista--grupo {
+    transition:
+      width var(--duracao-media) var(--curva-suave),
+      max-width var(--duracao-media) var(--curva-suave),
+      max-height var(--duracao-media) var(--curva-suave),
+      margin var(--duracao-media) var(--curva-suave),
+      padding var(--duracao-media) var(--curva-suave),
+      gap var(--duracao-media) var(--curva-suave),
+      opacity var(--duracao-media) var(--curva-suave),
+      background-color var(--duracao-media) var(--curva-suave),
+      border-color var(--duracao-media) var(--curva-suave),
+      border-left-width var(--duracao-media) var(--curva-suave),
+      border-radius var(--duracao-media) var(--curva-suave),
+      aspect-ratio var(--duracao-media) var(--curva-suave);
+  }
+
+  .casca__lateral .menu__item {
+    transition:
+      gap var(--duracao-media) var(--curva-suave),
+      background-color var(--duracao-curta),
+      color var(--duracao-curta);
+  }
+
+  /* Proporção real de public/logo-dmc.png (1024×260). */
+  .casca__lateral .menu__logo {
+    object-fit: cover;
+    object-position: left center;
+    aspect-ratio: 1024 / 260;
+  }
+
+  .casca__lateral .menu__item > span,
+  .casca__lateral .menu__saudacao,
+  .casca__lateral .menu__grupo-rotulo {
+    min-width: 0;
+    min-height: 0;
+    overflow: hidden;
+    white-space: nowrap;
+  }
+
+  .casca__lateral .menu__item > span,
+  .casca__lateral .menu__saudacao {
+    max-width: var(--largura-menu);
+  }
+
+  .casca__lateral .menu__grupo-rotulo {
+    max-height: calc(var(--espaco-8) + var(--espaco-4) + var(--espaco-24));
+  }
+
+  .casca__lateral:not(:hover):not(:focus-within) .menu__logo {
+    width: var(--alvo-toque);
+    aspect-ratio: 1;
+    margin-inline: auto;
+    border-radius: var(--raio-8);
+  }
+
+  .casca__lateral:not(:hover):not(:focus-within) .menu__topo::after {
+    width: 100%;
+  }
+
+  .casca__lateral:not(:hover):not(:focus-within) .menu__usuario {
+    gap: 0;
+    padding: 0;
+    background: transparent;
+  }
+
+  .casca__lateral:not(:hover):not(:focus-within) .menu__item {
+    gap: 0;
+  }
+
+  .casca__lateral:not(:hover):not(:focus-within) .menu__item > span,
+  .casca__lateral:not(:hover):not(:focus-within) .menu__saudacao {
+    max-width: 0;
+    opacity: 0;
+  }
+
+  .casca__lateral:not(:hover):not(:focus-within) .menu__grupo {
+    margin-top: 0;
+    margin-bottom: 0;
+  }
+
+  .casca__lateral:not(:hover):not(:focus-within) .menu__grupo-rotulo {
+    max-height: 0;
+    opacity: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+
+  .casca__lateral:not(:hover):not(:focus-within) .menu__lista--grupo {
+    margin-left: 0;
+    padding-left: 0;
+    border-left-width: 0;
+  }
+}

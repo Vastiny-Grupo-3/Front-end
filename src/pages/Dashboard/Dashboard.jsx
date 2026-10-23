@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
-import { BadgeDollarSign, Calendar, Filter, Package, Receipt, ShoppingBag } from "lucide-react";
+import { AlertTriangle, BadgeDollarSign, Calendar, Filter, Package, Receipt, ShoppingBag, Wallet } from "lucide-react";
 import PageHeader from "../../components/PageHeader/PageHeader.jsx";
+import Tabs from "../../components/Tabs/Tabs.jsx";
 import Button from "../../components/Button/Button.jsx";
 import StatCard from "../../components/StatCard/StatCard.jsx";
 import DataTable from "../../components/DataTable/DataTable.jsx";
@@ -22,6 +23,7 @@ import {
   gravidadeDoEstado,
   niveisDeEstoque,
   periodoPadrao,
+  resumoEstoque,
   produtosMaisVendidos,
   textoDiasFiltrados,
 } from "../../utils/dashboard.js";
@@ -30,6 +32,11 @@ import { formatarData, formatarMoeda, hojeIso } from "../../utils/formatadores.j
 import "./Dashboard.css";
 
 const ERRO = "Não conseguimos carregar as informações. Verifique sua conexão e tente novamente.";
+
+const ABAS = [
+  { id: "vendas", rotulo: "Vendas", cor: "var(--cor-aba-vendas)" },
+  { id: "estoque", rotulo: "Estoque", cor: "var(--cor-aba-cadastro-produtos)" },
+];
 
 function Painel({ id, titulo, acao, children, className = "" }) {
   return (
@@ -54,6 +61,7 @@ export default function Dashboard() {
   const [categoriaIds, setCategoriaIds] = useState(todas);
   const [categoriaEstoqueIds, setCategoriaEstoqueIds] = useState(todas);
   const [estadoEstoque, setEstadoEstoque] = useState(ESTADOS_ESTOQUE);
+  const [aba, setAba] = useState("vendas");
   const [modal, setModal] = useState(null); // "periodo" | "categoria" | "estoque" | null
 
   const todasIds = categorias.map((categoria) => categoria.id);
@@ -70,6 +78,7 @@ export default function Dashboard() {
     [produtos, categoriaEstoqueIds, estadoEstoque],
   );
   const estoque = useMemo(() => niveisDeEstoque(produtos), [produtos]);
+  const estoqueResumo = useMemo(() => resumoEstoque(produtos), [produtos]);
 
   const carregando = status === "carregando";
   const comErro = status === "erro";
@@ -167,151 +176,188 @@ export default function Dashboard() {
     <>
       <PageHeader
         titulo="Dashboard"
-        subtitulo="Resumo do Negócio - Período Selecionado"
+        subtitulo={
+          aba === "vendas" ? "Resumo do Negócio - Período Selecionado" : "Situação atual do estoque"
+        }
         acao={
-          <Button variante="secundario" icone={Calendar} onClick={() => setModal("periodo")}>
-            Filtro Temporal
-          </Button>
+          aba === "vendas" || !todoEstoque || !todosEstados ? (
+          <div className="dashboard__acao">
+            <p className="dashboard__filtros-ativos" aria-live="polite">
+              {aba === "vendas" ? (
+                <>
+                  <span>{textoPeriodo}</span>
+                  {!todasCategorias && (
+                    <span>
+                      Categoria:{" "}
+                      {categoriaIds.length > 0
+                        ? categorias.filter((c) => categoriaIds.includes(c.id)).map((c) => c.nome).join(", ")
+                        : "—"}
+                    </span>
+                  )}
+                </>
+              ) : (
+                <>
+                  {!todoEstoque && (
+                    <span>
+                      Categoria:{" "}
+                      {categoriaEstoqueIds.length > 0
+                        ? categorias.filter((c) => categoriaEstoqueIds.includes(c.id)).map((c) => c.nome).join(", ")
+                        : "—"}
+                    </span>
+                  )}
+                  {!todosEstados && (
+                    <span>
+                      Estado:{" "}
+                      {ESTADOS_ESTOQUE.filter((estado) => estadoEstoque.includes(estado)).join(", ") || "—"}
+                    </span>
+                  )}
+                </>
+              )}
+            </p>
+            {aba === "vendas" && (
+              <Button variante="secundario" icone={Calendar} onClick={() => setModal("periodo")}>
+                Filtro Temporal
+              </Button>
+            )}
+          </div>
+          ) : null
         }
       />
 
-      <p className="dashboard__filtros-ativos" aria-live="polite">
-        <span>{textoPeriodo}</span>
-        {!todasCategorias && (
-          <span>
-            Categoria:{" "}
-            {categoriaIds.length > 0
-              ? categorias.filter((c) => categoriaIds.includes(c.id)).map((c) => c.nome).join(", ")
-              : "—"}
-          </span>
+      <Tabs className="dashboard__abas" rotulo="Dashboards" abas={ABAS} abaAtiva={aba} aoMudar={setAba}>
+        {aba === "vendas" ? (
+          <>
+            <div className="dashboard__indicadores dashboard__indicadores--tres">
+              <StatCard
+                rotulo="Vendas no período"
+                valor={indicadores.vendas}
+                icone={ShoppingBag}
+                estado={estadoIndicador}
+              />
+              <StatCard
+                rotulo="Faturamento do período"
+                valor={formatarMoeda(indicadores.faturamento)}
+                icone={BadgeDollarSign}
+                estado={estadoIndicador}
+              />
+              <StatCard
+                rotulo="Preço médio das vendas"
+                valor={indicadores.precoMedio != null ? formatarMoeda(indicadores.precoMedio) : null}
+                icone={Receipt}
+                estado={estadoIndicador === "padrao" && indicadores.precoMedio == null ? "vazio" : estadoIndicador}
+              />
+            </div>
+
+            <div className="dashboard__linha">
+              <Painel id="painel-categorias" titulo="Categorias mais vendidas">
+                {conteudoVendas(
+                  <BarChart
+                    dados={barras}
+                    legendaTabela="Categorias mais vendidas"
+                    selecionadas={todasCategorias ? [] : categoriaIds}
+                    aoEscolher={escolherCategoria}
+                  />,
+                  { vazio: semVendasNoPeriodo },
+                )}
+              </Painel>
+
+              <Painel
+                id="painel-produtos"
+                titulo="Produtos mais Vendidos"
+                acao={
+                  <Button
+                    variante="icone"
+                    icone={Filter}
+                    aria-label="Filtrar por categoria"
+                    onClick={() => setModal("categoria")}
+                  />
+                }
+              >
+                {conteudoVendas(
+                  <DataTable
+                    className="dashboard__tabela"
+                    legenda="Produtos mais Vendidos"
+                    colunas={colunasMaisVendidos}
+                    linhas={maisVendidos.map((linha, indice) => ({ ...linha, posicao: indice + 1 }))}
+                    mensagemVazio={
+                      todasCategorias
+                        ? "Nenhum registro por aqui ainda."
+                        : "Nenhum produto encontrado com esses filtros. Tente remover algum deles."
+                    }
+                  />,
+                  { vazio: semVendasNoPeriodo },
+                )}
+              </Painel>
+            </div>
+          </>
+        ) : (
+          <>
+            <div className="dashboard__indicadores dashboard__indicadores--tres">
+              <StatCard
+                rotulo="Produtos ativos"
+                valor={estoque.total}
+                icone={Package}
+                estado={estadoIndicador}
+              />
+              <StatCard
+                rotulo="Abaixo do mínimo"
+                valor={estoqueResumo.abaixoDoMinimo}
+                icone={AlertTriangle}
+                estado={estadoIndicador}
+              />
+              <StatCard
+                rotulo="Custo em estoque"
+                valor={formatarMoeda(estoqueResumo.custo)}
+                icone={Wallet}
+                estado={estadoIndicador}
+              />
+            </div>
+
+            <div className="dashboard__linha">
+              <Painel id="painel-niveis" className="dashboard__painel--centro" titulo="Níveis de Estoque Atual">
+                {carregando ? (
+                  <span className="esqueleto dashboard__esqueleto" aria-hidden="true" />
+                ) : (
+                  <DonutChart
+                    niveis={estoque.niveis}
+                    total={estoque.total}
+                    legendaTabela="Níveis de Estoque Atual"
+                    estadosSelecionados={todosEstados ? [] : estadoEstoque}
+                    aoEscolherEstado={escolherEstado}
+                  />
+                )}
+              </Painel>
+
+              <Painel
+                id="painel-estoque"
+                titulo="Estoque"
+                acao={
+                  <Button
+                    variante="icone"
+                    icone={Filter}
+                    aria-label="Filtrar estoque"
+                    onClick={() => setModal("estoque")}
+                  />
+                }
+              >
+                <DataTable
+                  className="dashboard__tabela"
+                  legenda="Estoque"
+                  colunas={colunasEstoque}
+                  linhas={produtosEstoque}
+                  estado={carregando || comErro ? status : "padrao"}
+                  aoTentarNovamente={recarregar}
+                  mensagemVazio={
+                    todoEstoque && todosEstados
+                      ? "Nenhum registro por aqui ainda."
+                      : "Nenhum produto encontrado com esses filtros. Tente remover algum deles."
+                  }
+                />
+              </Painel>
+            </div>
+          </>
         )}
-        {!todoEstoque && (
-          <span>
-            Estoque:{" "}
-            {categoriaEstoqueIds.length > 0
-              ? categorias.filter((c) => categoriaEstoqueIds.includes(c.id)).map((c) => c.nome).join(", ")
-              : "—"}
-          </span>
-        )}
-        {!todosEstados && (
-          <span>
-            Estado:{" "}
-            {ESTADOS_ESTOQUE.filter((estado) => estadoEstoque.includes(estado)).join(", ") || "—"}
-          </span>
-        )}
-      </p>
-
-      <div className="dashboard__indicadores">
-        <StatCard
-          rotulo="Vendas no período"
-          valor={indicadores.vendas}
-          icone={ShoppingBag}
-          estado={estadoIndicador}
-        />
-        <StatCard
-          rotulo="Faturamento do período"
-          valor={formatarMoeda(indicadores.faturamento)}
-          icone={BadgeDollarSign}
-          estado={estadoIndicador}
-        />
-        <StatCard
-          rotulo="Preço médio das vendas"
-          valor={indicadores.precoMedio != null ? formatarMoeda(indicadores.precoMedio) : null}
-          icone={Receipt}
-          estado={estadoIndicador === "padrao" && indicadores.precoMedio == null ? "vazio" : estadoIndicador}
-        />
-        <StatCard
-          rotulo="Produtos ativos"
-          valor={indicadores.produtosAtivos}
-          icone={Package}
-          estado={estadoIndicador}
-        />
-      </div>
-
-      <div className="dashboard__linha">
-        <Painel id="painel-categorias" titulo="Categorias mais vendidas">
-          {conteudoVendas(
-            <BarChart
-              dados={barras}
-              legendaTabela="Categorias mais vendidas"
-              selecionadas={todasCategorias ? [] : categoriaIds}
-              aoEscolher={escolherCategoria}
-            />,
-            { vazio: semVendasNoPeriodo },
-          )}
-        </Painel>
-
-        <Painel id="painel-niveis" className="dashboard__painel--centro" titulo="Níveis de Estoque Atual">
-          {carregando ? (
-            <span className="esqueleto dashboard__esqueleto" aria-hidden="true" />
-          ) : (
-            <DonutChart
-              niveis={estoque.niveis}
-              total={estoque.total}
-              legendaTabela="Níveis de Estoque Atual"
-              estadosSelecionados={todosEstados ? [] : estadoEstoque}
-              aoEscolherEstado={escolherEstado}
-            />
-          )}
-        </Painel>
-      </div>
-
-      <div className="dashboard__linha">
-        <Painel
-          id="painel-produtos"
-          titulo="Produtos mais Vendidos"
-          acao={
-            <Button
-              variante="icone"
-              icone={Filter}
-              aria-label="Filtrar por categoria"
-              onClick={() => setModal("categoria")}
-            />
-          }
-        >
-          {conteudoVendas(
-            <DataTable
-              className="dashboard__tabela"
-              legenda="Produtos mais Vendidos"
-              colunas={colunasMaisVendidos}
-              linhas={maisVendidos.map((linha, indice) => ({ ...linha, posicao: indice + 1 }))}
-              mensagemVazio={
-                todasCategorias
-                  ? "Nenhum registro por aqui ainda."
-                  : "Nenhum produto encontrado com esses filtros. Tente remover algum deles."
-              }
-            />,
-            { vazio: semVendasNoPeriodo },
-          )}
-        </Painel>
-
-        <Painel
-          id="painel-estoque"
-          titulo="Estoque"
-          acao={
-            <Button
-              variante="icone"
-              icone={Filter}
-              aria-label="Filtrar estoque"
-              onClick={() => setModal("estoque")}
-            />
-          }
-        >
-          <DataTable
-            className="dashboard__tabela"
-            legenda="Estoque"
-            colunas={colunasEstoque}
-            linhas={produtosEstoque}
-            estado={carregando || comErro ? status : "padrao"}
-            aoTentarNovamente={recarregar}
-            mensagemVazio={
-              todoEstoque && todosEstados
-                ? "Nenhum registro por aqui ainda."
-                : "Nenhum produto encontrado com esses filtros. Tente remover algum deles."
-            }
-          />
-        </Painel>
-      </div>
+      </Tabs>
 
       <PeriodoModal
         aberto={modal === "periodo"}

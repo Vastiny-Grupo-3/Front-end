@@ -21,10 +21,12 @@ export const cadastrosProdutos = [
 ];
 
 export const cadastrosClientes = [
-  { id: 1, clienteId: 1, nome: "Eduardo Ribeiro", telefone: "(11) 90000-0001", data: "2026-09-10" },
-  { id: 2, clienteId: 2, nome: "Nicolas Mazza", telefone: "(11) 90000-0002", data: "2026-09-12" },
-  { id: 3, clienteId: 3, nome: "Miguel Igor", telefone: "(11) 90000-0003", data: "2026-09-15" },
-  { id: 4, clienteId: 4, nome: "Ana Paula Souza", telefone: "(11) 98123-4567", data: "2026-09-20" },
-  { id: 5, clienteId: 5, nome: "Oficina Dois Irmãos", telefone: "(11) 3456-7890", data: "2026-09-21" },
-  { id: 6, clienteId: 6, nome: "Roberto Lima", telefone: "(11) 99876-5432", data: "2026-10-01" },
+  { id: 1, clienteId: 1, nome: "Eduardo Ribeiro", telefone: "(11) 90000-0001", descricao: "", dataCadastro: "2026-09-10", data: "2026-09-10" },
+  { id: 2, clienteId: 2, nome: "Nicolas Mazza", telefone: "(11) 90000-0002", descricao: "", dataCadastro: "2026-09-12", data: "2026-09-12" },
+  { id: 3, clienteId: 3, nome: "Miguel Igor", telefone: "(11) 90000-0003", descricao: "Dono de um Fusca 1972.", dataCadastro: "2026-09-15", data: "2026-09-15" },
+  { id: 4, clienteId: 4, nome: "Ana Paula Souza", telefone: "(11) 97000-1111", descricao: "", dataCadastro: "2026-09-20", data: "2026-09-20" },
+  { id: 5, clienteId: 5, nome: "Oficina Dois Irmãos", telefone: "(11) 3456-7890", descricao: "Retira os pedidos no balcão às sextas.", dataCadastro: "2026-09-21", data: "2026-09-21" },
+  { id: 6, clienteId: 6, nome: "Roberto Lima", telefone: "(11) 99876-5432", descricao: "", dataCadastro: "2026-10-01", data: "2026-10-01" },
+  { id: 7, clienteId: 4, nome: "Ana Paula Souza", telefone: "(11) 98123-4567", descricao: "", dataCadastro: "2026-09-20", data: "2026-10-05" },
+  { id: 8, clienteId: 1, nome: "Eduardo Ribeiro", telefone: "(11) 90000-0001", descricao: "Mecânico parceiro; compra para a oficina.", dataCadastro: "2026-09-10", data: "2026-10-02" },
 ];

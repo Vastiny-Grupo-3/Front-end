@@ -36,6 +36,15 @@
   font: var(--texto-h3);
 }
 
+/* Mesma largura em todas as alterações, para Nome, Telefone e Descrição coincidirem. */
+.detalhes-historico__alteracao .tabela__tabela {
+  table-layout: fixed;
+}
+
+.detalhes-historico__alteracao .tabela__tabela th:nth-child(1) { width: 32%; }
+.detalhes-historico__alteracao .tabela__tabela th:nth-child(2) { width: 28%; }
+.detalhes-historico__alteracao .tabela__tabela th:nth-child(3) { width: 40%; }
+
 .detalhes-historico__total {
   display: flex;
   justify-content: flex-end;
