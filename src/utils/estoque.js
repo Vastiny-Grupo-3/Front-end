@@ -19,6 +19,9 @@ export const MENSAGENS_ESTOQUE = {
   telefoneCliente: "Informe o telefone do cliente.",
   nomeCategoria: "Informe o nome da categoria.",
   categoriaRepetida: "Já existe uma categoria com esse nome.",
+  estoqueMinimo: (nivel) => `Informe o estoque mínimo para ${nivel}.`,
+  estoqueMinimoOrdem:
+    "O mínimo de Bom deve ser maior ou igual ao de Médio, o de Médio ao de Ruim e o de Ruim ao de Crítico.",
   categoriaComProdutos: (quantidade) =>
     `Esta categoria tem ${quantidade} produtos associados. Mude a categoria deles antes de excluir.`,
 };
@@ -213,7 +216,7 @@ function camposCliente(entrada) {
   };
 }
 
-/** Cadastra cliente e cria o registro em "Cadastro de Clientes". */
+/** Cadastra cliente e cria a primeira alteração em "Alteração de Clientes". */
 export function cadastrarCliente(dados, entrada, data) {
   const erros = validarCliente(entrada);
   if (Object.keys(erros).length > 0) return { dados, erros };
@@ -224,6 +227,8 @@ export function cadastrarCliente(dados, entrada, data) {
     clienteId: cliente.id,
     nome: cliente.nome,
     telefone: cliente.telefone,
+    descricao: cliente.descricao,
+    dataCadastro: data,
     data,
   };
   return {
@@ -236,15 +241,31 @@ export function cadastrarCliente(dados, entrada, data) {
   };
 }
 
-export function editarCliente(dados, clienteId, entrada) {
+export function editarCliente(dados, clienteId, entrada, data) {
   const erros = validarCliente(entrada);
   if (Object.keys(erros).length > 0) return { dados, erros };
+  const campos = camposCliente(entrada);
+  const anteriores = dados.cadastrosClientes.filter((item) => item.clienteId === clienteId);
+  const ultimo = anteriores[anteriores.length - 1];
+  const mudou =
+    !ultimo ||
+    ultimo.nome !== campos.nome ||
+    ultimo.telefone !== campos.telefone ||
+    (ultimo.descricao ?? "") !== campos.descricao;
+  const dataCadastro = anteriores.reduce((menor, item) => {
+    const atual = item.dataCadastro ?? item.data;
+    return atual < menor ? atual : menor;
+  }, ultimo?.dataCadastro ?? ultimo?.data ?? data);
+  const registro = mudou
+    ? { id: proximoId(dados.cadastrosClientes), clienteId, ...campos, dataCadastro, data }
+    : null;
   return {
     dados: {
       ...dados,
       clientes: dados.clientes.map((cliente) =>
-        cliente.id === clienteId ? { ...cliente, ...camposCliente(entrada) } : cliente,
+        cliente.id === clienteId ? { ...cliente, ...campos } : cliente,
       ),
+      cadastrosClientes: registro ? [...dados.cadastrosClientes, registro] : dados.cadastrosClientes,
     },
   };
 }
@@ -293,6 +314,11 @@ export function contarProdutosDaCategoria(dados, categoriaId) {
   return dados.produtos.filter((produto) => produto.categoriaId === categoriaId).length;
 }
 
+export function textoCriterios(criterios) {
+  if (!criterios) return "—";
+  return `Bom ${criterios.bom} · Médio ${criterios.medio} · Ruim ${criterios.ruim} · Crítico ${criterios.critico}`;
+}
+
 function validarNomeCategoria(dados, nome, idIgnorado) {
   const limpo = texto(nome);
   if (!limpo) return MENSAGENS_ESTOQUE.nomeCategoria;
@@ -304,21 +330,59 @@ function validarNomeCategoria(dados, nome, idIgnorado) {
   return repetido ? MENSAGENS_ESTOQUE.categoriaRepetida : null;
 }
 
-export function criarCategoria(dados, nome) {
-  const erro = validarNomeCategoria(dados, nome);
-  if (erro) return { dados, erro };
-  const categoria = { id: proximoId(dados.categorias), nome: texto(nome) };
+const NIVEIS_ESTOQUE = [
+  ["bom", "Bom"],
+  ["medio", "Médio"],
+  ["ruim", "Ruim"],
+  ["critico", "Crítico"],
+];
+
+function validarCriterios(entrada) {
+  const erros = {};
+  const valores = {};
+  for (const [chave, rotulo] of NIVEIS_ESTOQUE) {
+    const informado = texto(entrada?.[chave]);
+    if (!/^\d+$/.test(informado)) {
+      erros[chave] = MENSAGENS_ESTOQUE.estoqueMinimo(rotulo);
+      continue;
+    }
+    valores[chave] = Number(informado);
+  }
+  if (Object.keys(erros).length > 0) return { erros };
+  const { bom, medio, ruim, critico } = valores;
+  if (!(bom >= medio && medio >= ruim && ruim >= critico)) {
+    return { erros: { bom: MENSAGENS_ESTOQUE.estoqueMinimoOrdem } };
+  }
+  return { valores };
+}
+
+function montarCategoria(dados, entrada, idIgnorado) {
+  const erros = {};
+  const erroNome = validarNomeCategoria(dados, entrada?.nome, idIgnorado);
+  if (erroNome) erros.nome = erroNome;
+  const criterios = validarCriterios(entrada);
+  Object.assign(erros, criterios.erros ?? {});
+  if (Object.keys(erros).length > 0) return { erros };
+  return { nome: texto(entrada.nome), criterios: criterios.valores };
+}
+
+export function criarCategoria(dados, entrada) {
+  const montado = montarCategoria(dados, entrada);
+  if (montado.erros) return { dados, erros: montado.erros };
+  const categoria = { id: proximoId(dados.categorias), nome: montado.nome, criterios: montado.criterios };
   return { dados: { ...dados, categorias: [...dados.categorias, categoria] }, registro: categoria };
 }
 
-export function editarCategoria(dados, categoriaId, nome) {
-  const erro = validarNomeCategoria(dados, nome, categoriaId);
-  if (erro) return { dados, erro };
+export function editarCategoria(dados, categoriaId, entrada) {
+  const montado = montarCategoria(dados, entrada, categoriaId);
+  if (montado.erros) return { dados, erros: montado.erros };
   return {
     dados: {
       ...dados,
       categorias: dados.categorias.map((categoria) =>
-        categoria.id === categoriaId ? { ...categoria, nome: texto(nome) } : categoria,
+        categoria.id === categoriaId
+          ? { ...categoria, nome: montado.nome, criterios: montado.criterios }
+          : categoria,
       ),
     },
   };

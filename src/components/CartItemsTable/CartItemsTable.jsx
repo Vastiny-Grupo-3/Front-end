@@ -80,7 +80,6 @@ export default function CartItemsTable({ itens }) {
     {
       chave: "preco",
       titulo: "Preço por Unidade",
-      alinhamento: "direita",
       renderizar: (linha) => formatarMoeda(linha.precoUnitario),
     },
     {
@@ -100,7 +99,6 @@ export default function CartItemsTable({ itens }) {
     {
       chave: "total",
       titulo: "Total",
-      alinhamento: "direita",
       renderizar: (linha) => formatarMoeda(linha.total),
     },
     {

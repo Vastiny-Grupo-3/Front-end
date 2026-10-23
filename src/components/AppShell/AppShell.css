@@ -41,6 +41,32 @@
   outline: none;
 }
 
+/*
+ * Desktop com mouse: a coluna fica na largura dos ícones e a barra cresce
+ * por cima do conteúdo. O teclado abre do mesmo jeito, via :focus-within.
+ * Sem hover (toque), a barra permanece na largura cheia.
+ */
+@media (min-width: 1024px) and (hover: hover) {
+  .casca {
+    grid-template-columns: var(--largura-menu-fechado) minmax(0, 1fr);
+  }
+
+  .casca__lateral {
+    z-index: var(--camada-menu);
+    width: var(--largura-menu-fechado);
+    overflow: hidden;
+    transition:
+      width var(--duracao-media) var(--curva-suave),
+      box-shadow var(--duracao-media) var(--curva-suave);
+  }
+
+  .casca__lateral:hover,
+  .casca__lateral:focus-within {
+    width: var(--largura-menu);
+    box-shadow: var(--sombra-modal);
+  }
+}
+
 /* bp-1024: margem da página espaco-32 */
 @media (max-width: 1439px) {
   .casca__conteudo {

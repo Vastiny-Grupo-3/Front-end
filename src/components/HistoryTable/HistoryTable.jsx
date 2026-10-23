@@ -1,4 +1,4 @@
-import { useId, useState } from "react";
+import { useEffect, useId, useState } from "react";
 import { MoreHorizontal } from "lucide-react";
 import DataTable from "../DataTable/DataTable.jsx";
 import Button from "../Button/Button.jsx";
@@ -12,9 +12,13 @@ const VAZIO = "Nenhum registro por aqui ainda.";
  * com o botão "…" que abre o painel de detalhes.
  * aba: configuração de abasHistorico.js
  */
-export default function HistoryTable({ aba, linhas, estado = "padrao", aoTentarNovamente }) {
+export default function HistoryTable({ aba, linhas, estado = "padrao", aoTentarNovamente, linhaInicial = null }) {
   const base = useId();
-  const [selecionada, setSelecionada] = useState(null);
+  const [selecionada, setSelecionada] = useState(linhaInicial);
+
+  useEffect(() => {
+    if (linhaInicial) setSelecionada(linhaInicial);
+  }, [linhaInicial]);
   const idIdentificador = (linha) => `${base}-linha-${linha.id}`;
 
   const colunas = [

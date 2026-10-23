@@ -7,6 +7,16 @@
   gap: 0;
 }
 
+.cliente-detalhes__compras {
+  display: flex;
+  align-items: center;
+  gap: var(--espaco-4);
+}
+
+.cliente-detalhes__historico.botao--icone {
+  color: var(--cor-primaria);
+}
+
 /* "Excluir" com ícone em cor-erro */
 .clientes__excluir.botao--icone {
   color: var(--cor-erro);

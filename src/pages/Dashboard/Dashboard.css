@@ -1,11 +1,26 @@
-/* Filtros aplicados ficam visíveis (período e categorias) */
+/* Período e filtros ativos ficam ao lado do Filtro Temporal, sem uma linha só para eles. */
+.dashboard__acao {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--espaco-8);
+  min-width: 0;
+}
+
 .dashboard__filtros-ativos {
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
   gap: var(--espaco-8);
-  margin: calc(-1 * var(--espaco-16)) 0 0;
+  margin: 0;
   font: var(--texto-corpo-pequeno);
   color: var(--cor-texto-secundario);
+}
+
+.dashboard__filtros-ativos:empty {
+  display: none;
 }
 
 .dashboard__filtros-ativos span {
@@ -20,6 +35,20 @@
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: var(--espaco-24);
+}
+
+.dashboard__indicadores--tres {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  max-width: calc(var(--largura-menu) * 5);
+}
+
+.dashboard__indicadores .indicador {
+  min-height: calc(var(--espaco-48) + var(--espaco-32));
+  padding: var(--espaco-12) var(--espaco-16) var(--espaco-12) var(--espaco-16);
+}
+
+.dashboard__indicadores .indicador__valor {
+  font: var(--texto-h2);
 }
 
 .dashboard__indicadores .indicador::before {
@@ -73,12 +102,44 @@
   color: var(--cor-grafico-6);
 }
 
+/* O dashboard ocupa a tela: o que sobra vai para os painéis, sem faixa vazia. */
+.casca:has(.dashboard__abas) {
+  height: 100vh;
+}
+
+.casca__conteudo:has(.dashboard__abas) {
+  height: 100%;
+  min-height: 0;
+  overflow: auto;
+}
+
+.dashboard__abas {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.dashboard__abas .abas__lista,
+.dashboard__indicadores {
+  flex-shrink: 0;
+}
+
+.dashboard__abas .abas__painel {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: var(--espaco-24);
+  min-height: 0;
+}
+
 /* Painéis de análise e de estoque: 2 lado a lado (6 colunas cada) */
 .dashboard__linha {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-rows: minmax(0, 1fr);
   gap: var(--espaco-24);
-  align-items: start;
+  flex: 1 1 auto;
+  align-items: stretch;
+  min-height: 0;
 }
 
 .dashboard__painel {
@@ -86,7 +147,9 @@
   flex-direction: column;
   gap: var(--espaco-16);
   min-width: 0;
+  min-height: 0;
   height: 100%;
+  overflow: hidden;
   padding: var(--espaco-16);
   border: var(--borda-1) solid var(--cor-borda);
   border-radius: var(--raio-16);
@@ -98,13 +161,29 @@
   flex: 1;
 }
 
+/* O gráfico ocupa o painel, sem faixa branca embaixo e sem cortar os nomes. */
+.dashboard__painel .grafico-barras {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.dashboard__painel .grafico-barras__rolagem {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
 .dashboard__cabecalho-painel {
   display: flex;
+  flex-shrink: 0;
   align-items: center;
   justify-content: space-between;
   gap: var(--espaco-16);
+  height: var(--espaco-48);
+  min-height: var(--espaco-48);
   margin: calc(-1 * var(--espaco-16)) calc(-1 * var(--espaco-16)) 0;
-  padding: var(--espaco-12) var(--espaco-16);
+  padding: 0 var(--espaco-16);
   border-bottom: var(--borda-1) solid var(--cor-borda);
   border-radius: calc(var(--raio-16) - var(--borda-1)) calc(var(--raio-16) - var(--borda-1)) 0 0;
   background: color-mix(in srgb, var(--cor-primaria) 6%, var(--cor-superficie));
@@ -112,6 +191,21 @@
 
 .dashboard__titulo-painel {
   font: var(--texto-h3);
+  white-space: nowrap;
+}
+
+/* O desenho fica menor; a área de clique continua com o alvo de toque. */
+.dashboard__cabecalho-painel .botao--icone {
+  width: var(--espaco-32);
+  min-width: var(--espaco-32);
+  height: var(--espaco-32);
+  min-height: var(--espaco-32);
+}
+
+.dashboard__cabecalho-painel .botao--icone::after {
+  content: "";
+  position: absolute;
+  inset: calc((var(--espaco-32) - var(--alvo-toque)) / 2);
 }
 
 .dashboard__esqueleto {
@@ -120,6 +214,7 @@
 
 /* Tabelas compactas para caber em meio painel */
 .dashboard__tabela .tabela__tabela th {
+  height: var(--alvo-toque);
   padding-inline: var(--espaco-4);
   white-space: normal;
 }
@@ -135,6 +230,20 @@
 
 .dashboard__tabela .celula-produto__nome {
   min-width: calc(var(--espaco-48) + var(--espaco-24));
+}
+
+/* A tabela preenche o painel e rola por dentro, sem mudar a altura do cartão. */
+.dashboard__painel > .tabela {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.dashboard__tabela .tabela__rolagem {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
 }
 
 .dashboard__filtro-grupo {

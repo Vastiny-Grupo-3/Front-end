@@ -30,11 +30,13 @@ export default function CartModal() {
       mostrarFechar
     >
       <div className="modal-carrinho__acoes">
-        <Button onClick={irParaCarrinho}>Ir para Carrinho</Button>
         <CartSelector rotulo="Trocar Carrinho" />
       </div>
       <CartItemsTable />
-      <CartTotals resumo={resumo} />
+      <div className="modal-carrinho__rodape">
+        <CartTotals resumo={resumo} />
+        <Button onClick={irParaCarrinho}>Ir para Carrinho</Button>
+      </div>
     </Modal>
   );
 }

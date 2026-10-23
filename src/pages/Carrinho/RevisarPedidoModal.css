@@ -1,0 +1,58 @@
+.revisar-pedido {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--espaco-16);
+}
+
+.revisar-pedido__cliente,
+.revisar-pedido__nome,
+.revisar-pedido__valores p {
+  margin: 0;
+}
+
+.revisar-pedido__cliente,
+.revisar-pedido__valores p {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--espaco-4);
+}
+
+.revisar-pedido__rotulo {
+  font: var(--texto-label);
+  color: var(--cor-texto-secundario);
+}
+
+.revisar-pedido__lista {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-12);
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.revisar-pedido__item {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--espaco-8);
+  padding-bottom: var(--espaco-12);
+  border-bottom: var(--borda-1) solid var(--cor-borda);
+}
+
+.revisar-pedido__nome {
+  font-weight: 600;
+}
+
+.revisar-pedido__valores {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espaco-12) var(--espaco-24);
+}
+
+.revisar-pedido .totais-carrinho {
+  width: 100%;
+}

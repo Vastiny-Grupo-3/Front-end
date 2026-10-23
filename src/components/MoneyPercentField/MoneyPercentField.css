@@ -21,8 +21,7 @@
 .desconto__parte {
   position: relative;
   display: flex;
-  flex: 1;
-  min-width: 0;
+  flex: 0 0 auto;
 }
 
 .desconto__adorno {
@@ -42,15 +41,19 @@
 
 .desconto__entrada {
   min-width: 0;
-  text-align: right;
+  text-align: left;
 }
 
-.desconto__entrada--reais {
+.desconto__entrada.desconto__entrada--reais {
+  width: calc(var(--alvo-toque) * 2 + var(--espaco-24));
+  min-width: calc(var(--alvo-toque) * 2 + var(--espaco-24));
   padding-left: calc(var(--espaco-12) + var(--espaco-24));
   padding-right: var(--espaco-12);
 }
 
-.desconto__entrada--percentual {
+.desconto__entrada.desconto__entrada--percentual {
+  width: calc(var(--alvo-toque) + var(--espaco-48));
+  min-width: calc(var(--alvo-toque) + var(--espaco-48));
   padding-left: var(--espaco-12);
   padding-right: calc(var(--espaco-12) + var(--espaco-16));
 }

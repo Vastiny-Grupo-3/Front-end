@@ -133,6 +133,20 @@ export function produtosMaisVendidos({ vendas, inicio, fim, categoriaIds, limite
 }
 
 /**
+ * Produtos com quantidade abaixo do mínimo cadastrado e o custo parado
+ * no estoque (quantidade × valor de compra).
+ */
+export function resumoEstoque(produtos) {
+  const abaixoDoMinimo = produtos.filter(
+    (produto) => produto.estoqueMinimo != null && produto.quantidade < produto.estoqueMinimo,
+  ).length;
+  const custo = arredondar(
+    produtos.reduce((soma, produto) => soma + produto.quantidade * (produto.valorCompra ?? 0), 0),
+  );
+  return { abaixoDoMinimo, custo };
+}
+
+/**
  * Níveis de estoque atual: quantos produtos em cada estado (vindo do banco).
  * Produtos sem estado informado ficam de fora.
  */

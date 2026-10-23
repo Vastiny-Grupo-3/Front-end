@@ -2,17 +2,23 @@ import Modal from "../Modal/Modal.jsx";
 import DataTable from "../DataTable/DataTable.jsx";
 import "./HistoryDetailsModal.css";
 
+const COLUNAS_ALTERACAO = [
+  { chave: "nome", titulo: "Nome" },
+  { chave: "telefone", titulo: "Telefone" },
+  { chave: "descricao", titulo: "Descrição" },
+];
+
 const COLUNAS_PRODUTOS = [
-  { chave: "nome", titulo: "Nome do Produto" },
-  { chave: "preco", titulo: "Preço na época", alinhamento: "direita" },
-  { chave: "lucro", titulo: "Lucro na época", alinhamento: "direita" },
-  { chave: "unidades", titulo: "Unidades compradas", alinhamento: "direita" },
-  { chave: "valorTotal", titulo: "Valor total", alinhamento: "direita" },
+  { chave: "nome", titulo: "Nome do Produto", largura: "32%" },
+  { chave: "preco", titulo: "Preço unitário", largura: "17%" },
+  { chave: "unidades", titulo: "Unidades compradas", largura: "18%" },
+  { chave: "valorTotal", titulo: "Valor total", largura: "17%" },
+  { chave: "lucro", titulo: "Lucro", largura: "16%" },
 ];
 
 /**
  * Painel de detalhes do Histórico (aberto pelo "…"), com "X" e Esc.
- * detalhes: { campos: [[rotulo, valor]], vendas?: [{ id, titulo, produtos, total? }] }
+ * detalhes: { campos, alteracoes?: [{ id, titulo, nome, telefone, descricao }], vendas? }
  */
 export default function HistoryDetailsModal({ titulo, detalhes, aoFechar }) {
   return (
@@ -35,6 +41,17 @@ export default function HistoryDetailsModal({ titulo, detalhes, aoFechar }) {
               </div>
             ))}
           </dl>
+
+          {detalhes.alteracoes?.map((alteracao) => (
+            <section key={alteracao.id} className="detalhes-historico__venda detalhes-historico__alteracao">
+              <h3 className="detalhes-historico__titulo-venda">{alteracao.titulo}</h3>
+              <DataTable
+                legenda={alteracao.titulo}
+                colunas={COLUNAS_ALTERACAO}
+                linhas={[alteracao]}
+              />
+            </section>
+          ))}
 
           {detalhes.vendas?.map((venda) => (
             <section key={venda.id} className="detalhes-historico__venda">

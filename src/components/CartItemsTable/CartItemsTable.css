@@ -3,7 +3,62 @@
 }
 
 .itens-carrinho__desconto {
-  min-width: calc(var(--largura-menu) - var(--espaco-48) - var(--espaco-12));
+  width: max-content;
+  max-width: 100%;
+}
+
+/* A página larga reparte o espaço; o produto fica maior, sem engolir o desconto. */
+.itens-carrinho .tabela__tabela {
+  table-layout: fixed;
+}
+
+.itens-carrinho .tabela__tabela th:nth-child(1) { width: 4%; }
+.itens-carrinho .tabela__tabela th:nth-child(2) { width: 22%; }
+.itens-carrinho .tabela__tabela th:nth-child(3) { width: 12%; }
+.itens-carrinho .tabela__tabela th:nth-child(4) { width: 14%; }
+.itens-carrinho .tabela__tabela th:nth-child(5) { width: 14%; }
+.itens-carrinho .tabela__tabela th:nth-child(6) { width: 20%; }
+.itens-carrinho .tabela__tabela th:nth-child(7) { width: 8%; }
+.itens-carrinho .tabela__tabela th:nth-child(8) { width: 6%; }
+
+.itens-carrinho .tabela__tabela th:nth-child(5) {
+  white-space: nowrap;
+}
+
+/* No modal (~960 px) as colunas acompanham o conteúdo, para o stepper caber. */
+.modal .itens-carrinho .tabela__tabela {
+  table-layout: auto;
+}
+
+.modal .itens-carrinho .tabela__tabela th:nth-child(n) {
+  width: 1%;
+}
+
+.modal .itens-carrinho .tabela__tabela th:nth-child(2) {
+  width: auto;
+}
+
+.modal .itens-carrinho__desconto {
+  width: calc(var(--alvo-toque) * 3 + var(--espaco-24) + var(--espaco-48) + var(--espaco-8));
+}
+
+.modal .itens-carrinho .tabela__tabela th:nth-child(5) {
+  white-space: normal;
+}
+
+.modal .itens-carrinho .tabela__tabela th,
+.modal .itens-carrinho .tabela__tabela td {
+  padding-inline: var(--espaco-8);
+}
+
+.modal .itens-carrinho .celula-produto {
+  width: 100%;
+}
+
+.modal .itens-carrinho .celula-produto__nome {
+  flex: 1;
+  min-width: calc(var(--alvo-toque) * 2);
+  overflow-wrap: break-word;
 }
 
 /* Versão compacta para caber no modal grande (~960 px) */
@@ -26,8 +81,11 @@
 
 @media (max-width: 767px) {
   .itens-carrinho__desconto {
-    min-width: 0;
-    flex: 1;
-    max-width: calc(var(--largura-menu) - var(--espaco-32));
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .itens-carrinho__desconto .desconto__linha {
+    flex-wrap: wrap;
   }
 }

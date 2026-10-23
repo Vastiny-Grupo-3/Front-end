@@ -9,8 +9,10 @@ import SelectField from "../../components/SelectField/SelectField.jsx";
 import Button from "../../components/Button/Button.jsx";
 import ConfirmModal from "../../components/ConfirmModal/ConfirmModal.jsx";
 import PurchaseCompleteModal from "../../components/PurchaseCompleteModal/PurchaseCompleteModal.jsx";
+import RevisarPedidoModal from "./RevisarPedidoModal.jsx";
 import { useCart } from "../../context/CartContext.jsx";
 import { useStock } from "../../context/StockContext.jsx";
+import { MENSAGENS_CARRINHO } from "../../utils/carrinho.js";
 import "./Carrinho.css";
 
 function normalizar(texto) {
@@ -24,12 +26,22 @@ export default function Carrinho() {
   const { carrinhoAtual, itens, resumo, definirCliente, excluirCarrinho, finalizarCompra } = useCart();
   const [pesquisa, setPesquisa] = useState("");
   const [confirmandoExclusao, setConfirmandoExclusao] = useState(false);
+  const [revisando, setRevisando] = useState(false);
   const [erro, setErro] = useState("");
   const [vendaFinalizada, setVendaFinalizada] = useState(null);
 
   // A pesquisa do cabeçalho filtra os itens do carrinho pelo nome do produto.
   const termo = normalizar(pesquisa);
   const itensVisiveis = termo ? itens.filter((item) => normalizar(item.produto.nome).includes(termo)) : itens;
+
+  function revisarPedido() {
+    if (itens.length === 0) {
+      setErro(MENSAGENS_CARRINHO.erroFinalizar);
+      return;
+    }
+    setErro("");
+    setRevisando(true);
+  }
 
   function finalizar() {
     const resultado = finalizarCompra();
@@ -38,6 +50,7 @@ export default function Carrinho() {
       return;
     }
     setErro("");
+    setRevisando(false);
     setVendaFinalizada(resultado.venda);
   }
 
@@ -85,7 +98,7 @@ export default function Carrinho() {
         <CartTotals resumo={resumo} />
       </div>
 
-      {erro && (
+      {erro && !revisando && (
         <p className="carrinho__erro" role="alert">
           <AlertCircle className="carrinho__icone-erro" aria-hidden="true" focusable="false" />
           {erro}
@@ -99,10 +112,23 @@ export default function Carrinho() {
         <Button variante="secundario" onClick={() => navegar("/")}>
           Continuar comprando
         </Button>
-        <Button className="carrinho__finalizar" onClick={finalizar}>
-          Finalizar Compra
+        <Button className="carrinho__finalizar" onClick={revisarPedido}>
+          Revisar pedido
         </Button>
       </div>
+
+      <RevisarPedidoModal
+        aberto={revisando}
+        cliente={clientes.find((cliente) => cliente.id === carrinhoAtual.clienteId)?.nome ?? "Sem Cliente"}
+        itens={itens}
+        resumo={resumo}
+        erro={revisando ? erro : ""}
+        aoVoltar={() => {
+          setErro("");
+          setRevisando(false);
+        }}
+        aoFinalizar={finalizar}
+      />
 
       <ConfirmModal
         aberto={confirmandoExclusao}
