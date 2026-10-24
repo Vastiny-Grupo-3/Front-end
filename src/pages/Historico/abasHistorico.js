@@ -281,7 +281,7 @@ export const ABAS_HISTORICO = [
       ],
       alteracoes: l.historico.map((item) => ({
         id: item.id,
-        titulo: `Alteração: ${formatarId(item.id)}`,
+        titulo: `${item.id == Math.min(...l.historico.map((item) => item.id)) ? "Cadastro" : "Alteração"}: ${formatarId(item.id)}`,
         nome: item.nome,
         telefone: item.telefone,
         descricao: item.descricao || "—",
