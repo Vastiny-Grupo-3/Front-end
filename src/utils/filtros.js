@@ -30,6 +30,8 @@ export const FILTROS_PADRAO = {
   categorias: [],
   precoMinimo: null,
   precoMaximo: null,
+  quantidadeMinima: null,
+  quantidadeMaxima: null,
   estoque: "todos",
   carrinho: "todos",
   ordem: "nome",
@@ -37,6 +39,7 @@ export const FILTROS_PADRAO = {
 
 export const MENSAGENS_FILTROS = {
   precoInvalido: "O preço mínimo não pode ser maior que o máximo.",
+  quantidadeInvalida: "A quantidade mínima não pode ser maior que a máxima.",
   semResultadoPesquisa: "Nenhum produto encontrado. Tente buscar por outro nome.",
   semResultadoFiltros: "Nenhum produto encontrado com esses filtros. Tente remover algum deles.",
 };
@@ -48,13 +51,22 @@ function normalizar(texto) {
   return texto.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().trim();
 }
 
-/** Retorna a mensagem de erro dos filtros ou null. */
+/** Mínimo maior que o máximo (os dois informados)? */
+function faixaInvertida(minimo, maximo) {
+  return minimo != null && maximo != null && minimo > maximo;
+}
+
+/**
+ * Valida os filtros. Retorna null quando está tudo certo, ou as mensagens por seção:
+ * { preco?: string, quantidade?: string }.
+ */
 export function validarFiltros(filtros) {
-  const { precoMinimo, precoMaximo } = filtros;
-  if (precoMinimo != null && precoMaximo != null && precoMinimo > precoMaximo) {
-    return MENSAGENS_FILTROS.precoInvalido;
+  const erros = {};
+  if (faixaInvertida(filtros.precoMinimo, filtros.precoMaximo)) erros.preco = MENSAGENS_FILTROS.precoInvalido;
+  if (faixaInvertida(filtros.quantidadeMinima, filtros.quantidadeMaxima)) {
+    erros.quantidade = MENSAGENS_FILTROS.quantidadeInvalida;
   }
-  return null;
+  return Object.keys(erros).length > 0 ? erros : null;
 }
 
 /** Há algum filtro diferente do padrão? (a ordenação não conta como filtro) */
@@ -63,6 +75,8 @@ export function temFiltrosAtivos(filtros) {
     filtros.categorias.length > 0 ||
     filtros.precoMinimo != null ||
     filtros.precoMaximo != null ||
+    filtros.quantidadeMinima != null ||
+    filtros.quantidadeMaxima != null ||
     filtros.estoque !== "todos" ||
     filtros.carrinho !== "todos"
   );
@@ -87,6 +101,8 @@ export function filtrarProdutos(produtos, { pesquisa = "", filtros = FILTROS_PAD
     if (filtros.categorias.length > 0 && !filtros.categorias.includes(produto.categoriaId)) return false;
     if (filtros.precoMinimo != null && produto.valorVenda < filtros.precoMinimo) return false;
     if (filtros.precoMaximo != null && produto.valorVenda > filtros.precoMaximo) return false;
+    if (filtros.quantidadeMinima != null && produto.quantidade < filtros.quantidadeMinima) return false;
+    if (filtros.quantidadeMaxima != null && produto.quantidade > filtros.quantidadeMaxima) return false;
 
     if (filtros.estoque === "com" && produto.quantidade <= 0) return false;
     if (filtros.estoque === "sem" && produto.quantidade > 0) return false;
@@ -135,6 +151,20 @@ export function listarFiltrosAtivos(filtros, categorias) {
       id: "preco-maximo",
       rotulo: `Máximo: ${formatarMoeda(filtros.precoMaximo)}`,
       filtrosSemEste: { ...filtros, precoMaximo: null },
+    });
+  }
+  if (filtros.quantidadeMinima != null) {
+    etiquetas.push({
+      id: "quantidade-minima",
+      rotulo: `Quantidade mínima: ${filtros.quantidadeMinima}`,
+      filtrosSemEste: { ...filtros, quantidadeMinima: null },
+    });
+  }
+  if (filtros.quantidadeMaxima != null) {
+    etiquetas.push({
+      id: "quantidade-maxima",
+      rotulo: `Quantidade máxima: ${filtros.quantidadeMaxima}`,
+      filtrosSemEste: { ...filtros, quantidadeMaxima: null },
     });
   }
   if (filtros.estoque !== "todos") {

@@ -21,6 +21,14 @@ function textoParaPreco(texto) {
   return Number.isNaN(valor) ? null : valor;
 }
 
+function quantidadeParaTexto(valor) {
+  return valor == null ? "" : String(valor);
+}
+
+function textoParaQuantidade(texto) {
+  return texto === "" ? null : Number(texto);
+}
+
 function Secao({ titulo, children }) {
   return (
     <fieldset className="filtros__secao">
@@ -60,8 +68,11 @@ export default function FilterModal({
   const [rascunho, setRascunho] = useState(filtros);
   const [textoMinimo, setTextoMinimo] = useState("");
   const [textoMaximo, setTextoMaximo] = useState("");
-  const [erro, setErro] = useState("");
+  const [textoQuantidadeMinima, setTextoQuantidadeMinima] = useState("");
+  const [textoQuantidadeMaxima, setTextoQuantidadeMaxima] = useState("");
+  const [erros, setErros] = useState({});
   const minimoRef = useRef(null);
+  const quantidadeMinimaRef = useRef(null);
 
   // Ao abrir, o rascunho parte dos filtros aplicados.
   useEffect(() => {
@@ -69,7 +80,9 @@ export default function FilterModal({
     setRascunho(filtros);
     setTextoMinimo(precoParaTexto(filtros.precoMinimo));
     setTextoMaximo(precoParaTexto(filtros.precoMaximo));
-    setErro("");
+    setTextoQuantidadeMinima(quantidadeParaTexto(filtros.quantidadeMinima));
+    setTextoQuantidadeMaxima(quantidadeParaTexto(filtros.quantidadeMaxima));
+    setErros({});
   }, [aberto, filtros]);
 
   function alternarCategoria(categoriaId) {
@@ -86,11 +99,14 @@ export default function FilterModal({
       ...rascunho,
       precoMinimo: textoParaPreco(textoMinimo),
       precoMaximo: textoParaPreco(textoMaximo),
+      quantidadeMinima: textoParaQuantidade(textoQuantidadeMinima),
+      quantidadeMaxima: textoParaQuantidade(textoQuantidadeMaxima),
     };
-    const mensagem = validarFiltros(novos);
-    if (mensagem) {
-      setErro(mensagem);
-      minimoRef.current?.focus();
+    const encontrados = validarFiltros(novos);
+    if (encontrados) {
+      setErros(encontrados);
+      // O foco vai para o primeiro campo com erro, na ordem em que aparecem no modal.
+      (encontrados.preco ? minimoRef : quantidadeMinimaRef).current?.focus();
       return;
     }
     aoAplicar(novos);
@@ -148,9 +164,9 @@ export default function FilterModal({
               value={textoMinimo}
               onChange={(evento) => {
                 setTextoMinimo(evento.target.value.replace(/[^\d.,]/g, ""));
-                setErro("");
+                setErros((atuais) => ({ ...atuais, preco: undefined }));
               }}
-              erro={erro}
+              erro={erros.preco}
             />
             <TextField
               rotulo="Máximo"
@@ -160,7 +176,7 @@ export default function FilterModal({
               value={textoMaximo}
               onChange={(evento) => {
                 setTextoMaximo(evento.target.value.replace(/[^\d.,]/g, ""));
-                setErro("");
+                setErros((atuais) => ({ ...atuais, preco: undefined }));
               }}
             />
           </div>
@@ -178,6 +194,32 @@ export default function FilterModal({
               rotulo={opcao.rotulo}
             />
           ))}
+          <div className="filtros__precos filtros__quantidades">
+            <TextField
+              ref={quantidadeMinimaRef}
+              rotulo="Quantidade mínima"
+              inputMode="numeric"
+              autoComplete="off"
+              placeholder="0"
+              value={textoQuantidadeMinima}
+              onChange={(evento) => {
+                setTextoQuantidadeMinima(evento.target.value.replace(/\D/g, ""));
+                setErros((atuais) => ({ ...atuais, quantidade: undefined }));
+              }}
+              erro={erros.quantidade}
+            />
+            <TextField
+              rotulo="Quantidade máxima"
+              inputMode="numeric"
+              autoComplete="off"
+              placeholder="0"
+              value={textoQuantidadeMaxima}
+              onChange={(evento) => {
+                setTextoQuantidadeMaxima(evento.target.value.replace(/\D/g, ""));
+                setErros((atuais) => ({ ...atuais, quantidade: undefined }));
+              }}
+            />
+          </div>
         </Secao>
 
         {mostrarCarrinho && (

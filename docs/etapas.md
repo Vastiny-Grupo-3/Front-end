@@ -25,6 +25,11 @@ Para pedir uma etapa ao Claude Code, basta escrever: `Faça a Etapa N de docs/et
 | 15 | Revisão de acessibilidade | Concluída | `fix: ajustes de acessibilidade` |
 | 16 | Revisão visual contra os wireframes | Concluída | `fix: alinhamento com wireframes e especificação` |
 | 17 | Entrega | Concluída | `docs: README e build final` |
+| 18 | Filtros por quantidade em estoque (mínimo e máximo) | Concluída | `feat: filtros por quantidade em estoque` |
+| 19 | Dashboard de Vendas (lucro, Top 10, layout em telas médias, selecionar todas) | Pendente | `feat: dashboard de vendas` |
+| 20 | Faixas de estoque por categoria e por produto | Pendente | `feat: faixas de estoque por categoria e por produto` |
+| 21 | Dashboard de Estoque (rosca, filtros e faixa) | Pendente | `feat: dashboard de estoque` |
+| 22 | Modelagem de dados (MySQL) | Pendente | `docs: modelagem de dados` |
 
 ## Observações
 
@@ -49,6 +54,17 @@ Para pedir uma etapa ao Claude Code, basta escrever: `Faça a Etapa N de docs/et
 - Os filtros (`src/utils/filtros.js`, `FilterModal`, `FilterChips`) já aceitam as opções da Entrada e da Saída (`mostrarAbaixoMinimo`).
 - `status` do StockContext é sempre "pronto" com os mocks; os estados carregando e erro das telas aparecem quando o back-end alimentar esse valor.
 
+
+## Revisão 3 (Etapas 18 a 22)
+
+Pedidos novos depois que o time (Leonardo Tomas) reformulou o visual (versões 3 e 4). Decisões confirmadas:
+
+- **Estado calculado pelas faixas:** o estado de cada produto (Crítico, Ruim, Médio, Bom) sai da quantidade e da faixa efetiva (a do produto, se ele tiver faixa própria; senão a da categoria). No banco não é coluna, é consulta. Isso substitui a regra antiga "o estado vem pronto do banco".
+- **Semântica das faixas:** "Estoque mínimo para Bom = 8" quer dizer quantidade ≥ 8 é Bom; ≥ Médio é Médio; ≥ Ruim é Ruim; abaixo disso é Crítico. A ordem `bom ≥ médio ≥ ruim ≥ crítico ≥ 0` é validada.
+- **Coluna "Mínimo" do Dashboard** vira **"Faixa de estoque"** (limites e se é da categoria ou própria); o indicador "Abaixo do mínimo" vira **"Precisam de reposição"** (Ruim + Crítico).
+- **Faixa própria por produto** é feita no modal Novo Produto / Editar Produto (Etapa 20).
+- **Banco de dados:** MySQL.
+- **Filtros de quantidade (Etapa 18):** os campos "Quantidade mínima" e "Quantidade máxima" ficam na seção Estoque do modal de filtros (Catálogo, Entrada e Saída) e não colidem com o antigo `estoqueMinimo` do produto.
 
 ## Resultado da revisão visual (Etapa 16)
 
