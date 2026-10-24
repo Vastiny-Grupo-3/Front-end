@@ -30,6 +30,7 @@ Para pedir uma etapa ao Claude Code, basta escrever: `Faça a Etapa N de docs/et
 | 20 | Faixas de estoque por categoria e por produto | Concluída | `feat: faixas de estoque por categoria e por produto` |
 | 21 | Dashboard de Estoque (rosca, filtros e faixa) | Concluída | `feat: dashboard de estoque` |
 | 22 | Modelagem de dados (MySQL) | Concluída | `docs: modelagem de dados` |
+| 23 | Revisão da modelagem de dados | Concluída | `docs: revisão da modelagem de dados` |
 
 ## Observações
 
@@ -67,6 +68,7 @@ Pedidos novos depois que o time (Leonardo Tomas) reformulou o visual (versões 3
 - **Dashboard de Vendas (Etapa 19):** novo indicador "Lucro no período" (soma do lucro dos itens vendidos, respeitando o filtro de categoria); a tabela passa a ser o "Top 10 Produtos mais Vendidos" (`MAXIMO_PRODUTOS = 10`, com rolagem interna); `CheckboxGroup` com "Selecionar todas as opções" (marcada, desmarcada ou indeterminada) no filtro de categoria. Em telas de até 1023 px os painéis se empilham e a página volta a rolar (antes a tabela ficava por cima do gráfico: o grid tinha uma única linha de altura fixa e a casca estava presa em `100vh`); em telas maiores cada painel tem altura mínima de `--altura-minima-painel`.
 - **Dashboard de Estoque (Etapa 21):** o centro da rosca ("Total Produto") é um botão (`aoEscolherTodos`, `aria-pressed` quando todos os estados estão ativos) que volta a mostrar todos os estados na tabela; o modal "Filtrar estoque" mostra Estado primeiro e Categoria depois, ambos com "Selecionar todas as opções" (`CheckboxGroup`). A coluna "Faixa de estoque" e o indicador "Precisam de reposição" já vieram na Etapa 20.
 - **Modelagem de dados (Etapa 22):** `docs/modelagem-dados.md` (diagrama, tabelas, integridade, mapeamento front → banco, consultas do Dashboard e pontos em aberto) e `docs/banco/schema.sql` (MySQL 8.0.16+). O script não foi executado em um MySQL neste ambiente; rodar em um servidor antes de adotar.
+- **Revisão da modelagem (Etapa 23):** `categoria` ganhou `data_cadastro` e `data_alteracao` (só no banco); `data_cadastro` do cliente saiu de `cliente_versao` e ficou em `cliente`; o carrinho passou a ser uma `venda` com `status` ABERTA/FINALIZADA, com preço e lucro unitário gravados ao entrar no carrinho; os totais de venda e de item deixaram de ser colunas e saem das views `vw_venda_resumo` e `vw_item_venda`; o Mermaid agora lista todas as FKs e as quatro faixas do produto.
 - **Filtros de quantidade (Etapa 18):** os campos "Quantidade mínima" e "Quantidade máxima" ficam na seção Estoque do modal de filtros (Catálogo, Entrada e Saída) e não colidem com o antigo `estoqueMinimo` do produto.
 
 ## Resultado da revisão visual (Etapa 16)

@@ -36,6 +36,8 @@ CREATE TABLE categoria (
   faixa_medio    INT UNSIGNED NOT NULL,
   faixa_ruim     INT UNSIGNED NOT NULL,
   faixa_critico  INT UNSIGNED NOT NULL,
+  data_cadastro  DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,                              -- só no banco
+  data_alteracao DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,  -- só no banco
   PRIMARY KEY (id),
   UNIQUE KEY uq_categoria_nome (nome),
   CONSTRAINT ck_categoria_faixa CHECK (
@@ -116,7 +118,7 @@ CREATE TABLE cliente (
   nome       VARCHAR(120) NOT NULL,
   telefone   VARCHAR(20)  NULL,
   descricao  VARCHAR(500) NOT NULL DEFAULT '',
-  criado_em  DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  data_cadastro DATE      NOT NULL,             -- uma vez só; as versões abaixo não repetem esta data
   PRIMARY KEY (id),
   KEY ix_cliente_nome (nome)
 ) ENGINE=InnoDB;
@@ -128,8 +130,7 @@ CREATE TABLE cliente_versao (
   nome            VARCHAR(120) NOT NULL,
   telefone        VARCHAR(20)  NULL,
   descricao       VARCHAR(500) NOT NULL DEFAULT '',
-  data_cadastro   DATE         NOT NULL,        -- data em que o cliente foi cadastrado
-  data_alteracao  DATE         NOT NULL,        -- igual a data_cadastro na primeira versão
+  data_alteracao  DATE         NOT NULL,        -- na primeira versão é igual a cliente.data_cadastro
   PRIMARY KEY (id),
   KEY ix_cliente_versao_cliente (cliente_id, data_alteracao),
   CONSTRAINT fk_cliente_versao_cliente FOREIGN KEY (cliente_id) REFERENCES cliente (id)
@@ -137,56 +138,86 @@ CREATE TABLE cliente_versao (
 ) ENGINE=InnoDB;
 
 -- ---------------------------------------------------------------------------
--- Vendas (imutáveis depois de registradas)
+-- Vendas e carrinho: o carrinho é uma venda com status ABERTA; ao finalizar vira FINALIZADA
+-- e entra no Histórico e no Dashboard. Os totais NÃO são colunas: saem das views abaixo.
 -- ---------------------------------------------------------------------------
 CREATE TABLE venda (
-  id                  INT UNSIGNED  NOT NULL AUTO_INCREMENT,
-  data                DATE          NOT NULL,
-  cliente_id          INT UNSIGNED  NULL,       -- venda sem cliente é permitida
-  cliente_nome        VARCHAR(120)  NULL,       -- nome da época; sobrevive à exclusão do cliente
-  conta_id            INT UNSIGNED  NULL,       -- NOVO: quem registrou
-  subtotal            DECIMAL(10,2) NOT NULL,
-  descontos           DECIMAL(10,2) NOT NULL DEFAULT 0,
-  valor_total         DECIMAL(10,2) NOT NULL,
-  lucro               DECIMAL(10,2) NOT NULL,
-  quantidade_produtos INT UNSIGNED  NOT NULL,
+  id               INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  status           ENUM('ABERTA', 'FINALIZADA') NOT NULL DEFAULT 'ABERTA',
+  cliente_id       INT UNSIGNED NULL,       -- venda sem cliente é permitida
+  cliente_nome     VARCHAR(120) NULL,       -- nome da época; gravado ao finalizar
+  conta_id         INT UNSIGNED NULL,       -- NOVO: quem registrou
+  data_criacao     DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  data_finalizacao DATETIME     NULL,       -- NULL enquanto estiver aberta
   PRIMARY KEY (id),
-  KEY ix_venda_data (data),
+  KEY ix_venda_status_data (status, data_finalizacao),
   KEY ix_venda_cliente (cliente_id),
   CONSTRAINT fk_venda_cliente FOREIGN KEY (cliente_id) REFERENCES cliente (id) ON DELETE SET NULL,
   CONSTRAINT fk_venda_conta   FOREIGN KEY (conta_id)   REFERENCES conta (id)   ON DELETE SET NULL,
-  CONSTRAINT ck_venda_totais CHECK (
-    descontos >= 0 AND subtotal >= 0 AND valor_total = subtotal - descontos
+  CONSTRAINT ck_venda_status CHECK (
+    (status = 'ABERTA' AND data_finalizacao IS NULL)
+    OR (status = 'FINALIZADA' AND data_finalizacao IS NOT NULL)
   )
 ) ENGINE=InnoDB;
 
--- "Foto" da linha no momento da venda: preço, lucro, código e nomes da época.
+-- Preço e lucro unitário são gravados ao colocar o item no carrinho (preço da época).
+-- Para atualizar o preço, remove-se o item e coloca-se de novo. Só muda com a venda ABERTA
+-- (regra do back-end; um CHECK não enxerga outra tabela).
 CREATE TABLE item_venda (
   id              INT UNSIGNED  NOT NULL AUTO_INCREMENT,
   venda_id        INT UNSIGNED  NOT NULL,
   produto_id      INT UNSIGNED  NULL,
   codigo          VARCHAR(30)   NOT NULL,
   nome            VARCHAR(150)  NOT NULL,
-  categoria_id    INT UNSIGNED  NULL,
+  categoria_id    INT UNSIGNED  NULL,           -- categoria da época (o produto pode mudar de categoria)
   categoria_nome  VARCHAR(80)   NOT NULL,
   quantidade      INT UNSIGNED  NOT NULL,
   preco_unitario  DECIMAL(10,2) NOT NULL,
   lucro_unitario  DECIMAL(10,2) NOT NULL,       -- pode ser negativo (vender abaixo do custo)
   desconto        DECIMAL(10,2) NOT NULL DEFAULT 0,
-  valor_linha     DECIMAL(10,2) NOT NULL,       -- quantidade × preco_unitario
-  total           DECIMAL(10,2) NOT NULL,       -- valor_linha − desconto
-  lucro           DECIMAL(10,2) NOT NULL,       -- quantidade × lucro_unitario − desconto
   PRIMARY KEY (id),
-  KEY ix_item_venda_venda (venda_id),
+  UNIQUE KEY uq_item_venda_produto (venda_id, produto_id),  -- uma linha por produto, como no carrinho
   KEY ix_item_venda_produto (produto_id),
   KEY ix_item_venda_categoria (categoria_id),
   CONSTRAINT fk_item_venda_venda     FOREIGN KEY (venda_id)     REFERENCES venda (id)     ON DELETE CASCADE,
   CONSTRAINT fk_item_venda_produto   FOREIGN KEY (produto_id)   REFERENCES produto (id)   ON DELETE SET NULL,
   CONSTRAINT fk_item_venda_categoria FOREIGN KEY (categoria_id) REFERENCES categoria (id) ON DELETE SET NULL,
   CONSTRAINT ck_item_venda_valores CHECK (
-    quantidade > 0 AND desconto >= 0 AND desconto <= valor_linha AND total = valor_linha - desconto
+    quantidade > 0 AND preco_unitario >= 0 AND desconto >= 0
+    AND desconto <= quantidade * preco_unitario
   )
 ) ENGINE=InnoDB;
+
+-- Valores de cada linha, calculados.
+CREATE VIEW vw_item_venda AS
+SELECT
+  i.*,
+  v.status,
+  v.data_finalizacao,
+  i.quantidade * i.preco_unitario                      AS valor_linha,
+  i.quantidade * i.preco_unitario - i.desconto         AS total,
+  i.quantidade * i.lucro_unitario - i.desconto         AS lucro
+FROM item_venda i
+JOIN venda v ON v.id = i.venda_id;
+
+-- Totais de cada venda: subtotal, descontos, valor total, lucro e quantidade de produtos.
+CREATE VIEW vw_venda_resumo AS
+SELECT
+  v.id,
+  v.status,
+  v.cliente_id,
+  v.cliente_nome,
+  v.conta_id,
+  v.data_criacao,
+  v.data_finalizacao,
+  COALESCE(SUM(i.quantidade * i.preco_unitario), 0)                     AS subtotal,
+  COALESCE(SUM(i.desconto), 0)                                          AS descontos,
+  COALESCE(SUM(i.quantidade * i.preco_unitario - i.desconto), 0)        AS valor_total,
+  COALESCE(SUM(i.quantidade * i.lucro_unitario - i.desconto), 0)        AS lucro,
+  COALESCE(SUM(i.quantidade), 0)                                        AS quantidade_produtos
+FROM venda v
+LEFT JOIN item_venda i ON i.venda_id = v.id
+GROUP BY v.id;
 
 -- ---------------------------------------------------------------------------
 -- Entradas e saídas de estoque (venda não entra aqui: ela tem item_venda)
@@ -236,16 +267,19 @@ CREATE TABLE produto_cadastro (
 ) ENGINE=InnoDB;
 
 -- ---------------------------------------------------------------------------
--- Exemplo de venda dentro de uma transação, sem deixar o estoque ficar negativo.
--- Trava as linhas dos produtos antes de conferir a quantidade.
+-- Exemplo: carrinho aberto, item com preço da época e finalização sem deixar o estoque negativo.
 -- ---------------------------------------------------------------------------
--- START TRANSACTION;
---   SELECT id, quantidade FROM produto WHERE id IN (7, 4) FOR UPDATE;
+-- INSERT INTO venda (cliente_id, cliente_nome) VALUES (1, 'Eduardo Ribeiro');          -- carrinho (ABERTA)
+-- INSERT INTO item_venda (venda_id, produto_id, codigo, nome, categoria_id, categoria_nome,
+--                         quantidade, preco_unitario, lucro_unitario)
+--   SELECT LAST_INSERT_ID(), p.id, p.codigo, p.nome, p.categoria_id, c.nome,
+--          1, p.valor_venda, p.valor_venda - p.valor_compra
+--   FROM produto p JOIN categoria c ON c.id = p.categoria_id WHERE p.id = 7;            -- preço da época
+--
+-- START TRANSACTION;                                                                   -- finalizar
+--   SELECT id, quantidade FROM produto WHERE id IN (SELECT produto_id FROM item_venda WHERE venda_id = :venda) FOR UPDATE;
 --   -- se alguma quantidade for menor que a pedida: ROLLBACK e avisar o usuário
---   INSERT INTO venda (data, cliente_id, cliente_nome, subtotal, descontos, valor_total, lucro, quantidade_produtos)
---     VALUES (CURDATE(), 1, 'Eduardo Ribeiro', 100.00, 0.00, 100.00, 35.00, 2);
---   INSERT INTO item_venda (venda_id, produto_id, codigo, nome, categoria_id, categoria_nome, quantidade,
---                           preco_unitario, lucro_unitario, desconto, valor_linha, total, lucro)
---     VALUES (LAST_INSERT_ID(), 7, 'SQ-001', 'Soquete Lâmpada H7', 3, 'Soquetes', 2, 50.00, 17.50, 0, 100.00, 100.00, 35.00);
---   UPDATE produto SET quantidade = quantidade - 2 WHERE id = 7;
+--   UPDATE produto p JOIN item_venda i ON i.produto_id = p.id AND i.venda_id = :venda
+--      SET p.quantidade = p.quantidade - i.quantidade;
+--   UPDATE venda SET status = 'FINALIZADA', data_finalizacao = NOW() WHERE id = :venda;
 -- COMMIT;
