@@ -135,7 +135,8 @@
 .dashboard__linha {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  grid-template-rows: minmax(0, 1fr);
+  /* Divide a altura que sobra na tela, mas nunca deixa um painel menor que o mínimo. */
+  grid-template-rows: minmax(var(--altura-minima-painel), 1fr);
   gap: var(--espaco-24);
   flex: 1 1 auto;
   align-items: stretch;
@@ -266,15 +267,6 @@
   color: var(--cor-texto);
 }
 
-/* Lista do filtro por categoria */
-.dashboard__categorias {
-  display: flex;
-  flex-direction: column;
-  margin: 0;
-  padding: 0;
-  border: 0;
-}
-
 .dashboard__categoria {
   display: flex;
   align-items: center;
@@ -306,8 +298,46 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+  /*
+   * Em 1 coluna os painéis se empilham e a página volta a rolar. Antes a casca
+   * ficava presa em 100vh e o grid tinha uma única linha de altura fixa: o
+   * segundo painel caía numa linha sem altura e ficava por cima do primeiro.
+   */
+  .casca:has(.dashboard__abas) {
+    height: auto;
+    min-height: 100vh;
+  }
+
+  .casca__conteudo:has(.dashboard__abas) {
+    height: auto;
+    overflow: visible;
+  }
+
+  .dashboard__abas,
+  .dashboard__abas .abas__painel {
+    flex: 0 0 auto;
+  }
+
   .dashboard__linha {
     grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: none;
+    grid-auto-rows: auto;
+    flex: 0 0 auto;
+  }
+
+  .dashboard__painel {
+    height: auto;
+    min-height: var(--altura-minima-painel);
+  }
+
+  /* As tabelas passam de uma altura e rolam por dentro, sem esticar a página. */
+  .dashboard__painel > .tabela {
+    flex: 0 1 auto;
+  }
+
+  .dashboard__tabela .tabela__rolagem {
+    flex: 0 1 auto;
+    max-height: var(--altura-lista-painel);
   }
 }
 

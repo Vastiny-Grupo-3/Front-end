@@ -90,6 +90,10 @@
   /* Tamanhos */
   --alvo-toque: 44px;
   --altura-linha-tabela: 48px;
+  /* Dashboard: um painel (gráfico ou tabela) nunca fica menor que isto. */
+  --altura-minima-painel: 360px;
+  /* Dashboard em 1 coluna: altura máxima das tabelas; passando disso, rolam por dentro. */
+  --altura-lista-painel: 420px;
   --tamanho-icone: 20px;
   --largura-menu: 256px;
   /* Trilho só com ícones (alvo de 44 px + respiro), já com a borda da barra. */

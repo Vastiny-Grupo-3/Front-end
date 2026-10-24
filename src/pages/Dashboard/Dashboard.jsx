@@ -1,5 +1,15 @@
 import { useMemo, useState } from "react";
-import { AlertTriangle, BadgeDollarSign, Calendar, Filter, Package, Receipt, ShoppingBag, Wallet } from "lucide-react";
+import {
+  AlertTriangle,
+  BadgeDollarSign,
+  Calendar,
+  Filter,
+  Package,
+  Receipt,
+  ShoppingBag,
+  TrendingUp,
+  Wallet,
+} from "lucide-react";
 import PageHeader from "../../components/PageHeader/PageHeader.jsx";
 import Tabs from "../../components/Tabs/Tabs.jsx";
 import Button from "../../components/Button/Button.jsx";
@@ -16,6 +26,7 @@ import EstoqueFiltroModal from "./EstoqueFiltroModal.jsx";
 import { useStock } from "../../context/StockContext.jsx";
 import {
   ESTADOS_ESTOQUE,
+  MAXIMO_PRODUTOS,
   MENSAGENS_DASHBOARD,
   calcularIndicadores,
   categoriasMaisVendidas,
@@ -32,6 +43,7 @@ import { formatarData, formatarMoeda, hojeIso } from "../../utils/formatadores.j
 import "./Dashboard.css";
 
 const ERRO = "Não conseguimos carregar as informações. Verifique sua conexão e tente novamente.";
+const TITULO_PRODUTOS = `Top ${MAXIMO_PRODUTOS} Produtos mais Vendidos`;
 
 const ABAS = [
   { id: "vendas", rotulo: "Vendas", cor: "var(--cor-aba-vendas)" },
@@ -227,7 +239,7 @@ export default function Dashboard() {
       <Tabs className="dashboard__abas" rotulo="Dashboards" abas={ABAS} abaAtiva={aba} aoMudar={setAba}>
         {aba === "vendas" ? (
           <>
-            <div className="dashboard__indicadores dashboard__indicadores--tres">
+            <div className="dashboard__indicadores">
               <StatCard
                 rotulo="Vendas no período"
                 valor={indicadores.vendas}
@@ -238,6 +250,12 @@ export default function Dashboard() {
                 rotulo="Faturamento do período"
                 valor={formatarMoeda(indicadores.faturamento)}
                 icone={BadgeDollarSign}
+                estado={estadoIndicador}
+              />
+              <StatCard
+                rotulo="Lucro no período"
+                valor={formatarMoeda(indicadores.lucro)}
+                icone={TrendingUp}
                 estado={estadoIndicador}
               />
               <StatCard
@@ -263,7 +281,7 @@ export default function Dashboard() {
 
               <Painel
                 id="painel-produtos"
-                titulo="Produtos mais Vendidos"
+                titulo={TITULO_PRODUTOS}
                 acao={
                   <Button
                     variante="icone"
@@ -276,7 +294,7 @@ export default function Dashboard() {
                 {conteudoVendas(
                   <DataTable
                     className="dashboard__tabela"
-                    legenda="Produtos mais Vendidos"
+                    legenda={TITULO_PRODUTOS}
                     colunas={colunasMaisVendidos}
                     linhas={maisVendidos.map((linha, indice) => ({ ...linha, posicao: indice + 1 }))}
                     mensagemVazio={

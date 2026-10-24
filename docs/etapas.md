@@ -26,7 +26,7 @@ Para pedir uma etapa ao Claude Code, basta escrever: `Faça a Etapa N de docs/et
 | 16 | Revisão visual contra os wireframes | Concluída | `fix: alinhamento com wireframes e especificação` |
 | 17 | Entrega | Concluída | `docs: README e build final` |
 | 18 | Filtros por quantidade em estoque (mínimo e máximo) | Concluída | `feat: filtros por quantidade em estoque` |
-| 19 | Dashboard de Vendas (lucro, Top 10, layout em telas médias, selecionar todas) | Pendente | `feat: dashboard de vendas` |
+| 19 | Dashboard de Vendas (lucro, Top 10, layout em telas médias, selecionar todas) | Concluída | `feat: dashboard de vendas` |
 | 20 | Faixas de estoque por categoria e por produto | Pendente | `feat: faixas de estoque por categoria e por produto` |
 | 21 | Dashboard de Estoque (rosca, filtros e faixa) | Pendente | `feat: dashboard de estoque` |
 | 22 | Modelagem de dados (MySQL) | Pendente | `docs: modelagem de dados` |
@@ -43,7 +43,7 @@ Para pedir uma etapa ao Claude Code, basta escrever: `Faça a Etapa N de docs/et
 - Carrinho (Etapa 9): o modal TL02 fica no AppShell e abre pelo ícone do carrinho de qualquer `PageHeader` com `carrinho` e por "Alterar carrinho". A pesquisa do cabeçalho da TL03 filtra os itens do carrinho pelo nome. O título do TL02 é só para leitores de tela (o wireframe não mostra título).
 - Modal: a prop `focoAoFechar` define para onde vai o foco quando o botão que abriu o modal deixa de existir (ex.: linha excluída em Clientes).
 - Histórico (Etapa 11): as seis abas são configuradas em `src/pages/Historico/abasHistorico.js` e usam um único `HistoryTable`. Os painéis de detalhes não têm título visível (como nos wireframes); o título existe só para leitores de tela. Ids de transação e de cliente com 3 dígitos ("001") e ids de produto e de cadastro com 4 ("0001"), como nos wireframes.
-- Dashboard (Etapa 12): cálculos em `src/utils/dashboard.js`. Período padrão: da primeira venda até hoje. "Produtos ativos" = produtos cadastrados (nas categorias filtradas); a rosca conta produtos por estado. "Produtos mais Vendidos" mostra os 6 primeiros, como no wireframe. O filtro de categoria vale para indicadores e painéis de vendas; os de estoque mostram todos os produtos.
+- Dashboard (Etapa 12): cálculos em `src/utils/dashboard.js`. Período padrão: da primeira venda até hoje. "Produtos ativos" = produtos cadastrados (nas categorias filtradas); a rosca conta produtos por estado. "Produtos mais Vendidos" mostrava os 6 primeiros, como no wireframe (desde a Etapa 19 é o Top 10). O filtro de categoria vale para indicadores e painéis de vendas; os de estoque mostram todos os produtos.
 - Datas do Filtro Temporal usam o campo de data nativo do navegador (com calendário próprio); o calendário mensal sempre aberto do wireframe não foi reproduzido.
 - Paleta dos gráficos: o validador de cores aponta `cor-grafico-4` (#C25100) e `cor-grafico-5` (#DE350B) como difíceis de distinguir (daltonismo protan e até visão normal). O gráfico compensa com o nome da categoria e o valor em cada barra, mas vale a equipe revisar essas cores.
 - Entrada e Saída (Etapa 13): `ProductBrowser` (filtros + etiquetas + grade) é usado por Catálogo, Entrada e Saída; `StockMovementModal` faz "Adicionar Quantidade" e "Diminuir Quantidade". Os modais "Novo Produto" e "Editar Produto" têm "Cancelar" à esquerda (anatomia padrão do Modal), embora o wireframe só mostre o botão principal. A imagem do produto fica em memória como data URL até existir back-end.
@@ -64,6 +64,7 @@ Pedidos novos depois que o time (Leonardo Tomas) reformulou o visual (versões 3
 - **Coluna "Mínimo" do Dashboard** vira **"Faixa de estoque"** (limites e se é da categoria ou própria); o indicador "Abaixo do mínimo" vira **"Precisam de reposição"** (Ruim + Crítico).
 - **Faixa própria por produto** é feita no modal Novo Produto / Editar Produto (Etapa 20).
 - **Banco de dados:** MySQL.
+- **Dashboard de Vendas (Etapa 19):** novo indicador "Lucro no período" (soma do lucro dos itens vendidos, respeitando o filtro de categoria); a tabela passa a ser o "Top 10 Produtos mais Vendidos" (`MAXIMO_PRODUTOS = 10`, com rolagem interna); `CheckboxGroup` com "Selecionar todas as opções" (marcada, desmarcada ou indeterminada) no filtro de categoria. Em telas de até 1023 px os painéis se empilham e a página volta a rolar (antes a tabela ficava por cima do gráfico: o grid tinha uma única linha de altura fixa e a casca estava presa em `100vh`); em telas maiores cada painel tem altura mínima de `--altura-minima-painel`.
 - **Filtros de quantidade (Etapa 18):** os campos "Quantidade mínima" e "Quantidade máxima" ficam na seção Estoque do modal de filtros (Catálogo, Entrada e Saída) e não colidem com o antigo `estoqueMinimo` do produto.
 
 ## Resultado da revisão visual (Etapa 16)

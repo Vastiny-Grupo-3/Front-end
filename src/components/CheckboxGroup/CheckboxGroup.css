@@ -1,0 +1,50 @@
+.grupo-caixas {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+/* Vários grupos no mesmo modal ficam separados por uma linha */
+.grupo-caixas + .grupo-caixas {
+  margin-top: var(--espaco-16);
+  padding-top: var(--espaco-16);
+  border-top: var(--borda-1) solid var(--cor-borda);
+}
+
+.grupo-caixas__legenda {
+  margin-bottom: var(--espaco-8);
+  padding: 0;
+  font: var(--texto-label);
+  color: var(--cor-texto);
+}
+
+/* A caixa fica à direita do texto, como nas listas do Dashboard */
+.grupo-caixas__opcao {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espaco-16);
+  min-height: var(--alvo-toque);
+  font: var(--texto-corpo);
+  color: var(--cor-texto);
+  cursor: pointer;
+}
+
+.grupo-caixas__opcao input {
+  order: 1;
+  width: var(--tamanho-icone);
+  height: var(--tamanho-icone);
+  margin: 0;
+  accent-color: var(--cor-primaria);
+  cursor: pointer;
+}
+
+/* "Selecionar todas as opções" se destaca das opções e fica separada delas */
+.grupo-caixas__opcao--todas {
+  margin-bottom: var(--espaco-4);
+  border-bottom: var(--borda-1) solid var(--cor-borda);
+  font-weight: 600;
+}
