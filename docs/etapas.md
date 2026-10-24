@@ -28,7 +28,7 @@ Para pedir uma etapa ao Claude Code, basta escrever: `Faça a Etapa N de docs/et
 | 18 | Filtros por quantidade em estoque (mínimo e máximo) | Concluída | `feat: filtros por quantidade em estoque` |
 | 19 | Dashboard de Vendas (lucro, Top 10, layout em telas médias, selecionar todas) | Concluída | `feat: dashboard de vendas` |
 | 20 | Faixas de estoque por categoria e por produto | Concluída | `feat: faixas de estoque por categoria e por produto` |
-| 21 | Dashboard de Estoque (rosca, filtros e faixa) | Pendente | `feat: dashboard de estoque` |
+| 21 | Dashboard de Estoque (rosca, filtros e faixa) | Concluída | `feat: dashboard de estoque` |
 | 22 | Modelagem de dados (MySQL) | Pendente | `docs: modelagem de dados` |
 
 ## Observações
@@ -65,6 +65,7 @@ Pedidos novos depois que o time (Leonardo Tomas) reformulou o visual (versões 3
 - **Faixa própria por produto** é feita no modal Novo Produto / Editar Produto (Etapa 20). Na Etapa 20 também já entraram a coluna "Faixa de estoque" e o indicador "Precisam de reposição" no Dashboard. Divergências da especificação (TL12, TL20, decisão 16, lacuna 2): o estado deixou de ser dado pronto e o "Estoque abaixo do mínimo" virou "Precisam de reposição".
 - **Banco de dados:** MySQL.
 - **Dashboard de Vendas (Etapa 19):** novo indicador "Lucro no período" (soma do lucro dos itens vendidos, respeitando o filtro de categoria); a tabela passa a ser o "Top 10 Produtos mais Vendidos" (`MAXIMO_PRODUTOS = 10`, com rolagem interna); `CheckboxGroup` com "Selecionar todas as opções" (marcada, desmarcada ou indeterminada) no filtro de categoria. Em telas de até 1023 px os painéis se empilham e a página volta a rolar (antes a tabela ficava por cima do gráfico: o grid tinha uma única linha de altura fixa e a casca estava presa em `100vh`); em telas maiores cada painel tem altura mínima de `--altura-minima-painel`.
+- **Dashboard de Estoque (Etapa 21):** o centro da rosca ("Total Produto") é um botão (`aoEscolherTodos`, `aria-pressed` quando todos os estados estão ativos) que volta a mostrar todos os estados na tabela; o modal "Filtrar estoque" mostra Estado primeiro e Categoria depois, ambos com "Selecionar todas as opções" (`CheckboxGroup`). A coluna "Faixa de estoque" e o indicador "Precisam de reposição" já vieram na Etapa 20.
 - **Filtros de quantidade (Etapa 18):** os campos "Quantidade mínima" e "Quantidade máxima" ficam na seção Estoque do modal de filtros (Catálogo, Entrada e Saída) e não colidem com o antigo `estoqueMinimo` do produto.
 
 ## Resultado da revisão visual (Etapa 16)

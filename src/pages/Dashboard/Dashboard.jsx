@@ -108,14 +108,23 @@ export default function Dashboard() {
     });
   }
 
-  function escolherEstado(estado) {
-    setEstadoEstoque((atual) =>
-      atual.length === 1 && atual[0] === estado ? [...ESTADOS_ESTOQUE] : [estado],
-    );
+  function mostrarTabelaEstoque() {
     document.getElementById("painel-estoque")?.closest("section")?.scrollIntoView({
       behavior: "smooth",
       block: "nearest",
     });
+  }
+
+  function escolherEstado(estado) {
+    setEstadoEstoque((atual) =>
+      atual.length === 1 && atual[0] === estado ? [...ESTADOS_ESTOQUE] : [estado],
+    );
+    mostrarTabelaEstoque();
+  }
+
+  function escolherTodosEstados() {
+    setEstadoEstoque([...ESTADOS_ESTOQUE]);
+    mostrarTabelaEstoque();
   }
 
   const estadoIndicador = carregando ? "carregando" : comErro ? "erro" : "padrao";
@@ -352,6 +361,7 @@ export default function Dashboard() {
                     legendaTabela="Níveis de Estoque Atual"
                     estadosSelecionados={todosEstados ? [] : estadoEstoque}
                     aoEscolherEstado={escolherEstado}
+                    aoEscolherTodos={escolherTodosEstados}
                   />
                 )}
               </Painel>
