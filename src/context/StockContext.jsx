@@ -56,9 +56,17 @@ export function StockProvider({ children }) {
   const [status] = useState("pronto");
   const recarregar = useCallback(() => {}, []);
 
+  // Os produtos chegam às telas com a faixa efetiva e o estado já calculados; por isso o
+  // estado se atualiza sozinho após venda, entrada, saída ou edição de faixa.
+  // `lerDados()` continua devolvendo os dados brutos (só o carrinho o usa).
+  const produtos = useMemo(
+    () => estoque.comEstoqueCalculado(dados.produtos, dados.categorias),
+    [dados.produtos, dados.categorias],
+  );
+
   const valor = useMemo(
-    () => ({ ...dados, ...acoes, lerDados, status, recarregar }),
-    [dados, acoes, lerDados, status, recarregar],
+    () => ({ ...dados, produtos, ...acoes, lerDados, status, recarregar }),
+    [dados, produtos, acoes, lerDados, status, recarregar],
   );
 
   return <StockContext.Provider value={valor}>{children}</StockContext.Provider>;

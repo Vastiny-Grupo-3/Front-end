@@ -38,7 +38,7 @@ import {
   produtosMaisVendidos,
   textoDiasFiltrados,
 } from "../../utils/dashboard.js";
-import { nomeCategoria } from "../../utils/estoque.js";
+import { nomeCategoria, textoFaixa } from "../../utils/estoque.js";
 import { formatarData, formatarMoeda, hojeIso } from "../../utils/formatadores.js";
 import "./Dashboard.css";
 
@@ -169,11 +169,21 @@ export default function Dashboard() {
     },
     { chave: "quantidade", titulo: "Estoque atual", ordenavel: true },
     {
-      chave: "estoqueMinimo",
-      titulo: "Mínimo",
+      chave: "faixa",
+      titulo: "Faixa de estoque",
       ordenavel: true,
-      valorOrdenacao: (linha) => linha.estoqueMinimo ?? -1,
-      renderizar: (linha) => linha.estoqueMinimo ?? "—",
+      valorOrdenacao: (linha) => linha.faixa?.bom ?? -1,
+      renderizar: (linha) =>
+        linha.faixa ? (
+          <span className="dashboard__faixa">
+            {textoFaixa(linha.faixa)}
+            <span className="dashboard__faixa-origem">
+              {linha.faixaOrigem === "propria" ? "(própria)" : "(da categoria)"}
+            </span>
+          </span>
+        ) : (
+          "—"
+        ),
     },
     {
       chave: "estado",
@@ -318,8 +328,8 @@ export default function Dashboard() {
                 estado={estadoIndicador}
               />
               <StatCard
-                rotulo="Abaixo do mínimo"
-                valor={estoqueResumo.abaixoDoMinimo}
+                rotulo="Precisam de reposição"
+                valor={estoqueResumo.reposicao}
                 icone={AlertTriangle}
                 estado={estadoIndicador}
               />

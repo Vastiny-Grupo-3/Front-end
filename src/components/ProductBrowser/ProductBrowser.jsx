@@ -27,7 +27,7 @@ const CARDS_ESQUELETO = 6;
  * variante: "catalogo" | "entrada" | "saida" (ProductCard)
  * propsDoCard(produto): props de ação do card (aoAdicionar, aoEditar…)
  * mostrarCarrinho / estaNoCarrinho: seção "Carrinho" do filtro (só Catálogo)
- * mostrarAbaixoMinimo: opção "Estoque abaixo do mínimo" (Entrada e Saída)
+ * mostrarReposicao: opção "Precisam de reposição" (Entrada e Saída)
  */
 export default function ProductBrowser({
   pesquisa,
@@ -35,7 +35,7 @@ export default function ProductBrowser({
   propsDoCard,
   mostrarCarrinho = false,
   estaNoCarrinho,
-  mostrarAbaixoMinimo = false,
+  mostrarReposicao = false,
 }) {
   const stock = useStock();
   const { produtos, categorias, status, recarregar } = stock;
@@ -117,7 +117,7 @@ export default function ProductBrowser({
         aoAplicar={setFiltros}
         categorias={categorias}
         mostrarCarrinho={mostrarCarrinho}
-        mostrarAbaixoMinimo={mostrarAbaixoMinimo}
+        mostrarReposicao={mostrarReposicao}
       />
     </>
   );

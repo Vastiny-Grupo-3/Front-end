@@ -136,23 +136,27 @@ export function produtosMaisVendidos({ vendas, inicio, fim, categoriaIds, limite
     .slice(0, limite);
 }
 
-/**
- * Produtos com quantidade abaixo do mínimo cadastrado e o custo parado
- * no estoque (quantidade × valor de compra).
- */
-export function resumoEstoque(produtos) {
-  const abaixoDoMinimo = produtos.filter(
-    (produto) => produto.estoqueMinimo != null && produto.quantidade < produto.estoqueMinimo,
-  ).length;
-  const custo = arredondar(
-    produtos.reduce((soma, produto) => soma + produto.quantidade * (produto.valorCompra ?? 0), 0),
-  );
-  return { abaixoDoMinimo, custo };
+/** Estados que pedem reposição: o estoque já está na faixa Ruim ou na Crítica. */
+export function precisaDeReposicao(produto) {
+  return produto.estado === "Ruim" || produto.estado === "Crítico";
 }
 
 /**
- * Níveis de estoque atual: quantos produtos em cada estado (vindo do banco).
- * Produtos sem estado informado ficam de fora.
+ * Quantos produtos precisam de reposição (Ruim ou Crítico) e o custo parado
+ * no estoque (quantidade × valor de compra).
+ * Recebe produtos com o estado já calculado (`comEstoqueCalculado`).
+ */
+export function resumoEstoque(produtos) {
+  const reposicao = produtos.filter(precisaDeReposicao).length;
+  const custo = arredondar(
+    produtos.reduce((soma, produto) => soma + produto.quantidade * (produto.valorCompra ?? 0), 0),
+  );
+  return { reposicao, custo };
+}
+
+/**
+ * Níveis de estoque atual: quantos produtos em cada estado (calculado pelas faixas).
+ * Produtos sem estado (sem faixa) ficam de fora.
  */
 export function niveisDeEstoque(produtos) {
   const contagem = ESTADOS_ESTOQUE.map((estado) => ({

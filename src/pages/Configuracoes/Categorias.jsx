@@ -8,14 +8,7 @@ import TextField from "../../components/TextField/TextField.jsx";
 import SectionCard from "./SectionCard.jsx";
 import { useStock } from "../../context/StockContext.jsx";
 import { useToast } from "../../context/ToastContext.jsx";
-import { MENSAGENS_ESTOQUE, contarProdutosDaCategoria, textoCriterios } from "../../utils/estoque.js";
-
-const CAMPOS_CRITERIO = [
-  ["bom", "Estoque mínimo para Bom"],
-  ["medio", "Estoque mínimo para Médio"],
-  ["ruim", "Estoque mínimo para Ruim"],
-  ["critico", "Estoque mínimo para Crítico"],
-];
+import { CAMPOS_FAIXA, MENSAGENS_ESTOQUE, contarProdutosDaCategoria, textoCriterios } from "../../utils/estoque.js";
 
 const CRITERIOS_VAZIOS = { bom: "", medio: "", ruim: "", critico: "" };
 
@@ -97,7 +90,7 @@ function CategoriaFormModal({ aberto, categoria, aoFechar }) {
           erro={erros.nome}
         />
         <div className="secao__duas-colunas">
-          {CAMPOS_CRITERIO.map(([chave, rotulo]) => (
+          {CAMPOS_FAIXA.map(([chave, rotulo]) => (
             <TextField
               key={chave}
               id={`categoria-${chave}`}
@@ -113,6 +106,9 @@ function CategoriaFormModal({ aberto, categoria, aoFechar }) {
             />
           ))}
         </div>
+        <p className="secao__subtitulo">
+          Produtos que usam a faixa da categoria são atualizados; produtos com faixa própria não mudam.
+        </p>
       </form>
     </Modal>
   );

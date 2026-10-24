@@ -4,24 +4,40 @@ import Button from "../../components/Button/Button.jsx";
 import TextField from "../../components/TextField/TextField.jsx";
 import SelectField from "../../components/SelectField/SelectField.jsx";
 import { useStock } from "../../context/StockContext.jsx";
-import { calcularLucro } from "../../utils/estoque.js";
+import { CAMPOS_FAIXA, calcularLucro, textoCriterios } from "../../utils/estoque.js";
 import { formatarDecimal, formatarMoeda, lerDecimal } from "../../utils/formatadores.js";
 
 const VAZIO = { imagem: "", codigo: "", nome: "", categoriaId: "", valorCompra: "", valorVenda: "", quantidade: "" };
+const FAIXA_VAZIA = { bom: "", medio: "", ruim: "", critico: "" };
 
 function paraNumero(texto) {
   const valor = lerDecimal(texto);
   return Number.isNaN(valor) ? null : valor;
 }
 
+/* Os campos da faixa trabalham com texto; a faixa guardada tem números. */
+function faixaParaTextos(faixa) {
+  if (!faixa) return FAIXA_VAZIA;
+  return {
+    bom: String(faixa.bom),
+    medio: String(faixa.medio),
+    ruim: String(faixa.ruim),
+    critico: String(faixa.critico),
+  };
+}
+
 /**
  * TL13 — "Novo Produto" (sem `produto`) ou "Editar Produto".
  * Lucro = valor de venda − valor de compra, calculado e somente leitura.
+ * Faixa de estoque: o produto usa a faixa da categoria ou tem a sua própria.
  */
 export default function ProdutoFormModal({ aberto, produto, aoFechar }) {
   const { categorias, cadastrarProduto, editarProduto } = useStock();
   const editando = Boolean(produto);
   const [valores, setValores] = useState(VAZIO);
+  const [faixaModo, setFaixaModo] = useState("categoria"); // "categoria" | "propria"
+  const [faixa, setFaixa] = useState(FAIXA_VAZIA);
+  const [errosFaixa, setErrosFaixa] = useState({});
   const [erro, setErro] = useState("");
   const [invalidos, setInvalidos] = useState([]);
   const refs = {
@@ -50,9 +66,29 @@ export default function ProdutoFormModal({ aberto, produto, aoFechar }) {
           }
         : VAZIO,
     );
+    setFaixaModo(produto?.faixaPropria ? "propria" : "categoria");
+    setFaixa(faixaParaTextos(produto?.faixaPropria));
+    setErrosFaixa({});
     setErro("");
     setInvalidos([]);
   }, [aberto, produto]);
+
+  const faixaDaCategoria =
+    categorias.find((categoria) => String(categoria.id) === valores.categoriaId)?.criterios ?? null;
+
+  function escolherModo(modo) {
+    setFaixaModo(modo);
+    // Ao definir a faixa própria pela primeira vez, parte dos valores da categoria.
+    if (modo === "propria" && Object.values(faixa).every((valor) => valor === "")) {
+      setFaixa(faixaParaTextos(faixaDaCategoria));
+    }
+    setErrosFaixa({});
+  }
+
+  function mudarFaixa(chave, valor) {
+    setFaixa((atual) => ({ ...atual, [chave]: valor }));
+    setErrosFaixa((atual) => ({ ...atual, [chave]: undefined }));
+  }
 
   function mudar(campo, filtro) {
     return (evento) => {
@@ -85,24 +121,32 @@ export default function ProdutoFormModal({ aberto, produto, aoFechar }) {
       valorCompra: compra,
       valorVenda: venda,
       quantidade,
+      faixaPropria: faixaModo === "propria" ? faixa : null,
     };
     const resultado = editando ? editarProduto(produto.id, entrada) : cadastrarProduto(entrada);
-    if (!resultado.erro) {
+    if (!resultado.erro && !resultado.erros) {
       aoFechar();
       return;
     }
 
-    const faltando = [
-      !valores.codigo.trim() && "codigo",
-      !valores.nome.trim() && "nome",
-      entrada.categoriaId == null && "categoriaId",
-      (compra == null || compra < 0) && "valorCompra",
-      (venda == null || venda < 0) && "valorVenda",
-      !editando && (quantidade == null || !Number.isInteger(quantidade)) && "quantidade",
-    ].filter(Boolean);
-    setErro(resultado.erro);
+    const faltando = resultado.erro
+      ? [
+          !valores.codigo.trim() && "codigo",
+          !valores.nome.trim() && "nome",
+          entrada.categoriaId == null && "categoriaId",
+          (compra == null || compra < 0) && "valorCompra",
+          (venda == null || venda < 0) && "valorVenda",
+          !editando && (quantidade == null || !Number.isInteger(quantidade)) && "quantidade",
+        ].filter(Boolean)
+      : [];
+    setErro(resultado.erro ?? "");
     setInvalidos(faltando);
-    refs[faltando[0]]?.current?.focus();
+    setErrosFaixa(resultado.erros ?? {});
+
+    // O foco vai para o primeiro campo com problema, na ordem em que aparecem no formulário.
+    const primeiroDaFaixa = CAMPOS_FAIXA.find(([chave]) => resultado.erros?.[chave])?.[0];
+    if (faltando[0]) refs[faltando[0]]?.current?.focus();
+    else if (primeiroDaFaixa) document.getElementById(`produto-faixa-${primeiroDaFaixa}`)?.focus();
   }
 
   const idFormulario = "formulario-produto";
@@ -222,6 +266,54 @@ export default function ProdutoFormModal({ aberto, produto, aoFechar }) {
             </output>
           </div>
         </div>
+
+        <fieldset className="produto-formulario__faixa">
+          <legend className="campo__rotulo">Faixa de estoque</legend>
+          <label className="produto-formulario__opcao">
+            <input
+              type="radio"
+              name="faixa-modo"
+              checked={faixaModo === "categoria"}
+              onChange={() => escolherModo("categoria")}
+            />
+            <span>Usar a faixa da categoria</span>
+          </label>
+          {faixaModo === "categoria" && (
+            <p className="produto-formulario__faixa-texto">
+              {faixaDaCategoria
+                ? `Faixa da categoria: ${textoCriterios(faixaDaCategoria)}`
+                : "Escolha a categoria para ver a faixa."}
+            </p>
+          )}
+          <label className="produto-formulario__opcao">
+            <input
+              type="radio"
+              name="faixa-modo"
+              checked={faixaModo === "propria"}
+              onChange={() => escolherModo("propria")}
+            />
+            <span>Definir faixa própria</span>
+          </label>
+          {faixaModo === "propria" && (
+            <div className="produto-formulario__duas-colunas">
+              {CAMPOS_FAIXA.map(([chave, rotulo]) => (
+                <TextField
+                  key={chave}
+                  id={`produto-faixa-${chave}`}
+                  rotulo={rotulo}
+                  type="number"
+                  inputMode="numeric"
+                  min="0"
+                  step="1"
+                  obrigatorio
+                  value={faixa[chave]}
+                  onChange={(evento) => mudarFaixa(chave, evento.target.value)}
+                  erro={errosFaixa[chave]}
+                />
+              ))}
+            </div>
+          )}
+        </fieldset>
       </form>
     </Modal>
   );

@@ -54,7 +54,7 @@ function Opcao({ tipo, nome, valor, marcado, aoMudar, rotulo }) {
  * "Limpar filtros" volta ao padrão; "X" e Esc fecham sem aplicar.
  *
  * mostrarCarrinho: seção "Carrinho" (só no Catálogo)
- * mostrarAbaixoMinimo: opção "Estoque abaixo do mínimo" (Entrada e Saída)
+ * mostrarReposicao: opção "Precisam de reposição" (Entrada e Saída)
  */
 export default function FilterModal({
   aberto,
@@ -63,7 +63,7 @@ export default function FilterModal({
   aoAplicar,
   categorias,
   mostrarCarrinho = false,
-  mostrarAbaixoMinimo = false,
+  mostrarReposicao = false,
 }) {
   const [rascunho, setRascunho] = useState(filtros);
   const [textoMinimo, setTextoMinimo] = useState("");
@@ -118,9 +118,9 @@ export default function FilterModal({
     aoFechar();
   }
 
-  const opcoesEstoque = mostrarAbaixoMinimo
+  const opcoesEstoque = mostrarReposicao
     ? OPCOES_ESTOQUE
-    : OPCOES_ESTOQUE.filter((opcao) => opcao.valor !== "abaixo-minimo");
+    : OPCOES_ESTOQUE.filter((opcao) => opcao.valor !== "reposicao");
 
   return (
     <Modal

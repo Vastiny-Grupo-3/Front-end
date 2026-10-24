@@ -224,6 +224,18 @@
   padding-inline: var(--espaco-8);
 }
 
+/* Coluna "Faixa de estoque": os limites e, abaixo, de onde a faixa vem. */
+.dashboard__faixa {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-4);
+}
+
+.dashboard__faixa-origem {
+  font: var(--texto-corpo-pequeno);
+  color: var(--cor-texto-secundario);
+}
+
 .dashboard__tabela .celula-produto__miniatura {
   width: var(--espaco-32);
   height: var(--espaco-32);

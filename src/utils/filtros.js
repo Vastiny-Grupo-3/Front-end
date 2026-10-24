@@ -9,7 +9,7 @@ export const OPCOES_ESTOQUE = [
   { valor: "todos", rotulo: "Todos" },
   { valor: "com", rotulo: "Com estoque" },
   { valor: "sem", rotulo: "Sem estoque" },
-  { valor: "abaixo-minimo", rotulo: "Estoque abaixo do mínimo" },
+  { valor: "reposicao", rotulo: "Precisam de reposição" },
 ];
 
 export const OPCOES_CARRINHO = [
@@ -106,10 +106,8 @@ export function filtrarProdutos(produtos, { pesquisa = "", filtros = FILTROS_PAD
 
     if (filtros.estoque === "com" && produto.quantidade <= 0) return false;
     if (filtros.estoque === "sem" && produto.quantidade > 0) return false;
-    if (
-      filtros.estoque === "abaixo-minimo" &&
-      !(produto.estoqueMinimo != null && produto.quantidade < produto.estoqueMinimo)
-    ) {
+    // "Precisam de reposição": estado Ruim ou Crítico (calculado pelas faixas do produto).
+    if (filtros.estoque === "reposicao" && !(produto.estado === "Ruim" || produto.estado === "Crítico")) {
       return false;
     }
 

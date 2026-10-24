@@ -27,7 +27,7 @@ Para pedir uma etapa ao Claude Code, basta escrever: `Faça a Etapa N de docs/et
 | 17 | Entrega | Concluída | `docs: README e build final` |
 | 18 | Filtros por quantidade em estoque (mínimo e máximo) | Concluída | `feat: filtros por quantidade em estoque` |
 | 19 | Dashboard de Vendas (lucro, Top 10, layout em telas médias, selecionar todas) | Concluída | `feat: dashboard de vendas` |
-| 20 | Faixas de estoque por categoria e por produto | Pendente | `feat: faixas de estoque por categoria e por produto` |
+| 20 | Faixas de estoque por categoria e por produto | Concluída | `feat: faixas de estoque por categoria e por produto` |
 | 21 | Dashboard de Estoque (rosca, filtros e faixa) | Pendente | `feat: dashboard de estoque` |
 | 22 | Modelagem de dados (MySQL) | Pendente | `docs: modelagem de dados` |
 
@@ -38,7 +38,7 @@ Para pedir uma etapa ao Claude Code, basta escrever: `Faça a Etapa N de docs/et
 - `PasswordField` (mostrar/ocultar senha) fica disponível para as senhas da Etapa 14.
 - Dados (Etapa 6): ficam em memória; recarregar a página volta aos mocks de `src/data/`. As regras estão em funções puras em `src/utils/carrinho.js` e `src/utils/estoque.js`; os contextos só guardam o estado.
 - Produto guarda `categoriaId` (e não o nome) para que renomear uma categoria atualize os produtos; os registros do histórico guardam o nome da época.
-- O campo `estado` do estoque não é recalculado no front: entradas, saídas e vendas não o alteram, e produto novo fica com `estado: null` até o back-end enviar o valor.
+- O `estado` do estoque é calculado no front (Etapa 20) por `comEstoqueCalculado` em `src/utils/estoque.js`: o `StockContext` entrega os produtos com `faixa`, `faixaOrigem` e `estado`, que se atualizam sozinhos após entradas, saídas, vendas e edição de faixas. Os mocks não têm mais `estado` nem `estoqueMinimo`; têm `faixaPropria` (null = usa a faixa da categoria).
 - Lucro da venda = soma de (quantidade × lucro por unidade) − descontos dos itens.
 - Carrinho (Etapa 9): o modal TL02 fica no AppShell e abre pelo ícone do carrinho de qualquer `PageHeader` com `carrinho` e por "Alterar carrinho". A pesquisa do cabeçalho da TL03 filtra os itens do carrinho pelo nome. O título do TL02 é só para leitores de tela (o wireframe não mostra título).
 - Modal: a prop `focoAoFechar` define para onde vai o foco quando o botão que abriu o modal deixa de existir (ex.: linha excluída em Clientes).
@@ -51,7 +51,7 @@ Para pedir uma etapa ao Claude Code, basta escrever: `Faça a Etapa N de docs/et
 - Configurações (Etapa 14): regras de conta em `src/utils/contas.js`. Contas e sessão ficam no sessionStorage (somem ao fechar a aba). Excluir conta remove só a conta e o acesso dela; textos da TL15/TL20 ajustados (ver CLAUDE.md). "Informe o nome de usuário." foi criado porque a especificação não define mensagem para o nome vazio.
 - Acessibilidade (Etapa 15): auditoria automática (contraste, rótulos, nomes, títulos, tabelas, ids, alvos de 44 px e reflow em 320 px) em 13 telas e 21 modais, mais revisão manual de teclado e foco. "Excluir do Carrinho" e a lixeira não pedem confirmação porque a ação é reversível (o produto pode ser adicionado de novo).
 - Entrega (Etapa 17): página temporária `/componentes` removida; `vite.config.js` silencia só o aviso `"use client"` vindo de `react-router` e `lucide-react` em `node_modules` (diretiva de Server Components, sem efeito aqui). O build sai sem avisos. README com instalação, estrutura, tokens, rotas e o que falta ligar ao back-end.
-- Os filtros (`src/utils/filtros.js`, `FilterModal`, `FilterChips`) já aceitam as opções da Entrada e da Saída (`mostrarAbaixoMinimo`).
+- Os filtros (`src/utils/filtros.js`, `FilterModal`, `FilterChips`) já aceitam as opções da Entrada e da Saída (`mostrarReposicao`: "Precisam de reposição" = estado Ruim ou Crítico).
 - `status` do StockContext é sempre "pronto" com os mocks; os estados carregando e erro das telas aparecem quando o back-end alimentar esse valor.
 
 
@@ -62,7 +62,7 @@ Pedidos novos depois que o time (Leonardo Tomas) reformulou o visual (versões 3
 - **Estado calculado pelas faixas:** o estado de cada produto (Crítico, Ruim, Médio, Bom) sai da quantidade e da faixa efetiva (a do produto, se ele tiver faixa própria; senão a da categoria). No banco não é coluna, é consulta. Isso substitui a regra antiga "o estado vem pronto do banco".
 - **Semântica das faixas:** "Estoque mínimo para Bom = 8" quer dizer quantidade ≥ 8 é Bom; ≥ Médio é Médio; ≥ Ruim é Ruim; abaixo disso é Crítico. A ordem `bom ≥ médio ≥ ruim ≥ crítico ≥ 0` é validada.
 - **Coluna "Mínimo" do Dashboard** vira **"Faixa de estoque"** (limites e se é da categoria ou própria); o indicador "Abaixo do mínimo" vira **"Precisam de reposição"** (Ruim + Crítico).
-- **Faixa própria por produto** é feita no modal Novo Produto / Editar Produto (Etapa 20).
+- **Faixa própria por produto** é feita no modal Novo Produto / Editar Produto (Etapa 20). Na Etapa 20 também já entraram a coluna "Faixa de estoque" e o indicador "Precisam de reposição" no Dashboard. Divergências da especificação (TL12, TL20, decisão 16, lacuna 2): o estado deixou de ser dado pronto e o "Estoque abaixo do mínimo" virou "Precisam de reposição".
 - **Banco de dados:** MySQL.
 - **Dashboard de Vendas (Etapa 19):** novo indicador "Lucro no período" (soma do lucro dos itens vendidos, respeitando o filtro de categoria); a tabela passa a ser o "Top 10 Produtos mais Vendidos" (`MAXIMO_PRODUTOS = 10`, com rolagem interna); `CheckboxGroup` com "Selecionar todas as opções" (marcada, desmarcada ou indeterminada) no filtro de categoria. Em telas de até 1023 px os painéis se empilham e a página volta a rolar (antes a tabela ficava por cima do gráfico: o grid tinha uma única linha de altura fixa e a casca estava presa em `100vh`); em telas maiores cada painel tem altura mínima de `--altura-minima-painel`.
 - **Filtros de quantidade (Etapa 18):** os campos "Quantidade mínima" e "Quantidade máxima" ficam na seção Estoque do modal de filtros (Catálogo, Entrada e Saída) e não colidem com o antigo `estoqueMinimo` do produto.

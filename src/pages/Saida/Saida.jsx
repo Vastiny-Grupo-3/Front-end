@@ -23,7 +23,7 @@ export default function Saida() {
       <ProductBrowser
         pesquisa={pesquisa}
         variante="saida"
-        mostrarAbaixoMinimo
+        mostrarReposicao
         propsDoCard={(item) => ({ aoDarBaixa: () => setProduto(item) })}
       />
 

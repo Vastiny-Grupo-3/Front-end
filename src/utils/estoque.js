@@ -7,7 +7,8 @@ import { calcularLucroUnitario } from "./carrinho.js";
  *   { dados, erro?, erros?, registro? }
  * Quando há erro, `dados` volta sem alteração.
  *
- * O campo `estado` do produto vem pronto do banco: estas funções não o calculam.
+ * O `estado` do produto (Crítico, Ruim, Médio, Bom) não é guardado: é calculado
+ * pela quantidade e pela faixa efetiva (ver "Faixas de estoque", no fim do arquivo).
  */
 
 export const MENSAGENS_ESTOQUE = {
@@ -45,7 +46,13 @@ function numeroValido(valor) {
 
 /* ---------- Produtos ---------- */
 
-function camposProduto(entrada, exigirQuantidade) {
+/**
+ * Valida e normaliza os campos do produto. Retorna { campos } e, quando algo não passa:
+ *   erro  → algum campo obrigatório está vazio ou inválido;
+ *   erros → a faixa própria é inválida (mensagens por nível: bom, medio, ruim, critico).
+ * `faixaPropria` vazia (null) significa "usar a faixa da categoria".
+ */
+function montarProduto(entrada, exigirQuantidade) {
   const campos = {
     codigo: texto(entrada.codigo),
     nome: texto(entrada.nome),
@@ -53,6 +60,7 @@ function camposProduto(entrada, exigirQuantidade) {
     imagem: entrada.imagem ?? "",
     valorCompra: entrada.valorCompra,
     valorVenda: entrada.valorVenda,
+    faixaPropria: null,
   };
   const completo =
     campos.codigo &&
@@ -61,7 +69,15 @@ function camposProduto(entrada, exigirQuantidade) {
     numeroValido(campos.valorCompra) &&
     numeroValido(campos.valorVenda) &&
     (!exigirQuantidade || (Number.isInteger(entrada.quantidade) && entrada.quantidade >= 0));
-  return completo ? campos : null;
+
+  const resultado = { campos };
+  if (!completo) resultado.erro = MENSAGENS_ESTOQUE.produtoIncompleto;
+  if (entrada.faixaPropria) {
+    const faixa = validarCriterios(entrada.faixaPropria);
+    if (faixa.erros) resultado.erros = faixa.erros;
+    else campos.faixaPropria = faixa.valores;
+  }
+  return resultado;
 }
 
 /** Lucro = valor de venda − valor de compra. */
@@ -71,15 +87,13 @@ export function calcularLucro(valorVenda, valorCompra) {
 
 /** Cadastra produto e cria o registro em "Cadastro de Produtos". */
 export function cadastrarProduto(dados, entrada, data) {
-  const campos = camposProduto(entrada, true);
-  if (!campos) return { dados, erro: MENSAGENS_ESTOQUE.produtoIncompleto };
+  const { campos, erro, erros } = montarProduto(entrada, true);
+  if (erro || erros) return { dados, erro, erros };
 
   const produto = {
     id: proximoId(dados.produtos),
     ...campos,
     quantidade: entrada.quantidade,
-    estoqueMinimo: entrada.estoqueMinimo ?? null,
-    estado: entrada.estado ?? null,
   };
   const registro = {
     id: proximoId(dados.cadastrosProdutos),
@@ -103,8 +117,8 @@ export function cadastrarProduto(dados, entrada, data) {
 
 /** Edita os dados do produto (a quantidade muda só por Entrada, Saída ou venda). */
 export function editarProduto(dados, produtoId, entrada) {
-  const campos = camposProduto(entrada, false);
-  if (!campos) return { dados, erro: MENSAGENS_ESTOQUE.produtoIncompleto };
+  const { campos, erro, erros } = montarProduto(entrada, false);
+  if (erro || erros) return { dados, erro, erros };
   return {
     dados: {
       ...dados,
@@ -330,14 +344,21 @@ function validarNomeCategoria(dados, nome, idIgnorado) {
   return repetido ? MENSAGENS_ESTOQUE.categoriaRepetida : null;
 }
 
-const NIVEIS_ESTOQUE = [
+export const NIVEIS_ESTOQUE = [
   ["bom", "Bom"],
   ["medio", "Médio"],
   ["ruim", "Ruim"],
   ["critico", "Crítico"],
 ];
 
-function validarCriterios(entrada) {
+/** Campos da faixa de estoque, na ordem do formulário: [chave, rótulo]. */
+export const CAMPOS_FAIXA = NIVEIS_ESTOQUE.map(([chave, nivel]) => [chave, `Estoque mínimo para ${nivel}`]);
+
+/**
+ * Valida os 4 limites (inteiros ≥ 0, em ordem decrescente). Aceita textos ou números.
+ * Retorna { valores } ou { erros } com a mensagem de cada nível.
+ */
+export function validarCriterios(entrada) {
   const erros = {};
   const valores = {};
   for (const [chave, rotulo] of NIVEIS_ESTOQUE) {
@@ -395,4 +416,49 @@ export function excluirCategoria(dados, categoriaId) {
   return {
     dados: { ...dados, categorias: dados.categorias.filter((categoria) => categoria.id !== categoriaId) },
   };
+}
+
+/* ---------- Faixas de estoque ---------- */
+
+/*
+ * Cada categoria tem uma faixa (`criterios`): o estoque mínimo para cada nível.
+ * O produto herda a faixa da categoria ou tem a sua (`faixaPropria`). Um item de
+ * giro alto precisa de mais estoque que um de giro baixo, por exemplo.
+ *
+ * Uma faixa { bom: 8, medio: 5, ruim: 2, critico: 0 } quer dizer: quantidade ≥ 8 é
+ * Bom; de 5 a 7, Médio; de 2 a 4, Ruim; abaixo de 2, Crítico.
+ */
+
+/**
+ * Faixa que vale para o produto: a própria, se tiver uma; senão a da categoria.
+ * Retorna { faixa, origem: "propria" | "categoria" }, ou { faixa: null, origem: null }.
+ */
+export function faixaEfetiva(produto, categorias) {
+  if (produto.faixaPropria) return { faixa: produto.faixaPropria, origem: "propria" };
+  const categoria = categorias.find((item) => item.id === produto.categoriaId);
+  if (categoria?.criterios) return { faixa: categoria.criterios, origem: "categoria" };
+  return { faixa: null, origem: null };
+}
+
+/** Estado do estoque pela quantidade e pela faixa; null quando não há faixa. */
+export function calcularEstado(quantidade, faixa) {
+  if (!faixa) return null;
+  if (quantidade >= faixa.bom) return "Bom";
+  if (quantidade >= faixa.medio) return "Médio";
+  if (quantidade >= faixa.ruim) return "Ruim";
+  return "Crítico";
+}
+
+/** Acrescenta a cada produto a faixa efetiva (`faixa`, `faixaOrigem`) e o `estado` calculado. */
+export function comEstoqueCalculado(produtos, categorias) {
+  return produtos.map((produto) => {
+    const { faixa, origem } = faixaEfetiva(produto, categorias);
+    return { ...produto, faixa, faixaOrigem: origem, estado: calcularEstado(produto.quantidade, faixa) };
+  });
+}
+
+/** "Bom ≥ 8 · Médio ≥ 5 · Ruim ≥ 2" (o Crítico é tudo o que fica abaixo do Ruim). */
+export function textoFaixa(faixa) {
+  if (!faixa) return "—";
+  return `Bom ≥ ${faixa.bom} · Médio ≥ ${faixa.medio} · Ruim ≥ ${faixa.ruim}`;
 }

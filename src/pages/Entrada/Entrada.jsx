@@ -33,7 +33,7 @@ export default function Entrada() {
       <ProductBrowser
         pesquisa={pesquisa}
         variante="entrada"
-        mostrarAbaixoMinimo
+        mostrarReposicao
         propsDoCard={(produto) => ({
           aoEditar: () => setModal({ tipo: "editar", produto }),
           aoAdicionarQtd: () => setModal({ tipo: "adicionar", produto }),
