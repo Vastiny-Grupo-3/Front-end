@@ -13,6 +13,7 @@ import "./Clientes.css";
 
 const VAZIO = "Nenhum cliente cadastrado. Use “Cadastrar Novo Cliente” para começar.";
 const VAZIO_PESQUISA = "Nenhum cliente encontrado. Tente buscar por outro nome.";
+const ERRO_EXCLUIR = "Não conseguimos excluir. Verifique sua conexão e tente novamente.";
 
 function normalizar(texto) {
   return String(texto ?? "")
@@ -25,20 +26,32 @@ function normalizar(texto) {
 /** TL04 Clientes: lista com Detalhes, Editar e Excluir (modais da TL05). */
 export default function Clientes() {
   const stock = useStock();
-  const { clientes, cadastrosClientes, status, recarregar, excluirCliente } = stock;
+  const { clientes, cadastrosClientes, statusClientes, recarregarClientes, excluirCliente } = stock;
   // modal: { tipo: "cadastrar" | "editar" | "detalhes" | "excluir", cliente? } | null
   const [modal, setModal] = useState(null);
+  const [erroExclusao, setErroExclusao] = useState("");
+  const [excluindo, setExcluindo] = useState(false);
   const [pesquisa, setPesquisa] = useState("");
   // Depois de excluir, o botão que abriu o modal some: o foco vai para a lista.
   const listaRef = useRef(null);
 
   function fechar() {
     setModal(null);
+    setErroExclusao("");
   }
 
-  function confirmarExclusao() {
-    excluirCliente(modal.cliente.id);
-    setModal(null);
+  async function confirmarExclusao() {
+    setExcluindo(true);
+    setErroExclusao("");
+    try {
+      await excluirCliente(modal.cliente.id);
+    } catch {
+      setExcluindo(false);
+      setErroExclusao(ERRO_EXCLUIR);
+      return;
+    }
+    setExcluindo(false);
+    fechar();
   }
 
   const termo = normalizar(pesquisa);
@@ -47,6 +60,7 @@ export default function Clientes() {
       ...cliente,
       compras: contarComprasDoCliente(stock, cliente.id),
       dataCadastro:
+        cliente.dataCadastro ??
         cadastrosClientes.find((cadastro) => cadastro.clienteId === cliente.id)?.dataCadastro ??
         cadastrosClientes.find((cadastro) => cadastro.clienteId === cliente.id)?.data ??
         null,
@@ -148,8 +162,8 @@ export default function Clientes() {
           legenda="Todos os clientes"
           colunas={colunas}
           linhas={linhas}
-          estado={status === "carregando" || status === "erro" ? status : "padrao"}
-          aoTentarNovamente={recarregar}
+          estado={statusClientes === "carregando" || statusClientes === "erro" ? statusClientes : "padrao"}
+          aoTentarNovamente={recarregarClientes}
           mensagemVazio={termo ? VAZIO_PESQUISA : VAZIO}
           ordemInicial={{ chave: "nome", direcao: "asc" }}
         />
@@ -173,6 +187,8 @@ export default function Clientes() {
         focoAoFechar={listaRef}
         titulo={`Tem certeza que deseja excluir o cliente '${modal?.cliente?.nome ?? ""}'?`}
         destrutivo
+        carregando={excluindo}
+        erro={erroExclusao}
       />
     </>
   );

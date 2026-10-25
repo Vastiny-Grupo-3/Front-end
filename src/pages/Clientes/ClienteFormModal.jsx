@@ -17,6 +17,7 @@ export default function ClienteFormModal({ aberto, cliente, aoFechar }) {
   const [valores, setValores] = useState(VAZIO);
   const [erros, setErros] = useState({});
   const [erroGeral, setErroGeral] = useState("");
+  const [enviando, setEnviando] = useState(false);
   const nomeRef = useRef(null);
   const telefoneRef = useRef(null);
   const editando = Boolean(cliente);
@@ -39,15 +40,20 @@ export default function ClienteFormModal({ aberto, cliente, aoFechar }) {
     };
   }
 
-  function confirmar(evento) {
+  async function confirmar(evento) {
     evento.preventDefault();
+    if (enviando) return;
+    setEnviando(true);
+    setErroGeral("");
     let resultado;
     try {
-      resultado = editando ? editarCliente(cliente.id, valores) : cadastrarCliente(valores);
+      resultado = await (editando ? editarCliente(cliente.id, valores) : cadastrarCliente(valores));
     } catch {
+      setEnviando(false);
       setErroGeral(ERRO_SALVAR);
       return;
     }
+    setEnviando(false);
     if (resultado.erros) {
       setErros(resultado.erros);
       (resultado.erros.nome ? nomeRef : telefoneRef).current?.focus();
@@ -69,7 +75,7 @@ export default function ClienteFormModal({ aberto, cliente, aoFechar }) {
           <Button variante="secundario" onClick={aoFechar}>
             Cancelar
           </Button>
-          <Button type="submit" form={idFormulario}>
+          <Button type="submit" form={idFormulario} carregando={enviando}>
             Confirmar
           </Button>
         </>

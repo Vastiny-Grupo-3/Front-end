@@ -215,14 +215,14 @@ export function registrarVenda(dados, venda) {
 
 /* ---------- Clientes ---------- */
 
-function validarCliente(entrada) {
+export function validarCliente(entrada) {
   const erros = {};
   if (!texto(entrada.nome)) erros.nome = MENSAGENS_ESTOQUE.nomeCliente;
   if (!texto(entrada.telefone)) erros.telefone = MENSAGENS_ESTOQUE.telefoneCliente;
   return erros;
 }
 
-function camposCliente(entrada) {
+export function camposCliente(entrada) {
   return {
     nome: texto(entrada.nome),
     telefone: texto(entrada.telefone),
@@ -235,7 +235,11 @@ export function cadastrarCliente(dados, entrada, data) {
   const erros = validarCliente(entrada);
   if (Object.keys(erros).length > 0) return { dados, erros };
 
-  const cliente = { id: proximoId(dados.clientes), ...camposCliente(entrada) };
+  return incluirCliente(dados, { id: proximoId(dados.clientes), ...camposCliente(entrada) }, data);
+}
+
+/** Inclui um cliente que já tem id (por exemplo, o que a API devolveu) e cria o registro de cadastro. */
+export function incluirCliente(dados, cliente, data) {
   const registro = {
     id: proximoId(dados.cadastrosClientes),
     clienteId: cliente.id,
