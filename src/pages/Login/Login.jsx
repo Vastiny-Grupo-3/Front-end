@@ -24,7 +24,7 @@ function gerarCodigo() {
 
 /** TL18 Login: cartão central com e-mail, senha e "Entrar". Sucesso leva ao Catálogo. */
 export default function Login() {
-  const { entrar, localizarConta, redefinirSenha } = useAuth();
+  const { entrar, localizarConta, redefinirSenha, recuperacaoDisponivel } = useAuth();
   const navegar = useNavigate();
   const [etapa, setEtapa] = useState("entrar");
   const [email, setEmail] = useState("");
@@ -256,9 +256,11 @@ export default function Login() {
               erro={erros.senha}
               disabled={entrando}
             />
-            <button type="button" className="login__esqueci" onClick={abrirRecuperacao}>
-              Esqueceu sua senha?
-            </button>
+            {recuperacaoDisponivel && (
+              <button type="button" className="login__esqueci" onClick={abrirRecuperacao}>
+                Esqueceu sua senha?
+              </button>
+            )}
             {erroGeral && (
               <p className="login__erro" role="alert">
                 <AlertCircle className="login__icone-erro" aria-hidden="true" focusable="false" />

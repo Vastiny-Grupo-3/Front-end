@@ -70,7 +70,7 @@ Credenciais inválidas: `401`.
 | --- | --- | --- |
 | `GET /usuarios/me` | | `200 { id, nome, email }` |
 | `PUT /usuarios/me` | `{ nome, email, senhaAtual?, novaSenha? }` | `200 { id, nome, email }`. `novaSenha` exige `senhaAtual` correta (`400 { erros: { senhaAtual } }`) |
-| `DELETE /usuarios/me` | `{ senhaAtual }` | `204`. Remove só a conta; estoque, clientes e vendas ficam (as vendas e movimentações da conta ficam com a conta em branco) |
+| `DELETE /usuarios/me` | `{ senhaAtual }` | `204`. Senha atual errada: `400 { erros: { senhaAtual } }` (não use `401`, que o site trata como sessão vencida). Remove só a conta; estoque, clientes e vendas ficam (as vendas e movimentações da conta ficam com a conta em branco) |
 | `POST /usuarios` | `{ nome, email, senha }` | `201 { id, nome, email }` |
 
 Regra de senha (a mesma do site): obrigatória, mínimo de 8 caracteres, com pelo menos uma letra e um número. A confirmação é conferida só no site.

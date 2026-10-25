@@ -1,117 +1,75 @@
-import { createContext, useCallback, useContext, useMemo, useRef, useState } from "react";
-import { contas as contasIniciais } from "../data/contas.js";
-import * as regras from "../utils/contas.js";
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { modoApi } from "../services/config.js";
+import { aoExpirarSessao } from "../services/http.js";
+import { servicoApi } from "../services/contas/api.js";
+import { criarServicoMock } from "../services/contas/mock.js";
 
 /*
- * Autenticação com as contas mockadas de src/data/contas.js até existir back-end.
- * Contas e sessão ficam no sessionStorage para sobreviver ao recarregamento da página.
+ * Autenticação. Com VITE_API_URL a conta e a sessão (JWT) vêm da API; sem ela usa
+ * as contas mockadas de src/data/contas.js. As duas formas (src/services/contas/)
+ * têm as mesmas operações assíncronas; este contexto só guarda o usuário da sessão.
  * Excluir uma conta remove só aquela conta (e o acesso dela); os dados da empresa ficam.
  */
 
-const CHAVE_SESSAO = "vastiny:sessao";
-const CHAVE_CONTAS = "vastiny:contas";
-
 const AuthContext = createContext(null);
 
-function ler(chave, padrao) {
-  try {
-    const salvo = sessionStorage.getItem(chave);
-    return salvo ? JSON.parse(salvo) : padrao;
-  } catch {
-    return padrao;
-  }
-}
-
-function gravar(chave, valor) {
-  try {
-    if (valor == null) sessionStorage.removeItem(chave);
-    else sessionStorage.setItem(chave, JSON.stringify(valor));
-  } catch {
-    // Sem armazenamento disponível: os dados valem só enquanto a página estiver aberta.
-  }
-}
+const SEM_RECUPERACAO = { erro: "A recuperação de senha não está disponível." };
 
 export function AuthProvider({ children }) {
-  const [contas, setContas] = useState(() => ler(CHAVE_CONTAS, contasIniciais));
-  const [idSessao, setIdSessao] = useState(() => ler(CHAVE_SESSAO, null)?.id ?? null);
-  const contasRef = useRef(contas);
+  const [servico] = useState(() => (modoApi ? servicoApi : criarServicoMock()));
+  const [usuario, setUsuario] = useState(() => servico.usuarioAtual());
 
-  const guardarContas = useCallback((novas) => {
-    contasRef.current = novas;
-    gravar(CHAVE_CONTAS, novas);
-    setContas(novas);
-  }, []);
+  // A API recusou o token (vencido ou inválido): encerra a sessão e o acesso volta ao login.
+  useEffect(() => aoExpirarSessao(() => setUsuario(null)), []);
 
-  const abrirSessao = useCallback((id) => {
-    gravar(CHAVE_SESSAO, id == null ? null : { id });
-    setIdSessao(id);
-  }, []);
-
-  const conta = contas.find((item) => item.id === idSessao) ?? null;
-  const usuario = useMemo(
-    () => (conta ? { id: conta.id, nome: conta.nome, email: conta.email } : null),
-    [conta],
-  );
-
-  /**
-   * Autentica o usuário. Assíncrona para já ter o formato do back-end.
-   * Resolve com { ok: true } ou { ok: false, motivo: "credenciais" | "conexao" }.
-   */
-  const localizarConta = useCallback((email) => regras.localizarConta(contasRef.current, email), []);
-
-  const redefinirSenha = useCallback(
-    (email, senha, confirmacao) => {
-      const resultado = regras.redefinirSenha(contasRef.current, { email, senha, confirmacao });
-      if (!resultado.erros) guardarContas(resultado.contas);
-      return { erros: resultado.erros };
-    },
-    [guardarContas],
-  );
-
+  /** Resolve com { ok: true } ou { ok: false, motivo: "credenciais" | "conexao" }. */
   const entrar = useCallback(
     async (email, senha) => {
-      const encontrada = regras.autenticar(contasRef.current, email, senha);
-      if (!encontrada) return { ok: false, motivo: "credenciais" };
-      abrirSessao(encontrada.id);
-      return { ok: true };
+      const resultado = await servico.entrar(email, senha);
+      if (resultado.ok) setUsuario(resultado.usuario);
+      return { ok: resultado.ok, motivo: resultado.motivo };
     },
-    [abrirSessao],
+    [servico],
   );
 
-  const sair = useCallback(() => abrirSessao(null), [abrirSessao]);
+  const sair = useCallback(() => {
+    servico.sair();
+    setUsuario(null);
+  }, [servico]);
 
-  const cadastrarConta = useCallback(
-    (dados) => {
-      const resultado = regras.cadastrarConta(contasRef.current, dados);
-      if (!resultado.erros) guardarContas(resultado.contas);
-      return { erros: resultado.erros, conta: resultado.conta };
-    },
-    [guardarContas],
-  );
+  /** Cada operação resolve com { erros } (por campo), { erroGeral } ou sem nada, quando deu certo. */
+  const cadastrarConta = useCallback((dados) => servico.cadastrarConta(dados), [servico]);
 
   const atualizarConta = useCallback(
-    (dados) => {
-      const resultado = regras.atualizarConta(contasRef.current, idSessao, dados);
-      if (!resultado.erros) guardarContas(resultado.contas);
-      return { erros: resultado.erros };
+    async (dados) => {
+      const resultado = await servico.atualizarConta(dados);
+      if (resultado.usuario) setUsuario(resultado.usuario);
+      return { erros: resultado.erros, erroGeral: resultado.erroGeral };
     },
-    [guardarContas, idSessao],
+    [servico],
   );
 
   const excluirConta = useCallback(
-    (senhaAtual) => {
-      const resultado = regras.excluirConta(contasRef.current, idSessao, senhaAtual);
-      if (resultado.erro) return { erro: resultado.erro };
-      guardarContas(resultado.contas);
-      abrirSessao(null);
-      return {};
+    async (senhaAtual) => {
+      const resultado = await servico.excluirConta(senhaAtual);
+      if (!resultado.erro) setUsuario(null);
+      return resultado;
     },
-    [guardarContas, abrirSessao, idSessao],
+    [servico],
+  );
+
+  const localizarConta = useCallback((email) => servico.localizarConta?.(email) ?? SEM_RECUPERACAO, [servico]);
+
+  const redefinirSenha = useCallback(
+    (email, senha, confirmacao) =>
+      servico.redefinirSenha?.(email, senha, confirmacao) ?? { erros: { email: SEM_RECUPERACAO.erro } },
+    [servico],
   );
 
   const valor = useMemo(
     () => ({
       usuario,
+      recuperacaoDisponivel: servico.recuperacaoDisponivel,
       entrar,
       sair,
       cadastrarConta,
@@ -120,7 +78,7 @@ export function AuthProvider({ children }) {
       localizarConta,
       redefinirSenha,
     }),
-    [usuario, entrar, sair, cadastrarConta, atualizarConta, excluirConta, localizarConta, redefinirSenha],
+    [usuario, servico, entrar, sair, cadastrarConta, atualizarConta, excluirConta, localizarConta, redefinirSenha],
   );
 
   return <AuthContext.Provider value={valor}>{children}</AuthContext.Provider>;

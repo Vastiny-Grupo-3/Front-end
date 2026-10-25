@@ -18,12 +18,15 @@ export default function CadastroContaModal({ aberto, aoFechar }) {
   const { mostrarToast } = useToast();
   const [valores, setValores] = useState(VAZIO);
   const [erros, setErros] = useState({});
+  const [erroGeral, setErroGeral] = useState("");
+  const [enviando, setEnviando] = useState(false);
   const refs = { nome: useRef(null), email: useRef(null), senha: useRef(null), confirmacao: useRef(null) };
 
   useEffect(() => {
     if (!aberto) return;
     setValores(VAZIO);
     setErros({});
+    setErroGeral("");
   }, [aberto]);
 
   function mudar(campo) {
@@ -33,12 +36,17 @@ export default function CadastroContaModal({ aberto, aoFechar }) {
     };
   }
 
-  function cadastrar(evento) {
+  async function cadastrar(evento) {
     evento.preventDefault();
-    const resultado = cadastrarConta(valores);
-    if (resultado.erros) {
-      setErros(resultado.erros);
-      refs[ORDEM_CAMPOS.find((campo) => resultado.erros[campo])]?.current?.focus();
+    if (enviando) return;
+    setEnviando(true);
+    setErroGeral("");
+    const resultado = await cadastrarConta(valores);
+    setEnviando(false);
+    if (resultado.erros || resultado.erroGeral) {
+      setErros(resultado.erros ?? {});
+      setErroGeral(resultado.erroGeral ?? "");
+      refs[ORDEM_CAMPOS.find((campo) => resultado.erros?.[campo])]?.current?.focus();
       return;
     }
     aoFechar();
@@ -53,6 +61,7 @@ export default function CadastroContaModal({ aberto, aoFechar }) {
       aoFechar={aoFechar}
       titulo="Cadastrar nova conta"
       subtitulo="Preencha os campos abaixo para cadastrar um novo usuário."
+      erro={erroGeral}
       tamanho="largo"
       mostrarFechar
       rodapeADireita
@@ -61,7 +70,7 @@ export default function CadastroContaModal({ aberto, aoFechar }) {
           <Button variante="secundario" onClick={aoFechar}>
             Cancelar
           </Button>
-          <Button type="submit" form={idFormulario} className="nova-conta__cadastrar">
+          <Button type="submit" form={idFormulario} className="nova-conta__cadastrar" carregando={enviando}>
             Cadastrar conta
           </Button>
         </>

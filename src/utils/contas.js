@@ -15,6 +15,7 @@ export const MENSAGENS_CONTA = {
   senhasDiferentes: "As senhas não são iguais. Digite novamente.",
   senhaAtual: "A senha atual não confere.",
   erroSalvar: "Não conseguimos salvar. Verifique os campos destacados e tente novamente.",
+  erroConexao: "Não conseguimos falar com o servidor. Verifique sua conexão e tente novamente.",
   emailObrigatorio: "Informe seu e-mail.",
   emailNaoEncontrado: "Não encontramos uma conta com esse e-mail.",
 };

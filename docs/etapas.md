@@ -32,7 +32,7 @@ Para pedir uma etapa ao Claude Code, basta escrever: `Faça a Etapa N de docs/et
 | 22 | Modelagem de dados (MySQL) | Concluída | `docs: modelagem de dados` |
 | 23 | Revisão da modelagem de dados | Concluída | `docs: revisão da modelagem de dados` |
 | 24 | Contrato da API e plano do back-end | Concluída | `docs: contrato da API e plano do back-end` |
-| 25 | Login com JWT e contas pela API | Pendente | `feat: login com JWT e contas pela API` |
+| 25 | Login com JWT e contas pela API | Concluída | `feat: login com JWT e contas pela API` |
 | 26 | Clientes pela API | Pendente | `feat: clientes pela API` |
 
 ## Observações
@@ -72,6 +72,7 @@ Pedidos novos depois que o time (Leonardo Tomas) reformulou o visual (versões 3
 - **Dashboard de Estoque (Etapa 21):** o centro da rosca ("Total Produto") é um botão (`aoEscolherTodos`, `aria-pressed` quando todos os estados estão ativos) que volta a mostrar todos os estados na tabela; o modal "Filtrar estoque" mostra Estado primeiro e Categoria depois, ambos com "Selecionar todas as opções" (`CheckboxGroup`). A coluna "Faixa de estoque" e o indicador "Precisam de reposição" já vieram na Etapa 20.
 - **Modelagem de dados (Etapa 22):** `docs/modelagem-dados.md` (diagrama, tabelas, integridade, mapeamento front → banco, consultas do Dashboard e pontos em aberto) e `docs/banco/schema.sql` (MySQL 8.0.16+). O script não foi executado em um MySQL neste ambiente; rodar em um servidor antes de adotar.
 - **Ligação com o back-end (Etapas 24 a 26):** o back é feito pelo restante do time, sem IA (exigência da faculdade); por isso o front não altera o repositório `Back-end`, só documenta o que ele precisa em `docs/contrato-api.md` (validação do código atual, plano em passos, contrato do login com JWT, contas e clientes, CORS e roteiro `curl`). O site tem dois modos: sem `VITE_API_URL` usa os mocks; com ela, login, contas e clientes usam a API (JWT no `sessionStorage`, enviado como `Authorization: Bearer`). Produtos, categorias, vendas, estoque e histórico seguem nos mocks. "Esqueceu sua senha?" só existe no modo mock.
+- **Login e contas pela API (Etapa 25):** `src/services/` tem `config.js` (`modoApi`), `sessao.js` (token e usuário no `sessionStorage`, descarta token vencido lendo o `exp`), `http.js` (`fetch` com `Authorization: Bearer`; `401` e `403` encerram a sessão; `ErroApi` com `tipo` e `erros` por campo) e `contas/mock.js` e `contas/api.js` (mesmas operações assíncronas). O `AuthContext` só guarda o usuário e escolhe o serviço. Mensagem nova: "Não conseguimos falar com o servidor. Verifique sua conexão e tente novamente." (a especificação não traz mensagem de falha de conexão ao salvar).
 - **Revisão da modelagem (Etapa 23):** `categoria` ganhou `data_cadastro` e `data_alteracao` (só no banco); `data_cadastro` do cliente saiu de `cliente_versao` e ficou em `cliente`; o carrinho passou a ser uma `venda` com `status` ABERTA/FINALIZADA, com preço e lucro unitário gravados ao entrar no carrinho; os totais de venda e de item deixaram de ser colunas e saem das views `vw_venda_resumo` e `vw_item_venda`; o Mermaid agora lista todas as FKs e as quatro faixas do produto.
 - **Filtros de quantidade (Etapa 18):** os campos "Quantidade mínima" e "Quantidade máxima" ficam na seção Estoque do modal de filtros (Catálogo, Entrada e Saída) e não colidem com o antigo `estoqueMinimo` do produto.
 

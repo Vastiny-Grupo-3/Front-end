@@ -16,6 +16,8 @@ export default function DadosConta({ aoCadastrarConta }) {
   const { mostrarToast } = useToast();
   const [valores, setValores] = useState({ nome: "", email: "", senhaAtual: "", novaSenha: "" });
   const [erros, setErros] = useState({});
+  const [erroGeral, setErroGeral] = useState("");
+  const [salvando, setSalvando] = useState(false);
   const refs = { nome: useRef(null), email: useRef(null), senhaAtual: useRef(null), novaSenha: useRef(null) };
 
   useEffect(() => {
@@ -29,12 +31,17 @@ export default function DadosConta({ aoCadastrarConta }) {
     };
   }
 
-  function salvar(evento) {
+  async function salvar(evento) {
     evento.preventDefault();
-    const resultado = atualizarConta(valores);
-    if (resultado.erros) {
-      setErros(resultado.erros);
-      refs[ORDEM_CAMPOS.find((campo) => resultado.erros[campo])]?.current?.focus();
+    if (salvando) return;
+    setSalvando(true);
+    setErroGeral("");
+    const resultado = await atualizarConta(valores);
+    setSalvando(false);
+    if (resultado.erros || resultado.erroGeral) {
+      setErros(resultado.erros ?? {});
+      setErroGeral(resultado.erroGeral ?? "");
+      refs[ORDEM_CAMPOS.find((campo) => resultado.erros?.[campo])]?.current?.focus();
       return;
     }
     setErros({});
@@ -56,10 +63,10 @@ export default function DadosConta({ aoCadastrarConta }) {
       }
     >
       <form className="secao__formulario" onSubmit={salvar} noValidate>
-        {temErros && (
+        {(temErros || erroGeral) && (
           <p className="secao__erro" role="alert">
             <AlertCircle className="secao__icone-erro" aria-hidden="true" focusable="false" />
-            {MENSAGENS_CONTA.erroSalvar}
+            {erroGeral || MENSAGENS_CONTA.erroSalvar}
           </p>
         )}
         <div className="secao__duas-colunas">
@@ -101,7 +108,9 @@ export default function DadosConta({ aoCadastrarConta }) {
           />
         </div>
         <div className="secao__rodape">
-          <Button type="submit">Salvar alterações</Button>
+          <Button type="submit" carregando={salvando}>
+            Salvar alterações
+          </Button>
         </div>
       </form>
     </SectionCard>
