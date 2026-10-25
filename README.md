@@ -122,3 +122,7 @@ Todas as rotas, exceto `/login`, exigem login. Endereços desconhecidos levam ao
 ## Licença
 
 Veja [`LICENSE`](LICENSE).
+
+## Ligar ao back-end
+
+O site funciona sem back-end, com dados de exemplo. Para usar a API (login com JWT, contas e clientes), copie `.env.example` para `.env`, ajuste `VITE_API_URL` e reinicie `npm run dev`. O que o back precisa oferecer (login, token, CORS, rotas) está em [`docs/contrato-api.md`](docs/contrato-api.md).
