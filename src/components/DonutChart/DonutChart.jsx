@@ -59,8 +59,16 @@ function caminhoSetor(inicio, fim) {
  * niveis: [{ estado, quantidade, percentual }], total
  * estadosSelecionados: níveis marcados no filtro (vazio = todos)
  * aoEscolherEstado(estado): clique na legenda filtra o estoque
+ * aoEscolherTodos(): clique no centro ("Total Produto") volta a mostrar todos os estados
  */
-export default function DonutChart({ niveis, total, legendaTabela, estadosSelecionados = [], aoEscolherEstado }) {
+export default function DonutChart({
+  niveis,
+  total,
+  legendaTabela,
+  estadosSelecionados = [],
+  aoEscolherEstado,
+  aoEscolherTodos,
+}) {
   const { daltonismo } = useAcessibilidade();
   const [destaque, setDestaque] = useState(null);
   const base = useId().replace(/:/g, "");
@@ -87,6 +95,7 @@ export default function DonutChart({ niveis, total, legendaTabela, estadosSeleci
       onMouseLeave={() => setDestaque(null)}
     >
       <figcaption className="sr-only">{resumo}</figcaption>
+      <div className="rosca__grafico">
       <svg
         className="rosca__svg"
         width={TAMANHO}
@@ -117,13 +126,22 @@ export default function DonutChart({ niveis, total, legendaTabela, estadosSeleci
             <title>{`${setor.estado}: ${setor.quantidade} (${formatarPercentual(setor.percentual)}%)`}</title>
           </path>
         ))}
-        <text className="rosca__rotulo-centro" x={CENTRO} y={CENTRO - 8}>
-          Total Produto:
-        </text>
-        <text className="rosca__total" x={CENTRO} y={CENTRO + 18}>
-          {total}
-        </text>
       </svg>
+      <button
+        type="button"
+        className="rosca__centro"
+        aria-pressed={estadosSelecionados.length === 0}
+        aria-label={`Total Produto: ${total}. Mostrar todos os estados`}
+        onClick={() => aoEscolherTodos?.()}
+      >
+        <span className="rosca__rotulo-centro" aria-hidden="true">
+          Total Produto:
+        </span>
+        <span className="rosca__total" aria-hidden="true">
+          {total}
+        </span>
+      </button>
+      </div>
 
       <ul className="rosca__legenda">
         {niveis.map((nivel) => (

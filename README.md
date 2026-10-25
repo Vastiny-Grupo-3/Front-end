@@ -111,9 +111,9 @@ Todas as rotas, exceto `/login`, exigem login. Endereços desconhecidos levam ao
 | O quê | Onde está hoje | O que o back-end precisa fazer |
 | --- | --- | --- |
 | Produtos, categorias, clientes, vendas, entradas, saídas e cadastros | `src/data/` em memória, via `StockContext` | Fornecer e gravar os dados; recarregar a página hoje volta aos mocks |
-| Carrinhos abertos | Memória, via `CartContext` | Decidir se os carrinhos ficam no servidor |
+| Carrinhos abertos | Memória, via `CartContext` | Gravar como `venda` com `status = ABERTA` e itens com o preço da época (ver `docs/modelagem-dados.md`) |
 | Contas e login | `src/data/contas.js` e `sessionStorage`, via `AuthContext` | Autenticar, guardar só o hash da senha e criar a sessão; `entrar` já é assíncrona e devolve `{ ok, motivo }` |
-| Estado do estoque ("Crítico", "Ruim", "Médio", "Bom") | Campo `estado` fixo nos mocks | Calcular pelos critérios de cada categoria e enviar pronto; o front só exibe. Produtos novos ficam sem estado até lá |
+| Estado do estoque ("Crítico", "Ruim", "Médio", "Bom") | Calculado no front por `comEstoqueCalculado` (`src/utils/estoque.js`), pela faixa do produto ou, sem faixa própria, da categoria | No banco não é coluna: calcular em consulta/view (ver `docs/modelagem-dados.md`) e enviar pronto, ou manter o cálculo no front |
 | Carregando e erro das telas | `status` do `StockContext` (sempre `"pronto"`) e `recarregar` vazio | Alimentar `status` (`"carregando"`, `"pronto"`, `"erro"`) e implementar `recarregar` ("Tentar novamente") |
 | Imagens dos produtos | Data URL em memória | Upload e armazenamento das imagens |
 | Erro de conexão no login | Tratado na tela, nunca acontece com os mocks | Rejeitar a promessa de `entrar` em falha de rede |

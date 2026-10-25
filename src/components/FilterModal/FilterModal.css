@@ -58,6 +58,12 @@
   width: 100%;
 }
 
+/* Quantidade mínima e máxima ficam abaixo dos botões de rádio do Estoque, em linha própria */
+.filtros__quantidades {
+  flex: 1 1 100%;
+  margin-top: var(--espaco-8);
+}
+
 @media (max-width: 767px) {
   .filtros__opcoes {
     flex-direction: column;

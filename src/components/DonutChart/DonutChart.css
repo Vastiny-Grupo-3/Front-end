@@ -7,8 +7,42 @@
   gap: var(--espaco-24);
 }
 
-.rosca__svg {
+.rosca__grafico {
+  position: relative;
   flex-shrink: 0;
+  line-height: 0;
+}
+
+.rosca__svg {
+  display: block;
+}
+
+/* Botão sobre o furo da rosca: mostra todos os estados de novo. */
+.rosca__centro {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: calc(var(--espaco-48) * 2 + var(--espaco-8));
+  height: calc(var(--espaco-48) * 2 + var(--espaco-8));
+  padding: 0;
+  border: 0;
+  border-radius: var(--raio-total);
+  background: transparent;
+  line-height: normal;
+  transform: translate(-50%, -50%);
+  cursor: pointer;
+}
+
+.rosca__centro:hover {
+  background: var(--cor-fundo);
+}
+
+.rosca__centro[aria-pressed="true"] {
+  background: color-mix(in srgb, var(--cor-primaria) 12%, var(--cor-superficie));
 }
 
 /* Espaço de 2 px na cor da superfície entre os setores */
@@ -35,14 +69,12 @@
 
 .rosca__rotulo-centro {
   font: var(--texto-corpo-pequeno);
-  fill: var(--cor-texto-secundario);
-  text-anchor: middle;
+  color: var(--cor-texto-secundario);
 }
 
 .rosca__total {
   font: var(--texto-h2);
-  fill: var(--cor-texto);
-  text-anchor: middle;
+  color: var(--cor-texto);
 }
 
 .rosca__legenda {

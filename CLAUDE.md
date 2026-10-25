@@ -32,7 +32,7 @@ Sistema web de controle de estoque e vendas para auto elétricas.
 - Tokens da especificação viram variáveis CSS em `:root` (por exemplo, `--cor-primaria`, `--espaco-16`). Nunca usar valores soltos de cor, espaçamento ou raio nos componentes.
 - Foco em desktop 1440×900, com adaptação responsiva básica.
 - Acessibilidade WCAG 2.1 AA: HTML semântico, rótulo em todo campo, foco visível, navegação por teclado, alvos de toque de 44×44 px e modais com foco preso e fechamento por Esc.
-- Dados: usar mocks em `src/data/` até existir backend. Critérios e estado do estoque vêm prontos nos dados (campo `estado`).
+- Dados: usar mocks em `src/data/` até existir backend. O `estado` do estoque é calculado (`comEstoqueCalculado`, em `src/utils/estoque.js`), nunca escrito nos dados: quantidade ≥ Bom é Bom; ≥ Médio é Médio; ≥ Ruim é Ruim; abaixo disso é Crítico. A faixa efetiva é a do produto (`faixaPropria`) ou, se for null, a da categoria (`criterios`).
 - Estrutura: `src/styles/`, `src/components/`, `src/pages/`, `src/data/`, `src/context/`.
 - Um commit por etapa, com mensagem em português no formato `feat: ...`.
 - Em dúvida sobre a especificação, perguntar antes de inventar.
