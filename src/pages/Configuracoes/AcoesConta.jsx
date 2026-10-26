@@ -18,6 +18,7 @@ function ExcluirContaModal({ aberto, aoFechar }) {
   const navegar = useNavigate();
   const [senha, setSenha] = useState("");
   const [erro, setErro] = useState("");
+  const [excluindo, setExcluindo] = useState(false);
   const senhaRef = useRef(null);
 
   useEffect(() => {
@@ -26,9 +27,12 @@ function ExcluirContaModal({ aberto, aoFechar }) {
     setErro("");
   }, [aberto]);
 
-  function excluir(evento) {
+  async function excluir(evento) {
     evento.preventDefault();
-    const resultado = excluirConta(senha);
+    if (excluindo) return;
+    setExcluindo(true);
+    const resultado = await excluirConta(senha);
+    setExcluindo(false);
     if (resultado.erro) {
       setErro(resultado.erro);
       senhaRef.current?.focus();
@@ -48,7 +52,7 @@ function ExcluirContaModal({ aberto, aoFechar }) {
           <Button variante="secundario" onClick={aoFechar}>
             Cancelar
           </Button>
-          <Button variante="destrutivo" type="submit" form="formulario-excluir-conta">
+          <Button variante="destrutivo" type="submit" form="formulario-excluir-conta" carregando={excluindo}>
             Excluir conta
           </Button>
         </>
