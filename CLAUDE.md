@@ -35,6 +35,7 @@ Sistema web de controle de estoque e vendas para auto elétricas.
 - Foco em desktop 1440×900, com adaptação responsiva básica.
 - Acessibilidade WCAG 2.1 AA: HTML semântico, rótulo em todo campo, foco visível, navegação por teclado, alvos de toque de 44×44 px e modais com foco preso e fechamento por Esc.
 - Dados: usar mocks em `src/data/` até existir backend. O `estado` do estoque é calculado (`comEstoqueCalculado`, em `src/utils/estoque.js`), nunca escrito nos dados: quantidade ≥ Bom é Bom; ≥ Médio é Médio; ≥ Ruim é Ruim; abaixo disso é Crítico. A faixa efetiva é a do produto (`faixaPropria`) ou, se for null, a da categoria (`criterios`).
+- Produto: de 1 a 4 `codigos` (o primeiro é o principal; nenhum se repete) e três valores: `valorCompra`, `precoEmpresa` e `precoConsumidor`. Cliente tem `tipo` (`pessoa-fisica` ou `empresa`): empresa paga `precoEmpresa`; pessoa física e venda sem cliente pagam `precoConsumidor`. O item do carrinho grava preço, custo e tipo de preço ao entrar (mudar o preço do produto ou o cliente do carrinho não o muda; para atualizar, remover e adicionar de novo). A venda recebe `numero` sequencial ao ser finalizada. O guia do back-end está em `docs/planejamento-back-end.md`.
 - Estrutura: `src/styles/`, `src/components/`, `src/pages/`, `src/data/`, `src/context/`.
 - Um commit por etapa, com mensagem em português no formato `feat: ...`.
 - Em dúvida sobre a especificação, perguntar antes de inventar.
