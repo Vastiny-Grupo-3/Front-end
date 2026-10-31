@@ -73,7 +73,7 @@ export default function StockMovementModal({ tipo, produto, aoFechar }) {
           <dl className="movimento__produto">
             <div>
               <dt className="sr-only">Código</dt>
-              <dd>{produto.codigo}</dd>
+              <dd>{produto.codigos?.join(", ")}</dd>
             </div>
             <div>
               <dt className="sr-only">Nome</dt>

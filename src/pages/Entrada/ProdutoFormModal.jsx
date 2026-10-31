@@ -4,10 +4,18 @@ import Button from "../../components/Button/Button.jsx";
 import TextField from "../../components/TextField/TextField.jsx";
 import SelectField from "../../components/SelectField/SelectField.jsx";
 import { useStock } from "../../context/StockContext.jsx";
-import { CAMPOS_FAIXA, calcularLucro, textoCriterios } from "../../utils/estoque.js";
+import { CAMPOS_FAIXA, MAXIMO_CODIGOS, calcularLucro, textoCriterios } from "../../utils/estoque.js";
 import { formatarDecimal, formatarMoeda, lerDecimal } from "../../utils/formatadores.js";
 
-const VAZIO = { imagem: "", codigo: "", nome: "", categoriaId: "", valorCompra: "", valorVenda: "", quantidade: "" };
+const VAZIO = {
+  imagem: "",
+  codigos: Array(MAXIMO_CODIGOS).fill(""),
+  nome: "",
+  categoriaId: "",
+  valorCompra: "",
+  valorVenda: "",
+  quantidade: "",
+};
 const FAIXA_VAZIA = { bom: "", medio: "", ruim: "", critico: "" };
 
 function paraNumero(texto) {
@@ -38,10 +46,14 @@ export default function ProdutoFormModal({ aberto, produto, aoFechar }) {
   const [faixaModo, setFaixaModo] = useState("categoria"); // "categoria" | "propria"
   const [faixa, setFaixa] = useState(FAIXA_VAZIA);
   const [errosFaixa, setErrosFaixa] = useState({});
+  const [errosCodigos, setErrosCodigos] = useState([]);
   const [erro, setErro] = useState("");
   const [invalidos, setInvalidos] = useState([]);
   const refs = {
     codigo: useRef(null),
+    codigo2: useRef(null),
+    codigo3: useRef(null),
+    codigo4: useRef(null),
     nome: useRef(null),
     categoriaId: useRef(null),
     valorCompra: useRef(null),
@@ -57,7 +69,7 @@ export default function ProdutoFormModal({ aberto, produto, aoFechar }) {
       produto
         ? {
             imagem: produto.imagem ?? "",
-            codigo: produto.codigo,
+            codigos: Array.from({ length: MAXIMO_CODIGOS }, (_, indice) => produto.codigos[indice] ?? ""),
             nome: produto.nome,
             categoriaId: String(produto.categoriaId),
             valorCompra: formatarDecimal(produto.valorCompra),
@@ -69,6 +81,7 @@ export default function ProdutoFormModal({ aberto, produto, aoFechar }) {
     setFaixaModo(produto?.faixaPropria ? "propria" : "categoria");
     setFaixa(faixaParaTextos(produto?.faixaPropria));
     setErrosFaixa({});
+    setErrosCodigos([]);
     setErro("");
     setInvalidos([]);
   }, [aberto, produto]);
@@ -98,6 +111,15 @@ export default function ProdutoFormModal({ aberto, produto, aoFechar }) {
     };
   }
 
+  function mudarCodigo(indice) {
+    return (evento) => {
+      const codigos = valores.codigos.map((atual, posicao) => (posicao === indice ? evento.target.value : atual));
+      setValores((atuais) => ({ ...atuais, codigos }));
+      setInvalidos((atuais) => atuais.filter((item) => item !== "codigo"));
+      setErrosCodigos((atuais) => atuais.map((mensagem, posicao) => (posicao === indice ? "" : mensagem)));
+    };
+  }
+
   function escolherImagem(evento) {
     const arquivo = evento.target.files?.[0];
     if (!arquivo) return;
@@ -115,7 +137,7 @@ export default function ProdutoFormModal({ aberto, produto, aoFechar }) {
     const quantidade = valores.quantidade === "" ? null : Number(valores.quantidade);
     const entrada = {
       imagem: valores.imagem,
-      codigo: valores.codigo,
+      codigos: valores.codigos,
       nome: valores.nome,
       categoriaId: valores.categoriaId ? Number(valores.categoriaId) : null,
       valorCompra: compra,
@@ -131,7 +153,7 @@ export default function ProdutoFormModal({ aberto, produto, aoFechar }) {
 
     const faltando = resultado.erro
       ? [
-          !valores.codigo.trim() && "codigo",
+          !valores.codigos[0].trim() && "codigo",
           !valores.nome.trim() && "nome",
           entrada.categoriaId == null && "categoriaId",
           (compra == null || compra < 0) && "valorCompra",
@@ -142,10 +164,13 @@ export default function ProdutoFormModal({ aberto, produto, aoFechar }) {
     setErro(resultado.erro ?? "");
     setInvalidos(faltando);
     setErrosFaixa(resultado.erros ?? {});
+    setErrosCodigos(resultado.erros?.codigos ?? []);
 
     // O foco vai para o primeiro campo com problema, na ordem em que aparecem no formulário.
     const primeiroDaFaixa = CAMPOS_FAIXA.find(([chave]) => resultado.erros?.[chave])?.[0];
+    const primeiroCodigo = (resultado.erros?.codigos ?? []).findIndex(Boolean);
     if (faltando[0]) refs[faltando[0]]?.current?.focus();
+    else if (primeiroCodigo >= 0) refs[["codigo", "codigo2", "codigo3", "codigo4"][primeiroCodigo]]?.current?.focus();
     else if (primeiroDaFaixa) document.getElementById(`produto-faixa-${primeiroDaFaixa}`)?.focus();
   }
 
@@ -190,15 +215,42 @@ export default function ProdutoFormModal({ aberto, produto, aoFechar }) {
           </div>
         </div>
 
-        <TextField
-          ref={refs.codigo}
-          rotulo="Código"
-          obrigatorio
-          autoComplete="off"
-          value={valores.codigo}
-          onChange={mudar("codigo")}
-          aria-invalid={invalido("codigo")}
-        />
+        <div className="produto-formulario__duas-colunas">
+          <TextField
+            ref={refs.codigo}
+            rotulo="Código"
+            obrigatorio
+            autoComplete="off"
+            value={valores.codigos[0]}
+            onChange={mudarCodigo(0)}
+            erro={errosCodigos[0] || undefined}
+            aria-invalid={invalido("codigo")}
+          />
+          <TextField
+            ref={refs.codigo2}
+            rotulo="Código 2"
+            autoComplete="off"
+            value={valores.codigos[1]}
+            onChange={mudarCodigo(1)}
+            erro={errosCodigos[1] || undefined}
+          />
+          <TextField
+            ref={refs.codigo3}
+            rotulo="Código 3"
+            autoComplete="off"
+            value={valores.codigos[2]}
+            onChange={mudarCodigo(2)}
+            erro={errosCodigos[2] || undefined}
+          />
+          <TextField
+            ref={refs.codigo4}
+            rotulo="Código 4"
+            autoComplete="off"
+            value={valores.codigos[3]}
+            onChange={mudarCodigo(3)}
+            erro={errosCodigos[3] || undefined}
+          />
+        </div>
         <TextField
           ref={refs.nome}
           rotulo="Nome"

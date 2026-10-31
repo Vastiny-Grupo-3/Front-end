@@ -13,6 +13,7 @@ import { calcularLucroUnitario } from "./carrinho.js";
 
 export const MENSAGENS_ESTOQUE = {
   produtoIncompleto: "Preencha código, nome, categoria, valor de compra, valor de venda e quantidade.",
+  codigoEmUso: "Este código já está em uso.",
   quantidadeMaiorQueZero: "Informe uma quantidade maior que zero.",
   quantidadeMaiorQueEstoque: "A quantidade não pode ser maior que o estoque disponível.",
   justificativa: "Informe uma justificativa.",
@@ -46,15 +47,52 @@ function numeroValido(valor) {
 
 /* ---------- Produtos ---------- */
 
+/** Um produto tem de 1 a 4 códigos; o primeiro é o principal. */
+export const MAXIMO_CODIGOS = 4;
+
+function chaveDoCodigo(codigo) {
+  return texto(codigo).toLowerCase();
+}
+
+/**
+ * Confere os códigos digitados (nas posições do formulário). O primeiro é obrigatório e
+ * nenhum se repete, nem dentro do produto nem em outro produto (sem diferenciar maiúsculas).
+ * Retorna { lista, principalPreenchido, erros }: `lista` sem os vazios; `erros` com uma
+ * mensagem por posição ("" = sem problema) ou null quando está tudo certo.
+ */
+function validarCodigos(brutos, dados, produtoId) {
+  const digitados = (Array.isArray(brutos) ? brutos : []).slice(0, MAXIMO_CODIGOS).map(texto);
+  const dosOutros = new Set(
+    (dados?.produtos ?? [])
+      .filter((produto) => produto.id !== produtoId)
+      .flatMap((produto) => produto.codigos ?? [])
+      .map(chaveDoCodigo),
+  );
+  const usados = new Set();
+  const erros = digitados.map((codigo) => {
+    if (!codigo) return "";
+    const chave = chaveDoCodigo(codigo);
+    const repetido = usados.has(chave) || dosOutros.has(chave);
+    usados.add(chave);
+    return repetido ? MENSAGENS_ESTOQUE.codigoEmUso : "";
+  });
+  return {
+    lista: digitados.filter(Boolean),
+    principalPreenchido: Boolean(digitados[0]),
+    erros: erros.some(Boolean) ? erros : null,
+  };
+}
+
 /**
  * Valida e normaliza os campos do produto. Retorna { campos } e, quando algo não passa:
  *   erro  → algum campo obrigatório está vazio ou inválido;
- *   erros → a faixa própria é inválida (mensagens por nível: bom, medio, ruim, critico).
+ *   erros → `codigos` (uma mensagem por posição) e/ou a faixa própria inválida (mensagens por nível: bom, medio, ruim, critico).
  * `faixaPropria` vazia (null) significa "usar a faixa da categoria".
  */
-function montarProduto(entrada, exigirQuantidade) {
+function montarProduto(entrada, exigirQuantidade, dados, produtoId) {
+  const codigos = validarCodigos(entrada.codigos, dados, produtoId);
   const campos = {
-    codigo: texto(entrada.codigo),
+    codigos: codigos.lista,
     nome: texto(entrada.nome),
     categoriaId: entrada.categoriaId,
     imagem: entrada.imagem ?? "",
@@ -63,7 +101,7 @@ function montarProduto(entrada, exigirQuantidade) {
     faixaPropria: null,
   };
   const completo =
-    campos.codigo &&
+    codigos.principalPreenchido &&
     campos.nome &&
     campos.categoriaId != null &&
     numeroValido(campos.valorCompra) &&
@@ -71,12 +109,15 @@ function montarProduto(entrada, exigirQuantidade) {
     (!exigirQuantidade || (Number.isInteger(entrada.quantidade) && entrada.quantidade >= 0));
 
   const resultado = { campos };
+  const erros = {};
   if (!completo) resultado.erro = MENSAGENS_ESTOQUE.produtoIncompleto;
+  if (codigos.erros) erros.codigos = codigos.erros;
   if (entrada.faixaPropria) {
     const faixa = validarCriterios(entrada.faixaPropria);
-    if (faixa.erros) resultado.erros = faixa.erros;
+    if (faixa.erros) Object.assign(erros, faixa.erros);
     else campos.faixaPropria = faixa.valores;
   }
+  if (Object.keys(erros).length > 0) resultado.erros = erros;
   return resultado;
 }
 
@@ -87,7 +128,7 @@ export function calcularLucro(valorVenda, valorCompra) {
 
 /** Cadastra produto e cria o registro em "Cadastro de Produtos". */
 export function cadastrarProduto(dados, entrada, data) {
-  const { campos, erro, erros } = montarProduto(entrada, true);
+  const { campos, erro, erros } = montarProduto(entrada, true, dados);
   if (erro || erros) return { dados, erro, erros };
 
   const produto = {
@@ -117,7 +158,7 @@ export function cadastrarProduto(dados, entrada, data) {
 
 /** Edita os dados do produto (a quantidade muda só por Entrada, Saída ou venda). */
 export function editarProduto(dados, produtoId, entrada) {
-  const { campos, erro, erros } = montarProduto(entrada, false);
+  const { campos, erro, erros } = montarProduto(entrada, false, dados, produtoId);
   if (erro || erros) return { dados, erro, erros };
   return {
     dados: {

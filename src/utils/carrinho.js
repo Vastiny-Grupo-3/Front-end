@@ -155,7 +155,7 @@ export function criarItensVenda(itensDetalhados, categorias) {
     const lucroUnitario = calcularLucroUnitario(item.produto);
     return {
       produtoId: item.produto.id,
-      codigo: item.produto.codigo,
+      codigo: item.produto.codigos[0],
       nome: item.produto.nome,
       imagem: item.produto.imagem ?? "",
       categoriaId: item.produto.categoriaId,

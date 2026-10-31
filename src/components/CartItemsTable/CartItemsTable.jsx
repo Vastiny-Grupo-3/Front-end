@@ -52,7 +52,7 @@ export default function CartItemsTable({ itens }) {
       renderizar: (linha) => (
         <ProductCell
           nome={linha.produto.nome}
-          codigo={linha.produto.codigo}
+          codigo={linha.produto.codigos?.[0]}
           imagem={linha.produto.imagem}
         />
       ),
