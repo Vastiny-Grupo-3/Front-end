@@ -17,7 +17,7 @@ function venda(id, data, clienteId, linhas) {
     const item = criarItemCarrinho(produto, cliente, quantidade, desconto);
     return { ...item, produto, ...calcularItem(item) };
   });
-  return montarVenda({ id, data, cliente, itens: criarItensVenda(itensDetalhados, categorias) });
+  return montarVenda({ id, numero: id, data, cliente, itens: criarItensVenda(itensDetalhados, categorias) });
 }
 
 export const vendas = [

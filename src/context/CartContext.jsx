@@ -127,7 +127,7 @@ export function CartProvider({ children }) {
         // Após a compra, o atual passa a ser um novo carrinho vazio (TL19).
         const restantes = atual.carrinhos.filter((item) => item.id !== alvo.id);
         guardar(comNovoCarrinho(atual, restantes));
-        return { venda };
+        return { venda: resultado.registro };
       },
     }),
     [alterarAtual, guardar, lerDados, produtoPorId, clienteDoCarrinho, registrarVenda],

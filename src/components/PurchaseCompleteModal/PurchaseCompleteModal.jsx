@@ -36,7 +36,7 @@ export default function PurchaseCompleteModal({ venda, aoVoltarAoCatalogo, aoVer
           <dl className="compra-finalizada__resumo">
             <div>
               <dt>Transação:</dt>
-              <dd>{formatarId(venda.id)}</dd>
+              <dd>{formatarId(venda.numero)}</dd>
             </div>
             <div>
               <dt>Cliente:</dt>

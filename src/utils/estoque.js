@@ -235,8 +235,14 @@ export function registrarSaida(dados, produtoId, quantidade, justificativa, data
   );
 }
 
-/** Registra a venda e baixa o estoque dos itens vendidos. */
-export function registrarVenda(dados, venda) {
+/** Próximo número de venda (sequencial, sem repetir): o maior já usado mais um. */
+export function proximoNumeroVenda(dados) {
+  return dados.vendas.reduce((maior, venda) => Math.max(maior, venda.numero ?? 0), 0) + 1;
+}
+
+/** Registra a venda, atribui o número sequencial e baixa o estoque dos itens vendidos. */
+export function registrarVenda(dados, vendaSemNumero) {
+  const venda = { ...vendaSemNumero, numero: proximoNumeroVenda(dados) };
   const semEstoque = venda.itens.some((item) => {
     const produto = dados.produtos.find((atual) => atual.id === item.produtoId);
     return !produto || item.quantidade > produto.quantidade;

@@ -203,11 +203,15 @@ export function criarItensVenda(itensDetalhados, categorias) {
   });
 }
 
-/** Monta o registro de venda a partir das linhas já criadas. */
-export function montarVenda({ id, data, cliente, itens }) {
+/**
+ * Monta o registro de venda a partir das linhas já criadas. O `numero` (sequencial, "Transação")
+ * só existe depois de finalizar: `registrarVenda` o atribui; as vendas de exemplo já o trazem.
+ */
+export function montarVenda({ id, numero = null, data, cliente, itens }) {
   const totais = calcularTotais(itens);
   return {
     id,
+    numero,
     data,
     clienteId: cliente?.id ?? null,
     clienteNome: cliente?.nome ?? null,
