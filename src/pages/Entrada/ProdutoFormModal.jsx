@@ -5,6 +5,8 @@ import TextField from "../../components/TextField/TextField.jsx";
 import SelectField from "../../components/SelectField/SelectField.jsx";
 import { useStock } from "../../context/StockContext.jsx";
 import { CAMPOS_FAIXA, MAXIMO_CODIGOS, calcularLucro, textoCriterios } from "../../utils/estoque.js";
+import { MENSAGENS_IMAGEM, TIPOS_IMAGEM, enderecoDaImagem, enviarImagem, validarImagem } from "../../services/imagens.js";
+import { modoApi } from "../../services/config.js";
 import { formatarDecimal, formatarMoeda, lerDecimal } from "../../utils/formatadores.js";
 
 const VAZIO = {
@@ -48,6 +50,8 @@ export default function ProdutoFormModal({ aberto, produto, aoFechar }) {
   const [faixa, setFaixa] = useState(FAIXA_VAZIA);
   const [errosFaixa, setErrosFaixa] = useState({});
   const [errosCodigos, setErrosCodigos] = useState([]);
+  const [erroImagem, setErroImagem] = useState("");
+  const [enviandoImagem, setEnviandoImagem] = useState(false);
   const [erro, setErro] = useState("");
   const [invalidos, setInvalidos] = useState([]);
   const refs = {
@@ -86,6 +90,8 @@ export default function ProdutoFormModal({ aberto, produto, aoFechar }) {
     setFaixa(faixaParaTextos(produto?.faixaPropria));
     setErrosFaixa({});
     setErrosCodigos([]);
+    setErroImagem("");
+    setEnviandoImagem(false);
     setErro("");
     setInvalidos([]);
   }, [aberto, produto]);
@@ -124,12 +130,33 @@ export default function ProdutoFormModal({ aberto, produto, aoFechar }) {
     };
   }
 
-  function escolherImagem(evento) {
-    const arquivo = evento.target.files?.[0];
+  async function escolherImagem(evento) {
+    const campo = evento.target;
+    const arquivo = campo.files?.[0];
     if (!arquivo) return;
-    const leitor = new FileReader();
-    leitor.onload = () => setValores((atuais) => ({ ...atuais, imagem: String(leitor.result) }));
-    leitor.readAsDataURL(arquivo);
+    const problema = validarImagem(arquivo);
+    setErroImagem(problema ?? "");
+    if (problema) {
+      campo.value = "";
+      return;
+    }
+    if (!modoApi) {
+      // Sem back-end a imagem fica em memória (data URL).
+      const leitor = new FileReader();
+      leitor.onload = () => setValores((atuais) => ({ ...atuais, imagem: String(leitor.result) }));
+      leitor.readAsDataURL(arquivo);
+      return;
+    }
+    setEnviandoImagem(true);
+    try {
+      const url = await enviarImagem(arquivo);
+      setValores((atuais) => ({ ...atuais, imagem: url }));
+    } catch {
+      setErroImagem(MENSAGENS_IMAGEM.envio);
+      campo.value = "";
+    } finally {
+      setEnviandoImagem(false);
+    }
   }
 
   const compra = paraNumero(valores.valorCompra);
@@ -140,6 +167,7 @@ export default function ProdutoFormModal({ aberto, produto, aoFechar }) {
 
   function confirmar(evento) {
     evento.preventDefault();
+    if (enviandoImagem) return;
     const quantidade = valores.quantidade === "" ? null : Number(valores.quantidade);
     const entrada = {
       imagem: valores.imagem,
@@ -196,7 +224,7 @@ export default function ProdutoFormModal({ aberto, produto, aoFechar }) {
           <Button variante="secundario" onClick={aoFechar}>
             Cancelar
           </Button>
-          <Button type="submit" form={idFormulario}>
+          <Button type="submit" form={idFormulario} carregando={enviandoImagem}>
             {editando ? "Editar" : "Cadastrar"}
           </Button>
         </>
@@ -209,18 +237,31 @@ export default function ProdutoFormModal({ aberto, produto, aoFechar }) {
           </label>
           <div className="produto-formulario__linha-imagem">
             {valores.imagem ? (
-              <img className="produto-formulario__previa" src={valores.imagem} alt="" />
+              <img className="produto-formulario__previa" src={enderecoDaImagem(valores.imagem)} alt="" />
             ) : (
               <span className="produto-formulario__previa" aria-hidden="true" />
             )}
             <input
               id={idImagem}
               type="file"
-              accept="image/*"
+              accept={TIPOS_IMAGEM.join(",")}
               className="produto-formulario__arquivo"
+              disabled={enviandoImagem}
+              aria-invalid={erroImagem ? true : undefined}
+              aria-describedby={erroImagem ? `${idImagem}-erro` : undefined}
               onChange={escolherImagem}
             />
           </div>
+          {enviandoImagem && (
+            <p className="produto-formulario__aviso-imagem" role="status">
+              Enviando imagem…
+            </p>
+          )}
+          {erroImagem && (
+            <p id={`${idImagem}-erro`} className="produto-formulario__erro-imagem" role="alert">
+              {erroImagem}
+            </p>
+          )}
         </div>
 
         <div className="produto-formulario__duas-colunas">

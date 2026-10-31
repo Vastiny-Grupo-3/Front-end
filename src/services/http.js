@@ -34,12 +34,14 @@ function tipoDoStatus(status) {
 
 /**
  * requisicao("/clientes", { metodo, corpo, autenticado })
- * Devolve o JSON da resposta (ou null quando não há corpo). `autenticado: false`
+ * `corpo` é enviado como JSON; um FormData (envio de arquivo) vai como está, sem `Content-Type`,
+ * para o navegador acrescentar o separador do multipart. Devolve o JSON da resposta (ou null quando não há corpo). `autenticado: false`
  * é para o login: um 401 ali é "credenciais inválidas", não sessão vencida.
  */
 export async function requisicao(caminho, { metodo = "GET", corpo, autenticado = true } = {}) {
   const cabecalhos = { Accept: "application/json" };
-  if (corpo !== undefined) cabecalhos["Content-Type"] = "application/json";
+  const formulario = typeof FormData !== "undefined" && corpo instanceof FormData;
+  if (corpo !== undefined && !formulario) cabecalhos["Content-Type"] = "application/json";
   const token = autenticado ? lerToken() : null;
   if (token) cabecalhos.Authorization = `Bearer ${token}`;
 
@@ -48,7 +50,7 @@ export async function requisicao(caminho, { metodo = "GET", corpo, autenticado =
     resposta = await fetch(`${API_URL}${caminho}`, {
       method: metodo,
       headers: cabecalhos,
-      body: corpo === undefined ? undefined : JSON.stringify(corpo),
+      body: corpo === undefined ? undefined : formulario ? corpo : JSON.stringify(corpo),
     });
   } catch {
     throw new ErroApi("conexao");

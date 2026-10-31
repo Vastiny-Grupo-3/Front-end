@@ -2,6 +2,7 @@ import { useId } from "react";
 import { Package } from "lucide-react";
 import Button from "../Button/Button.jsx";
 import Stepper from "../Stepper/Stepper.jsx";
+import { enderecoDaImagem } from "../../services/imagens.js";
 import { formatarMoeda } from "../../utils/formatadores.js";
 import "./ProductCard.css";
 
@@ -46,7 +47,7 @@ export default function ProductCard({
       aria-labelledby={idNome}
     >
       {produto.imagem ? (
-        <img className="produto__imagem" src={produto.imagem} alt={produto.nome} />
+        <img className="produto__imagem" src={enderecoDaImagem(produto.imagem)} alt={produto.nome} />
       ) : (
         <div className="produto__imagem produto__imagem--vazia" aria-hidden="true">
           <Package className="produto__icone-vazio" />
