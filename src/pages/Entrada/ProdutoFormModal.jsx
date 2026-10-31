@@ -4,10 +4,21 @@ import Button from "../../components/Button/Button.jsx";
 import TextField from "../../components/TextField/TextField.jsx";
 import SelectField from "../../components/SelectField/SelectField.jsx";
 import { useStock } from "../../context/StockContext.jsx";
-import { CAMPOS_FAIXA, calcularLucro, textoCriterios } from "../../utils/estoque.js";
+import { CAMPOS_FAIXA, MAXIMO_CODIGOS, calcularLucro, textoCriterios } from "../../utils/estoque.js";
+import { MENSAGENS_IMAGEM, TIPOS_IMAGEM, enderecoDaImagem, enviarImagem, validarImagem } from "../../services/imagens.js";
+import { modoApi } from "../../services/config.js";
 import { formatarDecimal, formatarMoeda, lerDecimal } from "../../utils/formatadores.js";
 
-const VAZIO = { imagem: "", codigo: "", nome: "", categoriaId: "", valorCompra: "", valorVenda: "", quantidade: "" };
+const VAZIO = {
+  imagem: "",
+  codigos: Array(MAXIMO_CODIGOS).fill(""),
+  nome: "",
+  categoriaId: "",
+  valorCompra: "",
+  precoConsumidor: "",
+  precoEmpresa: "",
+  quantidade: "",
+};
 const FAIXA_VAZIA = { bom: "", medio: "", ruim: "", critico: "" };
 
 function paraNumero(texto) {
@@ -38,18 +49,26 @@ export default function ProdutoFormModal({ aberto, produto, aoFechar }) {
   const [faixaModo, setFaixaModo] = useState("categoria"); // "categoria" | "propria"
   const [faixa, setFaixa] = useState(FAIXA_VAZIA);
   const [errosFaixa, setErrosFaixa] = useState({});
+  const [errosCodigos, setErrosCodigos] = useState([]);
+  const [erroImagem, setErroImagem] = useState("");
+  const [enviandoImagem, setEnviandoImagem] = useState(false);
   const [erro, setErro] = useState("");
   const [invalidos, setInvalidos] = useState([]);
   const refs = {
     codigo: useRef(null),
+    codigo2: useRef(null),
+    codigo3: useRef(null),
+    codigo4: useRef(null),
     nome: useRef(null),
     categoriaId: useRef(null),
     valorCompra: useRef(null),
-    valorVenda: useRef(null),
+    precoConsumidor: useRef(null),
+    precoEmpresa: useRef(null),
     quantidade: useRef(null),
   };
   const idImagem = `imagem-${useId()}`;
-  const idLucro = `lucro-${useId()}`;
+  const idLucroConsumidor = `lucro-consumidor-${useId()}`;
+  const idLucroEmpresa = `lucro-empresa-${useId()}`;
 
   useEffect(() => {
     if (!aberto) return;
@@ -57,11 +76,12 @@ export default function ProdutoFormModal({ aberto, produto, aoFechar }) {
       produto
         ? {
             imagem: produto.imagem ?? "",
-            codigo: produto.codigo,
+            codigos: Array.from({ length: MAXIMO_CODIGOS }, (_, indice) => produto.codigos[indice] ?? ""),
             nome: produto.nome,
             categoriaId: String(produto.categoriaId),
             valorCompra: formatarDecimal(produto.valorCompra),
-            valorVenda: formatarDecimal(produto.valorVenda),
+            precoConsumidor: formatarDecimal(produto.precoConsumidor),
+            precoEmpresa: formatarDecimal(produto.precoEmpresa),
             quantidade: String(produto.quantidade),
           }
         : VAZIO,
@@ -69,6 +89,9 @@ export default function ProdutoFormModal({ aberto, produto, aoFechar }) {
     setFaixaModo(produto?.faixaPropria ? "propria" : "categoria");
     setFaixa(faixaParaTextos(produto?.faixaPropria));
     setErrosFaixa({});
+    setErrosCodigos([]);
+    setErroImagem("");
+    setEnviandoImagem(false);
     setErro("");
     setInvalidos([]);
   }, [aberto, produto]);
@@ -98,28 +121,62 @@ export default function ProdutoFormModal({ aberto, produto, aoFechar }) {
     };
   }
 
-  function escolherImagem(evento) {
-    const arquivo = evento.target.files?.[0];
+  function mudarCodigo(indice) {
+    return (evento) => {
+      const codigos = valores.codigos.map((atual, posicao) => (posicao === indice ? evento.target.value : atual));
+      setValores((atuais) => ({ ...atuais, codigos }));
+      setInvalidos((atuais) => atuais.filter((item) => item !== "codigo"));
+      setErrosCodigos((atuais) => atuais.map((mensagem, posicao) => (posicao === indice ? "" : mensagem)));
+    };
+  }
+
+  async function escolherImagem(evento) {
+    const campo = evento.target;
+    const arquivo = campo.files?.[0];
     if (!arquivo) return;
-    const leitor = new FileReader();
-    leitor.onload = () => setValores((atuais) => ({ ...atuais, imagem: String(leitor.result) }));
-    leitor.readAsDataURL(arquivo);
+    const problema = validarImagem(arquivo);
+    setErroImagem(problema ?? "");
+    if (problema) {
+      campo.value = "";
+      return;
+    }
+    if (!modoApi) {
+      // Sem back-end a imagem fica em memória (data URL).
+      const leitor = new FileReader();
+      leitor.onload = () => setValores((atuais) => ({ ...atuais, imagem: String(leitor.result) }));
+      leitor.readAsDataURL(arquivo);
+      return;
+    }
+    setEnviandoImagem(true);
+    try {
+      const url = await enviarImagem(arquivo);
+      setValores((atuais) => ({ ...atuais, imagem: url }));
+    } catch {
+      setErroImagem(MENSAGENS_IMAGEM.envio);
+      campo.value = "";
+    } finally {
+      setEnviandoImagem(false);
+    }
   }
 
   const compra = paraNumero(valores.valorCompra);
-  const venda = paraNumero(valores.valorVenda);
-  const lucro = compra != null && venda != null ? calcularLucro(venda, compra) : null;
+  const consumidor = paraNumero(valores.precoConsumidor);
+  const empresa = paraNumero(valores.precoEmpresa);
+  const lucroConsumidor = compra != null && consumidor != null ? calcularLucro(consumidor, compra) : null;
+  const lucroEmpresa = compra != null && empresa != null ? calcularLucro(empresa, compra) : null;
 
   function confirmar(evento) {
     evento.preventDefault();
+    if (enviandoImagem) return;
     const quantidade = valores.quantidade === "" ? null : Number(valores.quantidade);
     const entrada = {
       imagem: valores.imagem,
-      codigo: valores.codigo,
+      codigos: valores.codigos,
       nome: valores.nome,
       categoriaId: valores.categoriaId ? Number(valores.categoriaId) : null,
       valorCompra: compra,
-      valorVenda: venda,
+      precoEmpresa: empresa,
+      precoConsumidor: consumidor,
       quantidade,
       faixaPropria: faixaModo === "propria" ? faixa : null,
     };
@@ -131,21 +188,25 @@ export default function ProdutoFormModal({ aberto, produto, aoFechar }) {
 
     const faltando = resultado.erro
       ? [
-          !valores.codigo.trim() && "codigo",
+          !valores.codigos[0].trim() && "codigo",
           !valores.nome.trim() && "nome",
           entrada.categoriaId == null && "categoriaId",
           (compra == null || compra < 0) && "valorCompra",
-          (venda == null || venda < 0) && "valorVenda",
           !editando && (quantidade == null || !Number.isInteger(quantidade)) && "quantidade",
+          (consumidor == null || consumidor < 0) && "precoConsumidor",
+          (empresa == null || empresa < 0) && "precoEmpresa",
         ].filter(Boolean)
       : [];
     setErro(resultado.erro ?? "");
     setInvalidos(faltando);
     setErrosFaixa(resultado.erros ?? {});
+    setErrosCodigos(resultado.erros?.codigos ?? []);
 
     // O foco vai para o primeiro campo com problema, na ordem em que aparecem no formulário.
     const primeiroDaFaixa = CAMPOS_FAIXA.find(([chave]) => resultado.erros?.[chave])?.[0];
+    const primeiroCodigo = (resultado.erros?.codigos ?? []).findIndex(Boolean);
     if (faltando[0]) refs[faltando[0]]?.current?.focus();
+    else if (primeiroCodigo >= 0) refs[["codigo", "codigo2", "codigo3", "codigo4"][primeiroCodigo]]?.current?.focus();
     else if (primeiroDaFaixa) document.getElementById(`produto-faixa-${primeiroDaFaixa}`)?.focus();
   }
 
@@ -163,7 +224,7 @@ export default function ProdutoFormModal({ aberto, produto, aoFechar }) {
           <Button variante="secundario" onClick={aoFechar}>
             Cancelar
           </Button>
-          <Button type="submit" form={idFormulario}>
+          <Button type="submit" form={idFormulario} carregando={enviandoImagem}>
             {editando ? "Editar" : "Cadastrar"}
           </Button>
         </>
@@ -176,29 +237,69 @@ export default function ProdutoFormModal({ aberto, produto, aoFechar }) {
           </label>
           <div className="produto-formulario__linha-imagem">
             {valores.imagem ? (
-              <img className="produto-formulario__previa" src={valores.imagem} alt="" />
+              <img className="produto-formulario__previa" src={enderecoDaImagem(valores.imagem)} alt="" />
             ) : (
               <span className="produto-formulario__previa" aria-hidden="true" />
             )}
             <input
               id={idImagem}
               type="file"
-              accept="image/*"
+              accept={TIPOS_IMAGEM.join(",")}
               className="produto-formulario__arquivo"
+              disabled={enviandoImagem}
+              aria-invalid={erroImagem ? true : undefined}
+              aria-describedby={erroImagem ? `${idImagem}-erro` : undefined}
               onChange={escolherImagem}
             />
           </div>
+          {enviandoImagem && (
+            <p className="produto-formulario__aviso-imagem" role="status">
+              Enviando imagem…
+            </p>
+          )}
+          {erroImagem && (
+            <p id={`${idImagem}-erro`} className="produto-formulario__erro-imagem" role="alert">
+              {erroImagem}
+            </p>
+          )}
         </div>
 
-        <TextField
-          ref={refs.codigo}
-          rotulo="Código"
-          obrigatorio
-          autoComplete="off"
-          value={valores.codigo}
-          onChange={mudar("codigo")}
-          aria-invalid={invalido("codigo")}
-        />
+        <div className="produto-formulario__duas-colunas">
+          <TextField
+            ref={refs.codigo}
+            rotulo="Código"
+            obrigatorio
+            autoComplete="off"
+            value={valores.codigos[0]}
+            onChange={mudarCodigo(0)}
+            erro={errosCodigos[0] || undefined}
+            aria-invalid={invalido("codigo")}
+          />
+          <TextField
+            ref={refs.codigo2}
+            rotulo="Código 2"
+            autoComplete="off"
+            value={valores.codigos[1]}
+            onChange={mudarCodigo(1)}
+            erro={errosCodigos[1] || undefined}
+          />
+          <TextField
+            ref={refs.codigo3}
+            rotulo="Código 3"
+            autoComplete="off"
+            value={valores.codigos[2]}
+            onChange={mudarCodigo(2)}
+            erro={errosCodigos[2] || undefined}
+          />
+          <TextField
+            ref={refs.codigo4}
+            rotulo="Código 4"
+            autoComplete="off"
+            value={valores.codigos[3]}
+            onChange={mudarCodigo(3)}
+            erro={errosCodigos[3] || undefined}
+          />
+        </div>
         <TextField
           ref={refs.nome}
           rotulo="Nome"
@@ -232,19 +333,6 @@ export default function ProdutoFormModal({ aberto, produto, aoFechar }) {
             onChange={mudar("valorCompra", /[^\d.,]/g)}
             aria-invalid={invalido("valorCompra")}
           />
-          <TextField
-            ref={refs.valorVenda}
-            rotulo="Valor de Venda"
-            obrigatorio
-            inputMode="decimal"
-            autoComplete="off"
-            placeholder="R$ 0,00"
-            value={valores.valorVenda}
-            onChange={mudar("valorVenda", /[^\d.,]/g)}
-            aria-invalid={invalido("valorVenda")}
-          />
-        </div>
-        <div className="produto-formulario__duas-colunas">
           {!editando && (
             <TextField
               ref={refs.quantidade}
@@ -257,12 +345,46 @@ export default function ProdutoFormModal({ aberto, produto, aoFechar }) {
               aria-invalid={invalido("quantidade")}
             />
           )}
+        </div>
+        <div className="produto-formulario__duas-colunas">
+          <TextField
+            ref={refs.precoConsumidor}
+            rotulo="Valor de Venda — Pessoa Física"
+            obrigatorio
+            inputMode="decimal"
+            autoComplete="off"
+            placeholder="R$ 0,00"
+            value={valores.precoConsumidor}
+            onChange={mudar("precoConsumidor", /[^\d.,]/g)}
+            aria-invalid={invalido("precoConsumidor")}
+          />
+          <TextField
+            ref={refs.precoEmpresa}
+            rotulo="Valor de Venda — Empresa"
+            obrigatorio
+            inputMode="decimal"
+            autoComplete="off"
+            placeholder="R$ 0,00"
+            value={valores.precoEmpresa}
+            onChange={mudar("precoEmpresa", /[^\d.,]/g)}
+            aria-invalid={invalido("precoEmpresa")}
+          />
+        </div>
+        <div className="produto-formulario__duas-colunas">
           <div className="campo">
-            <span id={idLucro} className="campo__rotulo">
-              Lucro
+            <span id={idLucroConsumidor} className="campo__rotulo">
+              Lucro — Pessoa Física
             </span>
-            <output className="produto-formulario__lucro" aria-labelledby={idLucro}>
-              {lucro != null ? formatarMoeda(lucro) : "—"}
+            <output className="produto-formulario__lucro" aria-labelledby={idLucroConsumidor}>
+              {lucroConsumidor != null ? formatarMoeda(lucroConsumidor) : "—"}
+            </output>
+          </div>
+          <div className="campo">
+            <span id={idLucroEmpresa} className="campo__rotulo">
+              Lucro — Empresa
+            </span>
+            <output className="produto-formulario__lucro" aria-labelledby={idLucroEmpresa}>
+              {lucroEmpresa != null ? formatarMoeda(lucroEmpresa) : "—"}
             </output>
           </div>
         </div>

@@ -79,13 +79,17 @@ Regra de senha (a mesma do site): obrigatória, mínimo de 8 caracteres, com pel
 
 | Rota | Corpo | Resposta |
 | --- | --- | --- |
-| `GET /clientes` | | `200 [ { id, nome, telefone, descricao, dataCadastro } ]` |
+| `GET /clientes` | | `200 [ { id, nome, telefone, descricao, tipo, dataCadastro } ]` |
 | `GET /clientes/{id}` | | `200 { ... }` ou `404` |
-| `POST /clientes` | `{ nome, telefone, descricao }` | `201 { ... }` |
-| `PUT /clientes/{id}` | `{ nome, telefone, descricao }` | `200 { ... }` |
+| `POST /clientes` | `{ nome, telefone, descricao, tipo }` | `201 { ... }` |
+| `PUT /clientes/{id}` | `{ nome, telefone, descricao, tipo }` | `200 { ... }` |
 | `DELETE /clientes/{id}` | | `204` |
 
 O site já envia `descricao`. Se o back ainda não a guardar, o site a mantém só em memória até recarregar a página.
+
+`tipo` é `PESSOA_FISICA` ou `EMPRESA` (empresa ou auto elétrica) e **define o preço da venda**: cliente `EMPRESA` paga `precoEmpresa` do produto; cliente `PESSOA_FISICA` ou venda sem cliente paga `precoConsumidor`. Se o `tipo` não vier, assumir `PESSOA_FISICA`.
+
+Os demais contratos (categorias, produtos, estoque, vendas, histórico, imagens) estão em `docs/planejamento-back-end.md`.
 
 ### Erros
 

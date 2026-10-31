@@ -57,6 +57,7 @@ export function StockProvider({ children }) {
       const clientes = lista.map((cliente) => ({
         ...cliente,
         descricao: cliente.descricao ?? atuais.find((atual) => atual.id === cliente.id)?.descricao ?? "",
+        tipo: cliente.tipo ?? atuais.find((atual) => atual.id === cliente.id)?.tipo ?? "pessoa-fisica",
       }));
       dadosRef.current = { ...dadosRef.current, clientes };
       setDados(dadosRef.current);
@@ -80,7 +81,12 @@ export function StockProvider({ children }) {
         if (Object.keys(erros).length > 0) return { erros };
         const campos = estoque.camposCliente(entrada);
         const salvo = await clientesApi.criarCliente(campos);
-        const cliente = { ...campos, ...salvo, descricao: salvo.descricao ?? campos.descricao };
+        const cliente = {
+          ...campos,
+          ...salvo,
+          descricao: salvo.descricao ?? campos.descricao,
+          tipo: salvo.tipo ?? campos.tipo,
+        };
         return aplicar((d) => estoque.incluirCliente(d, cliente, hojeIso()));
       },
       editarCliente: async (id, entrada) => {

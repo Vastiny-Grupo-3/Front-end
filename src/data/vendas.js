@@ -1,7 +1,7 @@
 import { categorias } from "./categorias.js";
 import { clientes } from "./clientes.js";
 import { produtos } from "./produtos.js";
-import { criarItensVenda, calcularItem, montarVenda } from "../utils/carrinho.js";
+import { criarItensVenda, criarItemCarrinho, calcularItem, montarVenda } from "../utils/carrinho.js";
 
 /*
  * Vendas (mock até existir back-end). Cada item guarda o preço e o lucro
@@ -11,13 +11,13 @@ import { criarItensVenda, calcularItem, montarVenda } from "../utils/carrinho.js
 
 // [produtoId, quantidade, desconto em R$]
 function venda(id, data, clienteId, linhas) {
+  const cliente = clientes.find((atual) => atual.id === clienteId) ?? null;
   const itensDetalhados = linhas.map(([produtoId, quantidade, desconto = 0]) => {
     const produto = produtos.find((atual) => atual.id === produtoId);
-    const item = { produtoId, quantidade, desconto };
-    return { ...item, produto, ...calcularItem(item, produto) };
+    const item = criarItemCarrinho(produto, cliente, quantidade, desconto);
+    return { ...item, produto, ...calcularItem(item) };
   });
-  const cliente = clientes.find((atual) => atual.id === clienteId) ?? null;
-  return montarVenda({ id, data, cliente, itens: criarItensVenda(itensDetalhados, categorias) });
+  return montarVenda({ id, numero: id, data, cliente, itens: criarItensVenda(itensDetalhados, categorias) });
 }
 
 export const vendas = [

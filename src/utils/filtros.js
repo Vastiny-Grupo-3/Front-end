@@ -84,23 +84,27 @@ export function temFiltrosAtivos(filtros) {
 
 const ORDENACOES = {
   nome: (a, b) => comparadorNome.compare(a.nome, b.nome),
-  "menor-preco": (a, b) => a.valorVenda - b.valorVenda,
-  "maior-preco": (a, b) => b.valorVenda - a.valorVenda,
+  "menor-preco": (a, b) => a.precoConsumidor - b.precoConsumidor,
+  "maior-preco": (a, b) => b.precoConsumidor - a.precoConsumidor,
   "maior-estoque": (a, b) => b.quantidade - a.quantidade,
   "menor-estoque": (a, b) => a.quantidade - b.quantidade,
 };
 
 /**
- * Aplica pesquisa por nome, filtros e ordenação.
+ * Aplica pesquisa por nome ou código, filtros e ordenação.
  * `estaNoCarrinho(produtoId)` só é usado pelo filtro "Carrinho" (Catálogo).
  */
 export function filtrarProdutos(produtos, { pesquisa = "", filtros = FILTROS_PADRAO, estaNoCarrinho } = {}) {
   const termo = normalizar(pesquisa);
   const resultado = produtos.filter((produto) => {
-    if (termo && !normalizar(produto.nome).includes(termo)) return false;
+    if (termo) {
+      const nomeConfere = normalizar(produto.nome).includes(termo);
+      const codigoConfere = (produto.codigos ?? []).some((codigo) => normalizar(codigo).includes(termo));
+      if (!nomeConfere && !codigoConfere) return false;
+    }
     if (filtros.categorias.length > 0 && !filtros.categorias.includes(produto.categoriaId)) return false;
-    if (filtros.precoMinimo != null && produto.valorVenda < filtros.precoMinimo) return false;
-    if (filtros.precoMaximo != null && produto.valorVenda > filtros.precoMaximo) return false;
+    if (filtros.precoMinimo != null && produto.precoConsumidor < filtros.precoMinimo) return false;
+    if (filtros.precoMaximo != null && produto.precoConsumidor > filtros.precoMaximo) return false;
     if (filtros.quantidadeMinima != null && produto.quantidade < filtros.quantidadeMinima) return false;
     if (filtros.quantidadeMaxima != null && produto.quantidade > filtros.quantidadeMaxima) return false;
 

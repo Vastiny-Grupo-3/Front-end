@@ -2,13 +2,14 @@ import { useId } from "react";
 import { Package } from "lucide-react";
 import Button from "../Button/Button.jsx";
 import Stepper from "../Stepper/Stepper.jsx";
+import { enderecoDaImagem } from "../../services/imagens.js";
 import { formatarMoeda } from "../../utils/formatadores.js";
 import "./ProductCard.css";
 
 /**
  * Card de produto.
  * variante: "catalogo" | "entrada" | "saida"
- * produto: { nome, categoria, imagem, valorVenda, quantidade }
+ * produto: { nome, categoria, imagem, precoConsumidor, quantidade }
  */
 export default function ProductCard({
   produto,
@@ -46,7 +47,7 @@ export default function ProductCard({
       aria-labelledby={idNome}
     >
       {produto.imagem ? (
-        <img className="produto__imagem" src={produto.imagem} alt={produto.nome} />
+        <img className="produto__imagem" src={enderecoDaImagem(produto.imagem)} alt={produto.nome} />
       ) : (
         <div className="produto__imagem produto__imagem--vazia" aria-hidden="true">
           <Package className="produto__icone-vazio" />
@@ -59,7 +60,7 @@ export default function ProductCard({
       <div className="produto__valores">
         <p className="produto__preco">
           <span className="produto__valor-rotulo">Preço</span>
-          <span className="produto__valor">{formatarMoeda(produto.valorVenda)}</span>
+          <span className="produto__valor">{formatarMoeda(produto.precoConsumidor)}</span>
         </p>
         <p className={`produto__estoque ${semEstoque ? "produto__estoque--vazio" : ""}`.trim()}>
           <span className="produto__valor-rotulo">Estoque</span>

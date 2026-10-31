@@ -4,7 +4,9 @@ import { arredondar, formatarId } from "./formatadores.js";
  * Funções puras do carrinho. Nenhuma altera os objetos recebidos: todas
  * devolvem cópias novas. Valores em reais, arredondados para centavos.
  *
- * carrinho: { id, nome, clienteId, itens: [{ produtoId, quantidade, desconto }] }
+ * carrinho: { id, nome, clienteId, itens: [{ produtoId, quantidade, desconto, tipoPreco, precoUnitario, custoUnitario }] }
+ * O preço, o custo e o tipo de preço do item são gravados quando ele entra no carrinho (preço da época):
+ * mudar o preço do produto depois não muda o item, e trocar o cliente do carrinho também não.
  * `desconto` é sempre em reais; o percentual é derivado do valor da linha.
  */
 
@@ -14,9 +16,32 @@ export const MENSAGENS_CARRINHO = {
   erroFinalizar: "Não conseguimos finalizar a compra. Verifique os itens e tente novamente.",
 };
 
-/** Lucro por unidade = valor de venda − valor de compra. */
+/** Lucro por unidade ao preço do consumidor (usado no registro de cadastro do produto). */
 export function calcularLucroUnitario(produto) {
-  return arredondar(produto.valorVenda - produto.valorCompra);
+  return arredondar(produto.precoConsumidor - produto.valorCompra);
+}
+
+/**
+ * Preço de venda pelo tipo do cliente: cliente "empresa" paga o preço de empresa/auto elétrica;
+ * pessoa física e venda sem cliente pagam o preço do consumidor.
+ */
+export function precoParaCliente(produto, cliente) {
+  const empresa = cliente?.tipo === "empresa";
+  return {
+    tipoPreco: empresa ? "empresa" : "pessoa-fisica",
+    precoUnitario: empresa ? produto.precoEmpresa : produto.precoConsumidor,
+  };
+}
+
+/** Item novo do carrinho, com o preço, o custo e o tipo de preço da hora em que entra. */
+export function criarItemCarrinho(produto, cliente, quantidade = 1, desconto = 0) {
+  return {
+    produtoId: produto.id,
+    quantidade,
+    desconto,
+    ...precoParaCliente(produto, cliente),
+    custoUnitario: produto.valorCompra,
+  };
 }
 
 /** Cria um carrinho vazio com o número informado ("Carrinho 001", "Carrinho 002"…). */
@@ -28,12 +53,15 @@ export function encontrarItem(carrinho, produtoId) {
   return carrinho.itens.find((item) => item.produtoId === produtoId);
 }
 
-/** Adiciona 1 unidade do produto. Sem estoque ou já no carrinho: nada muda. */
-export function adicionarItem(carrinho, produto) {
+/**
+ * Adiciona 1 unidade do produto, ao preço do tipo do cliente do carrinho (`cliente` pode ser null).
+ * Sem estoque ou já no carrinho: nada muda.
+ */
+export function adicionarItem(carrinho, produto, cliente = null) {
   if (produto.quantidade <= 0 || encontrarItem(carrinho, produto.id)) return carrinho;
   return {
     ...carrinho,
-    itens: [...carrinho.itens, { produtoId: produto.id, quantidade: 1, desconto: 0 }],
+    itens: [...carrinho.itens, criarItemCarrinho(produto, cliente)],
   };
 }
 
@@ -50,8 +78,10 @@ export function alterarQuantidade(carrinho, produto, quantidade) {
   if (quantidade > produto.quantidade) {
     return { carrinho, erro: MENSAGENS_CARRINHO.quantidadeMaiorQueEstoque };
   }
+  const atual = encontrarItem(carrinho, produto.id);
+  if (!atual) return { carrinho, erro: null };
   const novaQuantidade = Math.max(1, Math.floor(quantidade));
-  const valorLinha = arredondar(novaQuantidade * produto.valorVenda);
+  const valorLinha = arredondar(novaQuantidade * atual.precoUnitario);
   return {
     carrinho: {
       ...carrinho,
@@ -69,7 +99,7 @@ export function alterarQuantidade(carrinho, produto, quantidade) {
 export function alterarDesconto(carrinho, produto, desconto) {
   const item = encontrarItem(carrinho, produto.id);
   if (!item) return { carrinho, erro: null };
-  const valorLinha = arredondar(item.quantidade * produto.valorVenda);
+  const valorLinha = arredondar(item.quantidade * item.precoUnitario);
   if (desconto < 0 || desconto > valorLinha) {
     return { carrinho, erro: MENSAGENS_CARRINHO.descontoMaiorQueValor };
   }
@@ -88,11 +118,11 @@ export function definirCliente(carrinho, clienteId) {
   return { ...carrinho, clienteId: clienteId ?? null };
 }
 
-/** Valores de uma linha: preço por unidade, valor da linha, desconto (R$ e %) e total. */
-export function calcularItem(item, produto) {
-  const valorLinha = arredondar(item.quantidade * produto.valorVenda);
+/** Valores de uma linha, pelo preço gravado no item: valor da linha, desconto (R$ e %) e total. */
+export function calcularItem(item) {
+  const valorLinha = arredondar(item.quantidade * item.precoUnitario);
   return {
-    precoUnitario: produto.valorVenda,
+    precoUnitario: item.precoUnitario,
     valorLinha,
     desconto: item.desconto,
     percentualDesconto: valorLinha > 0 ? (item.desconto / valorLinha) * 100 : 0,
@@ -121,7 +151,7 @@ export function calcularTotais(linhas) {
 export function detalharItens(carrinho, produtos) {
   return carrinho.itens.flatMap((item) => {
     const produto = produtos.find((atual) => atual.id === item.produtoId);
-    return produto ? [{ ...item, produto, ...calcularItem(item, produto) }] : [];
+    return produto ? [{ ...item, produto, ...calcularItem(item) }] : [];
   });
 }
 
@@ -147,35 +177,41 @@ export function validarFinalizacao(carrinho, produtos) {
 }
 
 /**
- * Linhas da venda com preço e lucro registrados no momento da venda.
+ * Linhas da venda com preço, custo e lucro registrados no momento em que o item entrou no carrinho.
  * Lucro do item = quantidade × lucro por unidade − desconto do item.
  */
 export function criarItensVenda(itensDetalhados, categorias) {
   return itensDetalhados.map((item) => {
-    const lucroUnitario = calcularLucroUnitario(item.produto);
+    const lucroUnitario = arredondar(item.precoUnitario - item.custoUnitario);
     return {
       produtoId: item.produto.id,
-      codigo: item.produto.codigo,
+      codigo: item.produto.codigos[0],
       nome: item.produto.nome,
       imagem: item.produto.imagem ?? "",
       categoriaId: item.produto.categoriaId,
       categoria: categorias.find((categoria) => categoria.id === item.produto.categoriaId)?.nome ?? "",
       quantidade: item.quantidade,
-      precoUnitario: item.produto.valorVenda,
+      tipoPreco: item.tipoPreco,
+      precoUnitario: item.precoUnitario,
+      custoUnitario: item.custoUnitario,
       lucroUnitario,
       desconto: item.desconto,
-      valorLinha: arredondar(item.quantidade * item.produto.valorVenda),
-      total: arredondar(item.quantidade * item.produto.valorVenda - item.desconto),
+      valorLinha: arredondar(item.quantidade * item.precoUnitario),
+      total: arredondar(item.quantidade * item.precoUnitario - item.desconto),
       lucro: arredondar(item.quantidade * lucroUnitario - item.desconto),
     };
   });
 }
 
-/** Monta o registro de venda a partir das linhas já criadas. */
-export function montarVenda({ id, data, cliente, itens }) {
+/**
+ * Monta o registro de venda a partir das linhas já criadas. O `numero` (sequencial, "Transação")
+ * só existe depois de finalizar: `registrarVenda` o atribui; as vendas de exemplo já o trazem.
+ */
+export function montarVenda({ id, numero = null, data, cliente, itens }) {
   const totais = calcularTotais(itens);
   return {
     id,
+    numero,
     data,
     clienteId: cliente?.id ?? null,
     clienteNome: cliente?.nome ?? null,

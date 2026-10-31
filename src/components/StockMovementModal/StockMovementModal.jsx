@@ -73,7 +73,7 @@ export default function StockMovementModal({ tipo, produto, aoFechar }) {
           <dl className="movimento__produto">
             <div>
               <dt className="sr-only">Código</dt>
-              <dd>{produto.codigo}</dd>
+              <dd>{produto.codigos?.join(", ")}</dd>
             </div>
             <div>
               <dt className="sr-only">Nome</dt>
@@ -84,8 +84,12 @@ export default function StockMovementModal({ tipo, produto, aoFechar }) {
               <dd>{formatarMoeda(produto.valorCompra)}</dd>
             </div>
             <div>
-              <dt>Valor Venda</dt>
-              <dd>{formatarMoeda(produto.valorVenda)}</dd>
+              <dt>Venda (Pessoa Física)</dt>
+              <dd>{formatarMoeda(produto.precoConsumidor)}</dd>
+            </div>
+            <div>
+              <dt>Venda (Empresa)</dt>
+              <dd>{formatarMoeda(produto.precoEmpresa)}</dd>
             </div>
           </dl>
 

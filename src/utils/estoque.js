@@ -12,7 +12,8 @@ import { calcularLucroUnitario } from "./carrinho.js";
  */
 
 export const MENSAGENS_ESTOQUE = {
-  produtoIncompleto: "Preencha código, nome, categoria, valor de compra, valor de venda e quantidade.",
+  produtoIncompleto: "Preencha código, nome, categoria, valor de compra, valores de venda e quantidade.",
+  codigoEmUso: "Este código já está em uso.",
   quantidadeMaiorQueZero: "Informe uma quantidade maior que zero.",
   quantidadeMaiorQueEstoque: "A quantidade não pode ser maior que o estoque disponível.",
   justificativa: "Informe uma justificativa.",
@@ -46,48 +47,90 @@ function numeroValido(valor) {
 
 /* ---------- Produtos ---------- */
 
+/** Um produto tem de 1 a 4 códigos; o primeiro é o principal. */
+export const MAXIMO_CODIGOS = 4;
+
+function chaveDoCodigo(codigo) {
+  return texto(codigo).toLowerCase();
+}
+
+/**
+ * Confere os códigos digitados (nas posições do formulário). O primeiro é obrigatório e
+ * nenhum se repete, nem dentro do produto nem em outro produto (sem diferenciar maiúsculas).
+ * Retorna { lista, principalPreenchido, erros }: `lista` sem os vazios; `erros` com uma
+ * mensagem por posição ("" = sem problema) ou null quando está tudo certo.
+ */
+function validarCodigos(brutos, dados, produtoId) {
+  const digitados = (Array.isArray(brutos) ? brutos : []).slice(0, MAXIMO_CODIGOS).map(texto);
+  const dosOutros = new Set(
+    (dados?.produtos ?? [])
+      .filter((produto) => produto.id !== produtoId)
+      .flatMap((produto) => produto.codigos ?? [])
+      .map(chaveDoCodigo),
+  );
+  const usados = new Set();
+  const erros = digitados.map((codigo) => {
+    if (!codigo) return "";
+    const chave = chaveDoCodigo(codigo);
+    const repetido = usados.has(chave) || dosOutros.has(chave);
+    usados.add(chave);
+    return repetido ? MENSAGENS_ESTOQUE.codigoEmUso : "";
+  });
+  return {
+    lista: digitados.filter(Boolean),
+    principalPreenchido: Boolean(digitados[0]),
+    erros: erros.some(Boolean) ? erros : null,
+  };
+}
+
 /**
  * Valida e normaliza os campos do produto. Retorna { campos } e, quando algo não passa:
  *   erro  → algum campo obrigatório está vazio ou inválido;
- *   erros → a faixa própria é inválida (mensagens por nível: bom, medio, ruim, critico).
+ *   erros → `codigos` (uma mensagem por posição) e/ou a faixa própria inválida (mensagens por nível: bom, medio, ruim, critico).
  * `faixaPropria` vazia (null) significa "usar a faixa da categoria".
  */
-function montarProduto(entrada, exigirQuantidade) {
+function montarProduto(entrada, exigirQuantidade, dados, produtoId) {
+  const codigos = validarCodigos(entrada.codigos, dados, produtoId);
   const campos = {
-    codigo: texto(entrada.codigo),
+    codigos: codigos.lista,
     nome: texto(entrada.nome),
     categoriaId: entrada.categoriaId,
     imagem: entrada.imagem ?? "",
     valorCompra: entrada.valorCompra,
-    valorVenda: entrada.valorVenda,
+    precoEmpresa: entrada.precoEmpresa,
+    precoConsumidor: entrada.precoConsumidor,
     faixaPropria: null,
   };
   const completo =
-    campos.codigo &&
+    codigos.principalPreenchido &&
     campos.nome &&
     campos.categoriaId != null &&
     numeroValido(campos.valorCompra) &&
-    numeroValido(campos.valorVenda) &&
+    numeroValido(campos.precoEmpresa) &&
+    numeroValido(campos.precoConsumidor) &&
     (!exigirQuantidade || (Number.isInteger(entrada.quantidade) && entrada.quantidade >= 0));
 
   const resultado = { campos };
+  const erros = {};
   if (!completo) resultado.erro = MENSAGENS_ESTOQUE.produtoIncompleto;
+  if (codigos.erros) erros.codigos = codigos.erros;
   if (entrada.faixaPropria) {
     const faixa = validarCriterios(entrada.faixaPropria);
-    if (faixa.erros) resultado.erros = faixa.erros;
+    if (faixa.erros) Object.assign(erros, faixa.erros);
     else campos.faixaPropria = faixa.valores;
   }
+  if (Object.keys(erros).length > 0) resultado.erros = erros;
   return resultado;
 }
 
-/** Lucro = valor de venda − valor de compra. */
-export function calcularLucro(valorVenda, valorCompra) {
-  return arredondar(valorVenda - valorCompra);
+/** Lucro = preço de venda − valor de compra. */
+export function calcularLucro(precoVenda, valorCompra) {
+  return arredondar(precoVenda - valorCompra);
 }
 
 /** Cadastra produto e cria o registro em "Cadastro de Produtos". */
 export function cadastrarProduto(dados, entrada, data) {
-  const { campos, erro, erros } = montarProduto(entrada, true);
+  const { campos, erro, erros } = montarProduto(entrada, true, dados);
   if (erro || erros) return { dados, erro, erros };
 
   const produto = {
@@ -101,7 +144,7 @@ export function cadastrarProduto(dados, entrada, data) {
     nome: produto.nome,
     categoria: nomeCategoria(dados, produto.categoriaId),
     quantidadeInicial: produto.quantidade,
-    valor: produto.valorVenda,
+    valor: produto.precoConsumidor,
     lucro: calcularLucroUnitario(produto),
     data,
   };
@@ -117,7 +160,7 @@ export function cadastrarProduto(dados, entrada, data) {
 
 /** Edita os dados do produto (a quantidade muda só por Entrada, Saída ou venda). */
 export function editarProduto(dados, produtoId, entrada) {
-  const { campos, erro, erros } = montarProduto(entrada, false);
+  const { campos, erro, erros } = montarProduto(entrada, false, dados, produtoId);
   if (erro || erros) return { dados, erro, erros };
   return {
     dados: {
@@ -192,8 +235,14 @@ export function registrarSaida(dados, produtoId, quantidade, justificativa, data
   );
 }
 
-/** Registra a venda e baixa o estoque dos itens vendidos. */
-export function registrarVenda(dados, venda) {
+/** Próximo número de venda (sequencial, sem repetir): o maior já usado mais um. */
+export function proximoNumeroVenda(dados) {
+  return dados.vendas.reduce((maior, venda) => Math.max(maior, venda.numero ?? 0), 0) + 1;
+}
+
+/** Registra a venda, atribui o número sequencial e baixa o estoque dos itens vendidos. */
+export function registrarVenda(dados, vendaSemNumero) {
+  const venda = { ...vendaSemNumero, numero: proximoNumeroVenda(dados) };
   const semEstoque = venda.itens.some((item) => {
     const produto = dados.produtos.find((atual) => atual.id === item.produtoId);
     return !produto || item.quantidade > produto.quantidade;
@@ -222,11 +271,23 @@ export function validarCliente(entrada) {
   return erros;
 }
 
+/** Tipo do cliente: define o preço da venda (empresa/auto elétrica ou consumidor). */
+export const TIPOS_CLIENTE = [
+  { valor: "pessoa-fisica", rotulo: "Pessoa física" },
+  { valor: "empresa", rotulo: "Empresa / auto elétrica" },
+];
+export const TIPO_CLIENTE_PADRAO = "pessoa-fisica";
+
+export function rotuloDoTipoCliente(tipo) {
+  return (TIPOS_CLIENTE.find((atual) => atual.valor === tipo) ?? TIPOS_CLIENTE[0]).rotulo;
+}
+
 export function camposCliente(entrada) {
   return {
     nome: texto(entrada.nome),
     telefone: texto(entrada.telefone),
     descricao: texto(entrada.descricao),
+    tipo: TIPOS_CLIENTE.some((atual) => atual.valor === entrada.tipo) ? entrada.tipo : TIPO_CLIENTE_PADRAO,
   };
 }
 
@@ -246,6 +307,7 @@ export function incluirCliente(dados, cliente, data) {
     nome: cliente.nome,
     telefone: cliente.telefone,
     descricao: cliente.descricao,
+    tipo: cliente.tipo,
     dataCadastro: data,
     data,
   };
@@ -269,7 +331,8 @@ export function editarCliente(dados, clienteId, entrada, data) {
     !ultimo ||
     ultimo.nome !== campos.nome ||
     ultimo.telefone !== campos.telefone ||
-    (ultimo.descricao ?? "") !== campos.descricao;
+    (ultimo.descricao ?? "") !== campos.descricao ||
+    (ultimo.tipo ?? TIPO_CLIENTE_PADRAO) !== campos.tipo;
   const dataCadastro = anteriores.reduce((menor, item) => {
     const atual = item.dataCadastro ?? item.data;
     return atual < menor ? atual : menor;

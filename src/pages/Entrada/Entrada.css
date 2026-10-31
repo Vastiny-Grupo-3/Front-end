@@ -45,6 +45,20 @@
   cursor: pointer;
 }
 
+.produto-formulario__aviso-imagem,
+.produto-formulario__erro-imagem {
+  margin: var(--espaco-8) 0 0;
+  font: var(--texto-corpo-pequeno);
+}
+
+.produto-formulario__aviso-imagem {
+  color: var(--cor-texto-secundario);
+}
+
+.produto-formulario__erro-imagem {
+  color: var(--cor-erro);
+}
+
 .produto-formulario__lucro {
   display: flex;
   align-items: center;

@@ -66,7 +66,7 @@ function vendaDetalhada(venda) {
   const total = arredondar(venda.itens.reduce((soma, item) => soma + item.valorLinha, 0));
   return {
     id: venda.id,
-    titulo: `Transação: ${formatarId(venda.id, ID_CURTO)} · Data da Venda: ${formatarData(venda.data)}`,
+    titulo: `Transação: ${formatarId(venda.numero, ID_CURTO)} · Data da Venda: ${formatarData(venda.data)}`,
     produtos: produtosDaVenda(venda),
     total: formatarMoeda(total),
   };
@@ -88,10 +88,10 @@ export const ABAS_HISTORICO = [
     rotulo: "Vendas",
     cor: "var(--cor-aba-vendas)",
     caminho: "/historico",
-    ordemInicial: "id",
+    ordemInicial: "numero",
     linhas: (dados) => dados.vendas,
     colunas: [
-      ordenavel({ chave: "id", titulo: "Transação", renderizar: (l) => formatarId(l.id, ID_CURTO) }),
+      ordenavel({ chave: "numero", titulo: "Transação", renderizar: (l) => formatarId(l.numero, ID_CURTO) }),
       ordenavel(
         { chave: "cliente", titulo: "Cliente", renderizar: (l) => l.clienteNome ?? SEM_CLIENTE },
         (l) => l.clienteNome ?? SEM_CLIENTE,
@@ -109,11 +109,11 @@ export const ABAS_HISTORICO = [
       }),
       ordenavel({ chave: "data", titulo: "Dt. Venda", renderizar: (l) => formatarData(l.data) }),
     ],
-    identificador: (l) => `Transação ${formatarId(l.id, ID_CURTO)}`,
-    textoPesquisa: (l) => [formatarId(l.id, ID_CURTO), l.clienteNome ?? SEM_CLIENTE].join(" "),
+    identificador: (l) => `Transação ${formatarId(l.numero, ID_CURTO)}`,
+    textoPesquisa: (l) => [formatarId(l.numero, ID_CURTO), l.clienteNome ?? SEM_CLIENTE].join(" "),
     detalhes: (l) => ({
       campos: [
-        ["Transação", formatarId(l.id, ID_CURTO)],
+        ["Transação", formatarId(l.numero, ID_CURTO)],
         ["Cliente", l.clienteNome ?? SEM_CLIENTE],
         ["Valor Total", formatarMoeda(l.valor)],
         ["Lucro", formatarMoeda(l.lucro)],

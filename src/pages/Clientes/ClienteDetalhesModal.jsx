@@ -2,6 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { Paperclip } from "lucide-react";
 import Modal from "../../components/Modal/Modal.jsx";
 import Button from "../../components/Button/Button.jsx";
+import { rotuloDoTipoCliente } from "../../utils/estoque.js";
 import { formatarData, formatarId } from "../../utils/formatadores.js";
 
 /** TL05 — "Detalhes": todas as informações do cliente, com "X", "Fechar" e Esc. */
@@ -44,6 +45,10 @@ export default function ClienteDetalhesModal({ cliente, aoFechar }) {
             <div>
               <dt>Telefone</dt>
               <dd>{cliente.telefone}</dd>
+            </div>
+            <div>
+              <dt>Tipo de cliente</dt>
+              <dd>{rotuloDoTipoCliente(cliente.tipo)}</dd>
             </div>
             <div>
               <dt>Dt. Cadastro</dt>
