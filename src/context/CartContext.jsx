@@ -70,11 +70,19 @@ export function CartProvider({ children }) {
     [lerDados],
   );
 
+  // O cliente do carrinho define o preço do item que entra (empresa ou consumidor).
+  const clienteDoCarrinho = useCallback(
+    (alvo) => lerDados().clientes.find((cliente) => cliente.id === alvo.clienteId) ?? null,
+    [lerDados],
+  );
+
   const acoes = useMemo(
     () => ({
       adicionarProduto: (produtoId) => {
         const produto = produtoPorId(produtoId);
-        return produto ? alterarAtual((atual) => carrinho.adicionarItem(atual, produto)) : { erro: null };
+        return produto
+          ? alterarAtual((atual) => carrinho.adicionarItem(atual, produto, clienteDoCarrinho(atual)))
+          : { erro: null };
       },
       removerProduto: (produtoId) => alterarAtual((atual) => carrinho.removerItem(atual, produtoId)),
       alterarQuantidade: (produtoId, quantidade) =>
@@ -122,7 +130,7 @@ export function CartProvider({ children }) {
         return { venda };
       },
     }),
-    [alterarAtual, guardar, lerDados, produtoPorId, registrarVenda],
+    [alterarAtual, guardar, lerDados, produtoPorId, clienteDoCarrinho, registrarVenda],
   );
 
   const carrinhoAtual = estado.carrinhos.find((item) => item.id === estado.atualId);

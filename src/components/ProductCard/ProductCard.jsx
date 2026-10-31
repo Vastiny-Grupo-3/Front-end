@@ -8,7 +8,7 @@ import "./ProductCard.css";
 /**
  * Card de produto.
  * variante: "catalogo" | "entrada" | "saida"
- * produto: { nome, categoria, imagem, valorVenda, quantidade }
+ * produto: { nome, categoria, imagem, precoConsumidor, quantidade }
  */
 export default function ProductCard({
   produto,
@@ -59,7 +59,7 @@ export default function ProductCard({
       <div className="produto__valores">
         <p className="produto__preco">
           <span className="produto__valor-rotulo">Preço</span>
-          <span className="produto__valor">{formatarMoeda(produto.valorVenda)}</span>
+          <span className="produto__valor">{formatarMoeda(produto.precoConsumidor)}</span>
         </p>
         <p className={`produto__estoque ${semEstoque ? "produto__estoque--vazio" : ""}`.trim()}>
           <span className="produto__valor-rotulo">Estoque</span>

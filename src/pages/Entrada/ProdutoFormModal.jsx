@@ -13,7 +13,8 @@ const VAZIO = {
   nome: "",
   categoriaId: "",
   valorCompra: "",
-  valorVenda: "",
+  precoConsumidor: "",
+  precoEmpresa: "",
   quantidade: "",
 };
 const FAIXA_VAZIA = { bom: "", medio: "", ruim: "", critico: "" };
@@ -57,11 +58,13 @@ export default function ProdutoFormModal({ aberto, produto, aoFechar }) {
     nome: useRef(null),
     categoriaId: useRef(null),
     valorCompra: useRef(null),
-    valorVenda: useRef(null),
+    precoConsumidor: useRef(null),
+    precoEmpresa: useRef(null),
     quantidade: useRef(null),
   };
   const idImagem = `imagem-${useId()}`;
-  const idLucro = `lucro-${useId()}`;
+  const idLucroConsumidor = `lucro-consumidor-${useId()}`;
+  const idLucroEmpresa = `lucro-empresa-${useId()}`;
 
   useEffect(() => {
     if (!aberto) return;
@@ -73,7 +76,8 @@ export default function ProdutoFormModal({ aberto, produto, aoFechar }) {
             nome: produto.nome,
             categoriaId: String(produto.categoriaId),
             valorCompra: formatarDecimal(produto.valorCompra),
-            valorVenda: formatarDecimal(produto.valorVenda),
+            precoConsumidor: formatarDecimal(produto.precoConsumidor),
+            precoEmpresa: formatarDecimal(produto.precoEmpresa),
             quantidade: String(produto.quantidade),
           }
         : VAZIO,
@@ -129,8 +133,10 @@ export default function ProdutoFormModal({ aberto, produto, aoFechar }) {
   }
 
   const compra = paraNumero(valores.valorCompra);
-  const venda = paraNumero(valores.valorVenda);
-  const lucro = compra != null && venda != null ? calcularLucro(venda, compra) : null;
+  const consumidor = paraNumero(valores.precoConsumidor);
+  const empresa = paraNumero(valores.precoEmpresa);
+  const lucroConsumidor = compra != null && consumidor != null ? calcularLucro(consumidor, compra) : null;
+  const lucroEmpresa = compra != null && empresa != null ? calcularLucro(empresa, compra) : null;
 
   function confirmar(evento) {
     evento.preventDefault();
@@ -141,7 +147,8 @@ export default function ProdutoFormModal({ aberto, produto, aoFechar }) {
       nome: valores.nome,
       categoriaId: valores.categoriaId ? Number(valores.categoriaId) : null,
       valorCompra: compra,
-      valorVenda: venda,
+      precoEmpresa: empresa,
+      precoConsumidor: consumidor,
       quantidade,
       faixaPropria: faixaModo === "propria" ? faixa : null,
     };
@@ -157,8 +164,9 @@ export default function ProdutoFormModal({ aberto, produto, aoFechar }) {
           !valores.nome.trim() && "nome",
           entrada.categoriaId == null && "categoriaId",
           (compra == null || compra < 0) && "valorCompra",
-          (venda == null || venda < 0) && "valorVenda",
           !editando && (quantidade == null || !Number.isInteger(quantidade)) && "quantidade",
+          (consumidor == null || consumidor < 0) && "precoConsumidor",
+          (empresa == null || empresa < 0) && "precoEmpresa",
         ].filter(Boolean)
       : [];
     setErro(resultado.erro ?? "");
@@ -284,19 +292,6 @@ export default function ProdutoFormModal({ aberto, produto, aoFechar }) {
             onChange={mudar("valorCompra", /[^\d.,]/g)}
             aria-invalid={invalido("valorCompra")}
           />
-          <TextField
-            ref={refs.valorVenda}
-            rotulo="Valor de Venda"
-            obrigatorio
-            inputMode="decimal"
-            autoComplete="off"
-            placeholder="R$ 0,00"
-            value={valores.valorVenda}
-            onChange={mudar("valorVenda", /[^\d.,]/g)}
-            aria-invalid={invalido("valorVenda")}
-          />
-        </div>
-        <div className="produto-formulario__duas-colunas">
           {!editando && (
             <TextField
               ref={refs.quantidade}
@@ -309,12 +304,46 @@ export default function ProdutoFormModal({ aberto, produto, aoFechar }) {
               aria-invalid={invalido("quantidade")}
             />
           )}
+        </div>
+        <div className="produto-formulario__duas-colunas">
+          <TextField
+            ref={refs.precoConsumidor}
+            rotulo="Valor de Venda — Pessoa Física"
+            obrigatorio
+            inputMode="decimal"
+            autoComplete="off"
+            placeholder="R$ 0,00"
+            value={valores.precoConsumidor}
+            onChange={mudar("precoConsumidor", /[^\d.,]/g)}
+            aria-invalid={invalido("precoConsumidor")}
+          />
+          <TextField
+            ref={refs.precoEmpresa}
+            rotulo="Valor de Venda — Empresa"
+            obrigatorio
+            inputMode="decimal"
+            autoComplete="off"
+            placeholder="R$ 0,00"
+            value={valores.precoEmpresa}
+            onChange={mudar("precoEmpresa", /[^\d.,]/g)}
+            aria-invalid={invalido("precoEmpresa")}
+          />
+        </div>
+        <div className="produto-formulario__duas-colunas">
           <div className="campo">
-            <span id={idLucro} className="campo__rotulo">
-              Lucro
+            <span id={idLucroConsumidor} className="campo__rotulo">
+              Lucro — Pessoa Física
             </span>
-            <output className="produto-formulario__lucro" aria-labelledby={idLucro}>
-              {lucro != null ? formatarMoeda(lucro) : "—"}
+            <output className="produto-formulario__lucro" aria-labelledby={idLucroConsumidor}>
+              {lucroConsumidor != null ? formatarMoeda(lucroConsumidor) : "—"}
+            </output>
+          </div>
+          <div className="campo">
+            <span id={idLucroEmpresa} className="campo__rotulo">
+              Lucro — Empresa
+            </span>
+            <output className="produto-formulario__lucro" aria-labelledby={idLucroEmpresa}>
+              {lucroEmpresa != null ? formatarMoeda(lucroEmpresa) : "—"}
             </output>
           </div>
         </div>

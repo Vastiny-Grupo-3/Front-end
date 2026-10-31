@@ -12,7 +12,7 @@ import { calcularLucroUnitario } from "./carrinho.js";
  */
 
 export const MENSAGENS_ESTOQUE = {
-  produtoIncompleto: "Preencha código, nome, categoria, valor de compra, valor de venda e quantidade.",
+  produtoIncompleto: "Preencha código, nome, categoria, valor de compra, valores de venda e quantidade.",
   codigoEmUso: "Este código já está em uso.",
   quantidadeMaiorQueZero: "Informe uma quantidade maior que zero.",
   quantidadeMaiorQueEstoque: "A quantidade não pode ser maior que o estoque disponível.",
@@ -97,7 +97,8 @@ function montarProduto(entrada, exigirQuantidade, dados, produtoId) {
     categoriaId: entrada.categoriaId,
     imagem: entrada.imagem ?? "",
     valorCompra: entrada.valorCompra,
-    valorVenda: entrada.valorVenda,
+    precoEmpresa: entrada.precoEmpresa,
+    precoConsumidor: entrada.precoConsumidor,
     faixaPropria: null,
   };
   const completo =
@@ -105,7 +106,8 @@ function montarProduto(entrada, exigirQuantidade, dados, produtoId) {
     campos.nome &&
     campos.categoriaId != null &&
     numeroValido(campos.valorCompra) &&
-    numeroValido(campos.valorVenda) &&
+    numeroValido(campos.precoEmpresa) &&
+    numeroValido(campos.precoConsumidor) &&
     (!exigirQuantidade || (Number.isInteger(entrada.quantidade) && entrada.quantidade >= 0));
 
   const resultado = { campos };
@@ -121,9 +123,9 @@ function montarProduto(entrada, exigirQuantidade, dados, produtoId) {
   return resultado;
 }
 
-/** Lucro = valor de venda − valor de compra. */
-export function calcularLucro(valorVenda, valorCompra) {
-  return arredondar(valorVenda - valorCompra);
+/** Lucro = preço de venda − valor de compra. */
+export function calcularLucro(precoVenda, valorCompra) {
+  return arredondar(precoVenda - valorCompra);
 }
 
 /** Cadastra produto e cria o registro em "Cadastro de Produtos". */
@@ -142,7 +144,7 @@ export function cadastrarProduto(dados, entrada, data) {
     nome: produto.nome,
     categoria: nomeCategoria(dados, produto.categoriaId),
     quantidadeInicial: produto.quantidade,
-    valor: produto.valorVenda,
+    valor: produto.precoConsumidor,
     lucro: calcularLucroUnitario(produto),
     data,
   };
@@ -263,11 +265,23 @@ export function validarCliente(entrada) {
   return erros;
 }
 
+/** Tipo do cliente: define o preço da venda (empresa/auto elétrica ou consumidor). */
+export const TIPOS_CLIENTE = [
+  { valor: "pessoa-fisica", rotulo: "Pessoa física" },
+  { valor: "empresa", rotulo: "Empresa / auto elétrica" },
+];
+export const TIPO_CLIENTE_PADRAO = "pessoa-fisica";
+
+export function rotuloDoTipoCliente(tipo) {
+  return (TIPOS_CLIENTE.find((atual) => atual.valor === tipo) ?? TIPOS_CLIENTE[0]).rotulo;
+}
+
 export function camposCliente(entrada) {
   return {
     nome: texto(entrada.nome),
     telefone: texto(entrada.telefone),
     descricao: texto(entrada.descricao),
+    tipo: TIPOS_CLIENTE.some((atual) => atual.valor === entrada.tipo) ? entrada.tipo : TIPO_CLIENTE_PADRAO,
   };
 }
 
@@ -287,6 +301,7 @@ export function incluirCliente(dados, cliente, data) {
     nome: cliente.nome,
     telefone: cliente.telefone,
     descricao: cliente.descricao,
+    tipo: cliente.tipo,
     dataCadastro: data,
     data,
   };
@@ -310,7 +325,8 @@ export function editarCliente(dados, clienteId, entrada, data) {
     !ultimo ||
     ultimo.nome !== campos.nome ||
     ultimo.telefone !== campos.telefone ||
-    (ultimo.descricao ?? "") !== campos.descricao;
+    (ultimo.descricao ?? "") !== campos.descricao ||
+    (ultimo.tipo ?? TIPO_CLIENTE_PADRAO) !== campos.tipo;
   const dataCadastro = anteriores.reduce((menor, item) => {
     const atual = item.dataCadastro ?? item.data;
     return atual < menor ? atual : menor;

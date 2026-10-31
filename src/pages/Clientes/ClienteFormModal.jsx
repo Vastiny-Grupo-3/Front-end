@@ -3,10 +3,12 @@ import Modal from "../../components/Modal/Modal.jsx";
 import Button from "../../components/Button/Button.jsx";
 import TextField from "../../components/TextField/TextField.jsx";
 import TextArea from "../../components/TextArea/TextArea.jsx";
+import SelectField from "../../components/SelectField/SelectField.jsx";
 import { useStock } from "../../context/StockContext.jsx";
+import { TIPOS_CLIENTE, TIPO_CLIENTE_PADRAO } from "../../utils/estoque.js";
 
 const ERRO_SALVAR = "Não conseguimos salvar. Verifique sua conexão e tente novamente.";
-const VAZIO = { nome: "", telefone: "", descricao: "" };
+const VAZIO = { nome: "", telefone: "", tipo: TIPO_CLIENTE_PADRAO, descricao: "" };
 
 /**
  * TL05 — "Cadastrar Novo Cliente" (sem `cliente`) ou "Editar dados do cliente".
@@ -26,7 +28,12 @@ export default function ClienteFormModal({ aberto, cliente, aoFechar }) {
     if (!aberto) return;
     setValores(
       cliente
-        ? { nome: cliente.nome, telefone: cliente.telefone, descricao: cliente.descricao ?? "" }
+        ? {
+            nome: cliente.nome,
+            telefone: cliente.telefone,
+            tipo: cliente.tipo ?? TIPO_CLIENTE_PADRAO,
+            descricao: cliente.descricao ?? "",
+          }
         : VAZIO,
     );
     setErros({});
@@ -100,6 +107,13 @@ export default function ClienteFormModal({ aberto, cliente, aoFechar }) {
           value={valores.telefone}
           onChange={mudar("telefone")}
           erro={erros.telefone}
+        />
+        <SelectField
+          rotulo="Tipo de cliente"
+          obrigatorio
+          value={valores.tipo}
+          onChange={mudar("tipo")}
+          opcoes={TIPOS_CLIENTE.map((tipo) => ({ valor: tipo.valor, rotulo: tipo.rotulo }))}
         />
         <TextArea rotulo="Descrição" value={valores.descricao} onChange={mudar("descricao")} />
       </form>

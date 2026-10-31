@@ -84,8 +84,12 @@ export default function StockMovementModal({ tipo, produto, aoFechar }) {
               <dd>{formatarMoeda(produto.valorCompra)}</dd>
             </div>
             <div>
-              <dt>Valor Venda</dt>
-              <dd>{formatarMoeda(produto.valorVenda)}</dd>
+              <dt>Venda (Pessoa Física)</dt>
+              <dd>{formatarMoeda(produto.precoConsumidor)}</dd>
+            </div>
+            <div>
+              <dt>Venda (Empresa)</dt>
+              <dd>{formatarMoeda(produto.precoEmpresa)}</dd>
             </div>
           </dl>
 
