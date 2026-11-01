@@ -1,0 +1,1046 @@
+{
+  "info": {
+    "name": "Vastiny — Back-end, testes do Dashboard",
+    "description": "Rode em ordem (Runner). Precisa da conta admin do data.sql (emailInicial/senhaInicial) e dos dados de exemplo carregados. A pasta A não depende dos dados; a pasta B usa os valores calculados a partir do data.sql de exemplo (vendas de 22/08 a 25/10/2026).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080"
+    },
+    {
+      "key": "emailInicial",
+      "value": "admin@vastiny.com"
+    },
+    {
+      "key": "senhaInicial",
+      "value": "Vastiny123"
+    },
+    {
+      "key": "token",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "A. Estrutura, erros e períodos",
+      "item": [
+        {
+          "name": "0. Login da conta inicial → 200",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "const corpo = pm.response.json();",
+                  "pm.collectionVariables.set(\"token\", corpo.token);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "auth": {
+              "type": "noauth"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{emailInicial}}\",\n  \"senha\": \"{{senhaInicial}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "1. SEM token → 401",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 401\", () => pm.response.to.have.status(401));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "auth": {
+              "type": "noauth"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/dashboard?inicio=2026-08-01&fim=2026-10-31",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "dashboard"
+              ],
+              "query": [
+                {
+                  "key": "inicio",
+                  "value": "2026-08-01"
+                },
+                {
+                  "key": "fim",
+                  "value": "2026-10-31"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "2. Sem o parâmetro inicio → 400",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 400\", () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/dashboard?fim=2026-10-31",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "dashboard"
+              ],
+              "query": [
+                {
+                  "key": "fim",
+                  "value": "2026-10-31"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "3. Sem o parâmetro fim → 400",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 400\", () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/dashboard?inicio=2026-08-01",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "dashboard"
+              ],
+              "query": [
+                {
+                  "key": "inicio",
+                  "value": "2026-08-01"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "4. Data inválida → 400",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 400\", () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/dashboard?inicio=31-10-2026&fim=2026-10-31",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "dashboard"
+              ],
+              "query": [
+                {
+                  "key": "inicio",
+                  "value": "31-10-2026"
+                },
+                {
+                  "key": "fim",
+                  "value": "2026-10-31"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "5. Estrutura da resposta",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "const corpo = pm.response.json();",
+                  "pm.test(\"Tem kpis, categorias, topProdutos e estoque\", () => [\"kpis\",\"categorias\",\"topProdutos\",\"estoque\"].forEach(c => pm.expect(corpo).to.have.property(c)));",
+                  "pm.test(\"kpis completo\", () => [\"vendasNoPeriodo\",\"faturamento\",\"lucro\",\"precoMedio\"].forEach(c => pm.expect(corpo.kpis, c).to.have.property(c)));",
+                  "pm.test(\"estoque completo\", () => [\"bom\",\"medio\",\"ruim\",\"critico\",\"precisamReposicao\"].forEach(c => pm.expect(corpo.estoque, c).to.have.property(c)));",
+                  "pm.test(\"categorias: no máximo 6, ordenadas do maior faturado para o menor\", () => { pm.expect(corpo.categorias.length).to.be.at.most(6); for (let i = 1; i < corpo.categorias.length; i++) pm.expect(Number(corpo.categorias[i-1].faturado)).to.be.at.least(Number(corpo.categorias[i].faturado)); });",
+                  "pm.test(\"topProdutos: no máximo 10, por quantidade vendida decrescente\", () => { pm.expect(corpo.topProdutos.length).to.be.at.most(10); for (let i = 1; i < corpo.topProdutos.length; i++) pm.expect(corpo.topProdutos[i-1].qtdVendida).to.be.at.least(corpo.topProdutos[i].qtdVendida); });",
+                  "pm.test(\"topProdutos com os campos do contrato\", () => corpo.topProdutos.forEach(t => [\"codigo\",\"nome\",\"categoria\",\"qtdVendida\",\"faturado\",\"lucro\"].forEach(c => pm.expect(t, c).to.have.property(c))));",
+                  "pm.test(\"Lucro nunca maior que o faturamento\", () => pm.expect(Number(corpo.kpis.lucro)).to.be.at.most(Number(corpo.kpis.faturamento)));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/dashboard?inicio=2026-08-01&fim=2026-10-31",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "dashboard"
+              ],
+              "query": [
+                {
+                  "key": "inicio",
+                  "value": "2026-08-01"
+                },
+                {
+                  "key": "fim",
+                  "value": "2026-10-31"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "6. Período sem vendas (2025) → zeros e listas vazias, estoque igual",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "const corpo = pm.response.json();",
+                  "pm.test(\"Tudo zerado\", () => { pm.expect(corpo.kpis.vendasNoPeriodo).to.eql(0); pm.expect(Number(corpo.kpis.faturamento)).to.eql(0); pm.expect(Number(corpo.kpis.lucro)).to.eql(0); pm.expect(Number(corpo.kpis.precoMedio)).to.eql(0); });",
+                  "pm.test(\"Listas vazias\", () => { pm.expect(corpo.categorias).to.eql([]); pm.expect(corpo.topProdutos).to.eql([]); });",
+                  "pm.test(\"O estoque não depende do período\", () => pm.expect(corpo.estoque.bom + corpo.estoque.medio + corpo.estoque.ruim + corpo.estoque.critico).to.be.above(0));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/dashboard?inicio=2025-01-01&fim=2025-01-31",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "dashboard"
+              ],
+              "query": [
+                {
+                  "key": "inicio",
+                  "value": "2025-01-01"
+                },
+                {
+                  "key": "fim",
+                  "value": "2025-01-31"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "7. inicio depois de fim → sem erro e sem vendas",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "const corpo = pm.response.json();",
+                  "pm.test(\"Sem vendas\", () => pm.expect(corpo.kpis.vendasNoPeriodo).to.eql(0));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/dashboard?inicio=2026-10-31&fim=2026-08-01",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "dashboard"
+              ],
+              "query": [
+                {
+                  "key": "inicio",
+                  "value": "2026-10-31"
+                },
+                {
+                  "key": "fim",
+                  "value": "2026-08-01"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "8. Categoria inexistente (999) → 0 vendas, sem erro",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "const corpo = pm.response.json();",
+                  "pm.test(\"Sem vendas\", () => { pm.expect(corpo.kpis.vendasNoPeriodo).to.eql(0); pm.expect(corpo.topProdutos).to.eql([]); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/dashboard?inicio=2026-08-01&fim=2026-10-31&categorias=999",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "dashboard"
+              ],
+              "query": [
+                {
+                  "key": "inicio",
+                  "value": "2026-08-01"
+                },
+                {
+                  "key": "fim",
+                  "value": "2026-10-31"
+                },
+                {
+                  "key": "categorias",
+                  "value": "999"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "B. Valores com os dados de exemplo",
+      "item": [
+        {
+          "name": "9. Todo o período (01/08 a 31/10): totais",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "const corpo = pm.response.json();",
+                  "pm.test(\"Todo o período: vendasNoPeriodo = 63\", () => pm.expect(corpo.kpis.vendasNoPeriodo).to.eql(63));",
+                  "pm.test(\"Todo o período: faturamento = 6320.65\", () => pm.expect(Number(corpo.kpis.faturamento)).to.be.closeTo(6320.65, 0.01));",
+                  "pm.test(\"Todo o período: lucro = 3310.65\", () => pm.expect(Number(corpo.kpis.lucro)).to.be.closeTo(3310.65, 0.01));",
+                  "pm.test(\"Todo o período: precoMedio = 100.33\", () => pm.expect(Number(corpo.kpis.precoMedio)).to.be.closeTo(100.33, 0.01));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/dashboard?inicio=2026-08-01&fim=2026-10-31",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "dashboard"
+              ],
+              "query": [
+                {
+                  "key": "inicio",
+                  "value": "2026-08-01"
+                },
+                {
+                  "key": "fim",
+                  "value": "2026-10-31"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "10. Todo o período: categorias mais vendidas",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "const corpo = pm.response.json();",
+                  "const esperado = [[\"Lâmpadas\",2437.3],[\"Chicotes\",1180.6],[\"Buzinas\",1004.8],[\"Soquetes\",978.45],[\"Acessórios\",719.5]];",
+                  "pm.test(\"Mesmas categorias, na mesma ordem\", () => pm.expect(corpo.categorias.map(c => c.categoria)).to.eql(esperado.map(e => e[0])));",
+                  "pm.test(\"Mesmos valores faturados\", () => corpo.categorias.forEach((c, i) => pm.expect(Number(c.faturado)).to.be.closeTo(esperado[i][1], 0.01)));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/dashboard?inicio=2026-08-01&fim=2026-10-31",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "dashboard"
+              ],
+              "query": [
+                {
+                  "key": "inicio",
+                  "value": "2026-08-01"
+                },
+                {
+                  "key": "fim",
+                  "value": "2026-10-31"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "11. Todo o período: produtos mais vendidos",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "const corpo = pm.response.json();",
+                  "const qtds = [51,41,34,23,21,21,20,16,13,12];",
+                  "pm.test(\"As 10 maiores quantidades vendidas\", () => pm.expect(corpo.topProdutos.map(t => t.qtdVendida)).to.eql(qtds));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/dashboard?inicio=2026-08-01&fim=2026-10-31",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "dashboard"
+              ],
+              "query": [
+                {
+                  "key": "inicio",
+                  "value": "2026-08-01"
+                },
+                {
+                  "key": "fim",
+                  "value": "2026-10-31"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "12. Estoque confere com os dados de exemplo",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "const corpo = pm.response.json();",
+                  "pm.test(\"bom/médio/ruim/crítico = 7/5/4/4\", () => { pm.expect(corpo.estoque.bom).to.eql(7); pm.expect(corpo.estoque.medio).to.eql(5); pm.expect(corpo.estoque.ruim).to.eql(4); pm.expect(corpo.estoque.critico).to.eql(4); });",
+                  "pm.test(\"precisamReposicao = 8\", () => pm.expect(corpo.estoque.precisamReposicao).to.eql(8));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/dashboard?inicio=2026-08-01&fim=2026-10-31",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "dashboard"
+              ],
+              "query": [
+                {
+                  "key": "inicio",
+                  "value": "2026-08-01"
+                },
+                {
+                  "key": "fim",
+                  "value": "2026-10-31"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "13. Só outubro",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "const corpo = pm.response.json();",
+                  "pm.test(\"Outubro: vendasNoPeriodo = 28\", () => pm.expect(corpo.kpis.vendasNoPeriodo).to.eql(28));",
+                  "pm.test(\"Outubro: faturamento = 3107.40\", () => pm.expect(Number(corpo.kpis.faturamento)).to.be.closeTo(3107.4, 0.01));",
+                  "pm.test(\"Outubro: lucro = 1611.90\", () => pm.expect(Number(corpo.kpis.lucro)).to.be.closeTo(1611.9, 0.01));",
+                  "pm.test(\"Outubro: precoMedio = 110.98\", () => pm.expect(Number(corpo.kpis.precoMedio)).to.be.closeTo(110.98, 0.01));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/dashboard?inicio=2026-10-01&fim=2026-10-31",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "dashboard"
+              ],
+              "query": [
+                {
+                  "key": "inicio",
+                  "value": "2026-10-01"
+                },
+                {
+                  "key": "fim",
+                  "value": "2026-10-31"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "14. Um único dia (22/08): inicio = fim inclui o dia inteiro",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "const corpo = pm.response.json();",
+                  "pm.test(\"22/08: vendasNoPeriodo = 1\", () => pm.expect(corpo.kpis.vendasNoPeriodo).to.eql(1));",
+                  "pm.test(\"22/08: faturamento = 22.60\", () => pm.expect(Number(corpo.kpis.faturamento)).to.be.closeTo(22.6, 0.01));",
+                  "pm.test(\"22/08: lucro = 17.80\", () => pm.expect(Number(corpo.kpis.lucro)).to.be.closeTo(17.8, 0.01));",
+                  "pm.test(\"22/08: precoMedio = 22.60\", () => pm.expect(Number(corpo.kpis.precoMedio)).to.be.closeTo(22.6, 0.01));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/dashboard?inicio=2026-08-22&fim=2026-08-22",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "dashboard"
+              ],
+              "query": [
+                {
+                  "key": "inicio",
+                  "value": "2026-08-22"
+                },
+                {
+                  "key": "fim",
+                  "value": "2026-08-22"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "15. Último dia com venda às 16:40 (25/10) entra no período",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "const corpo = pm.response.json();",
+                  "pm.test(\"25/10: vendasNoPeriodo = 1\", () => pm.expect(corpo.kpis.vendasNoPeriodo).to.eql(1));",
+                  "pm.test(\"25/10: faturamento = 89.30\", () => pm.expect(Number(corpo.kpis.faturamento)).to.be.closeTo(89.3, 0.01));",
+                  "pm.test(\"25/10: lucro = 52.50\", () => pm.expect(Number(corpo.kpis.lucro)).to.be.closeTo(52.5, 0.01));",
+                  "pm.test(\"25/10: precoMedio = 89.30\", () => pm.expect(Number(corpo.kpis.precoMedio)).to.be.closeTo(89.3, 0.01));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/dashboard?inicio=2026-10-25&fim=2026-10-25",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "dashboard"
+              ],
+              "query": [
+                {
+                  "key": "inicio",
+                  "value": "2026-10-25"
+                },
+                {
+                  "key": "fim",
+                  "value": "2026-10-25"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "16. Filtro: só a categoria 2 (Soquetes)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "const corpo = pm.response.json();",
+                  "pm.test(\"Categoria 2: vendasNoPeriodo = 34\", () => pm.expect(corpo.kpis.vendasNoPeriodo).to.eql(34));",
+                  "pm.test(\"Categoria 2: faturamento = 978.45\", () => pm.expect(Number(corpo.kpis.faturamento)).to.be.closeTo(978.45, 0.01));",
+                  "pm.test(\"Categoria 2: lucro = 564.75\", () => pm.expect(Number(corpo.kpis.lucro)).to.be.closeTo(564.75, 0.01));",
+                  "pm.test(\"Categoria 2: precoMedio = 28.78\", () => pm.expect(Number(corpo.kpis.precoMedio)).to.be.closeTo(28.78, 0.01));",
+                  "const cods = [\"SQ-003\",\"SQ-001\",\"SQ-004\",\"SQ-002\"];",
+                  "pm.test(\"Todo produto do ranking é da categoria Soquetes\", () => corpo.topProdutos.forEach(t => pm.expect(t.categoria).to.eql(\"Soquetes\")));",
+                  "pm.test(\"O gráfico de categorias continua com todas (o filtro não vale para ele)\", () => pm.expect(corpo.categorias.length).to.be.above(1));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/dashboard?inicio=2026-08-01&fim=2026-10-31&categorias=2",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "dashboard"
+              ],
+              "query": [
+                {
+                  "key": "inicio",
+                  "value": "2026-08-01"
+                },
+                {
+                  "key": "fim",
+                  "value": "2026-10-31"
+                },
+                {
+                  "key": "categorias",
+                  "value": "2"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "17. Filtro: categorias 2 e 3",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "const corpo = pm.response.json();",
+                  "pm.test(\"Categorias 2 e 3: vendasNoPeriodo = 47\", () => pm.expect(corpo.kpis.vendasNoPeriodo).to.eql(47));",
+                  "pm.test(\"Categorias 2 e 3: faturamento = 3415.75\", () => pm.expect(Number(corpo.kpis.faturamento)).to.be.closeTo(3415.75, 0.01));",
+                  "pm.test(\"Categorias 2 e 3: lucro = 1717.55\", () => pm.expect(Number(corpo.kpis.lucro)).to.be.closeTo(1717.55, 0.01));",
+                  "pm.test(\"Categorias 2 e 3: precoMedio = 72.68\", () => pm.expect(Number(corpo.kpis.precoMedio)).to.be.closeTo(72.68, 0.01));",
+                  "pm.test(\"Só Soquetes e Lâmpadas no ranking\", () => corpo.topProdutos.forEach(t => pm.expect([\"Soquetes\",\"Lâmpadas\"]).to.include(t.categoria)));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/dashboard?inicio=2026-08-01&fim=2026-10-31&categorias=2,3",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "dashboard"
+              ],
+              "query": [
+                {
+                  "key": "inicio",
+                  "value": "2026-08-01"
+                },
+                {
+                  "key": "fim",
+                  "value": "2026-10-31"
+                },
+                {
+                  "key": "categorias",
+                  "value": "2,3"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "18. Filtro: o resultado fica entre o filtrado e o total",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "const corpo = pm.response.json();",
+                  "pm.test(\"Menor que o total (6320.65) e maior que só Soquetes (978.45)\", () => { pm.expect(Number(corpo.kpis.faturamento)).to.be.below(6320.65); pm.expect(Number(corpo.kpis.faturamento)).to.be.above(978.45); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/dashboard?inicio=2026-08-01&fim=2026-10-31&categorias=2,3",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "dashboard"
+              ],
+              "query": [
+                {
+                  "key": "inicio",
+                  "value": "2026-08-01"
+                },
+                {
+                  "key": "fim",
+                  "value": "2026-10-31"
+                },
+                {
+                  "key": "categorias",
+                  "value": "2,3"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "19. O estoque não muda com o filtro",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "const corpo = pm.response.json();",
+                  "pm.test(\"Mesmos números do estoque sem filtro\", () => { pm.expect(corpo.estoque.bom).to.eql(7); pm.expect(corpo.estoque.critico).to.eql(4); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/dashboard?inicio=2026-08-01&fim=2026-10-31&categorias=2",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "dashboard"
+              ],
+              "query": [
+                {
+                  "key": "inicio",
+                  "value": "2026-08-01"
+                },
+                {
+                  "key": "fim",
+                  "value": "2026-10-31"
+                },
+                {
+                  "key": "categorias",
+                  "value": "2"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

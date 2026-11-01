@@ -1,0 +1,612 @@
+{
+  "info": {
+    "name": "Vastiny — Back-end, testes da Fase 2 (Produtos)",
+    "description": "Rode em ordem (Runner). Precisa da conta inicial (emailInicial/senhaInicial) e dos dados de exemplo no banco (categorias e produtos). O teste 10 é opcional: preencha produtoInativoId com o id de um produto com ativo = false.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080"
+    },
+    {
+      "key": "emailInicial",
+      "value": "admin@vastiny.com"
+    },
+    {
+      "key": "senhaInicial",
+      "value": "troque-esta-senha1"
+    },
+    {
+      "key": "token",
+      "value": ""
+    },
+    {
+      "key": "categoriasJson",
+      "value": ""
+    },
+    {
+      "key": "produtosJson",
+      "value": ""
+    },
+    {
+      "key": "produtoId",
+      "value": ""
+    },
+    {
+      "key": "produtoInativoId",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "0. Login da conta inicial → 200",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+              "const corpo = pm.response.json();",
+              "pm.collectionVariables.set(\"token\", corpo.token);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "auth": {
+          "type": "noauth"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/auth/login",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "auth",
+            "login"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"{{emailInicial}}\",\n  \"senha\": \"{{senhaInicial}}\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "1. GET /produtos SEM token → 401",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status 401\", () => pm.response.to.have.status(401));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "auth": {
+          "type": "noauth"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/produtos",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "produtos"
+          ]
+        }
+      }
+    },
+    {
+      "name": "2. GET /produtos/1 SEM token → 401",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status 401\", () => pm.response.to.have.status(401));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "auth": {
+          "type": "noauth"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/produtos/1",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "produtos",
+            "1"
+          ]
+        }
+      }
+    },
+    {
+      "name": "3. Guardar as categorias (GET /categorias) → 200",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+              "const corpo = pm.response.json();",
+              "pm.collectionVariables.set(\"categoriasJson\", JSON.stringify(corpo));",
+              "pm.test(\"Há ao menos uma categoria (rode a carga de dados antes)\", () => pm.expect(corpo.length).to.be.above(0));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{baseUrl}}/categorias",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "categorias"
+          ]
+        }
+      }
+    },
+    {
+      "name": "4. GET /produtos → 200, lista de produtos",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+              "const corpo = pm.response.json();",
+              "pm.test(\"É uma lista com produtos (rode a carga de dados antes)\", () => { pm.expect(corpo).to.be.an(\"array\"); pm.expect(corpo.length).to.be.above(0); });",
+              "pm.collectionVariables.set(\"produtosJson\", JSON.stringify(corpo));",
+              "pm.collectionVariables.set(\"produtoId\", corpo[0].id);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{baseUrl}}/produtos",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "produtos"
+          ]
+        }
+      }
+    },
+    {
+      "name": "5. Cada produto tem os campos do contrato",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+              "const corpo = pm.response.json();",
+              "const campos = [\"id\",\"codigos\",\"descricao\",\"categoriaId\",\"imagem\",\"valorCompra\",\"precoEmpresa\",\"precoConsumidor\",\"quantidade\",\"faixaPropria\"];",
+              "pm.test(\"Todos os campos existem em todos os produtos\", () => corpo.forEach(p => campos.forEach(c => pm.expect(p, \"produto \" + p.id + \" sem \" + c).to.have.property(c))));",
+              "pm.test(\"id inteiro e descrição preenchida\", () => corpo.forEach(p => { pm.expect(Number.isInteger(p.id)).to.be.true; pm.expect(p.descricao).to.be.a(\"string\").and.not.empty; }));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{baseUrl}}/produtos",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "produtos"
+          ]
+        }
+      }
+    },
+    {
+      "name": "6. codigos: de 1 a 4 itens, sem null nem vazio, sem repetir",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+              "const corpo = pm.response.json();",
+              "pm.test(\"1 a 4 códigos preenchidos\", () => corpo.forEach(p => { pm.expect(p.codigos, \"produto \" + p.id).to.be.an(\"array\"); pm.expect(p.codigos.length, \"produto \" + p.id).to.be.within(1, 4); p.codigos.forEach(c => pm.expect(c, \"código vazio/nulo no produto \" + p.id).to.be.a(\"string\").and.not.match(/^\\s*$/)); }));",
+              "pm.test(\"Sem código repetido dentro do produto\", () => corpo.forEach(p => pm.expect(new Set(p.codigos).size, \"produto \" + p.id).to.eql(p.codigos.length)));",
+              "pm.test(\"Nenhum código repetido entre produtos diferentes\", () => { const vistos = {}; corpo.forEach(p => p.codigos.forEach(c => { pm.expect(vistos[c], \"código \" + c + \" no produto \" + p.id + \" e no \" + vistos[c]).to.be.undefined; vistos[c] = p.id; })); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{baseUrl}}/produtos",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "produtos"
+          ]
+        }
+      }
+    },
+    {
+      "name": "7. Valores e quantidade válidos",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+              "const corpo = pm.response.json();",
+              "pm.test(\"quantidade é inteiro maior ou igual a 0 (nunca null)\", () => corpo.forEach(p => { pm.expect(Number.isInteger(p.quantidade), \"produto \" + p.id).to.be.true; pm.expect(p.quantidade).to.be.at.least(0); }));",
+              "pm.test(\"Os 3 valores são números maiores ou iguais a 0\", () => corpo.forEach(p => [\"valorCompra\",\"precoEmpresa\",\"precoConsumidor\"].forEach(c => { pm.expect(p[c], c + \" do produto \" + p.id).to.be.a(\"number\"); pm.expect(p[c]).to.be.at.least(0); })));",
+              "pm.test(\"Preço da empresa não é menor que a compra, e o do consumidor não é menor que o da empresa\", () => corpo.forEach(p => { pm.expect(p.precoEmpresa, \"empresa x compra no produto \" + p.id).to.be.at.least(p.valorCompra); pm.expect(p.precoConsumidor, \"consumidor x empresa no produto \" + p.id).to.be.at.least(p.precoEmpresa); }));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{baseUrl}}/produtos",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "produtos"
+          ]
+        }
+      }
+    },
+    {
+      "name": "8. Não devolve estado, faixa nem faixaOrigem; faixaPropria é null",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+              "const corpo = pm.response.json();",
+              "pm.test(\"Sem estado, faixa e faixaOrigem (o site calcula)\", () => corpo.forEach(p => { pm.expect(p).to.not.have.property(\"estado\"); pm.expect(p).to.not.have.property(\"faixa\"); pm.expect(p).to.not.have.property(\"faixaOrigem\"); }));",
+              "pm.test(\"faixaPropria null (ainda não existe faixa própria)\", () => corpo.forEach(p => pm.expect(p.faixaPropria).to.be.null));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{baseUrl}}/produtos",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "produtos"
+          ]
+        }
+      }
+    },
+    {
+      "name": "9. categoriaId aponta para uma categoria que existe",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+              "const corpo = pm.response.json();",
+              "const ids = JSON.parse(pm.collectionVariables.get(\"categoriasJson\")).map(c => c.id);",
+              "pm.test(\"Todo produto tem categoriaId existente\", () => corpo.forEach(p => pm.expect(ids, \"categoria \" + p.categoriaId + \" do produto \" + p.id).to.include(p.categoriaId)));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{baseUrl}}/produtos",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "produtos"
+          ]
+        }
+      }
+    },
+    {
+      "name": "10. Produto inativo não aparece (opcional)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+              "const corpo = pm.response.json();",
+              "const inativo = pm.collectionVariables.get(\"produtoInativoId\");",
+              "if (!inativo) { pm.test(\"Pulado: preencha produtoInativoId (um produto com ativo = false no banco)\", () => pm.expect(true).to.be.true); }",
+              "else { pm.test(\"O inativo \" + inativo + \" não está na lista\", () => pm.expect(corpo.map(p => p.id)).to.not.include(Number(inativo))); }"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{baseUrl}}/produtos",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "produtos"
+          ]
+        }
+      }
+    },
+    {
+      "name": "11. GET /produtos/{id} → 200, igual ao da lista",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+              "const corpo = pm.response.json();",
+              "const daLista = JSON.parse(pm.collectionVariables.get(\"produtosJson\")).find(p => p.id === Number(pm.collectionVariables.get(\"produtoId\")));",
+              "pm.test(\"Mesmo conteúdo que veio na lista\", () => pm.expect(corpo).to.eql(daLista));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{baseUrl}}/produtos/{{produtoId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "produtos",
+            "{{produtoId}}"
+          ]
+        }
+      }
+    },
+    {
+      "name": "12. GET de id inexistente → 404",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status 404\", () => pm.response.to.have.status(404));",
+              "const corpo = pm.response.json();",
+              "pm.test(\"Mensagem em erro\", () => pm.expect(corpo.erro).to.be.a(\"string\").and.not.empty);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{baseUrl}}/produtos/999999",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "produtos",
+            "999999"
+          ]
+        }
+      }
+    },
+    {
+      "name": "13. Contagem por nível confere com o dashboard",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+              "const corpo = pm.response.json();",
+              "const categorias = JSON.parse(pm.collectionVariables.get(\"categoriasJson\"));",
+              "const produtos = JSON.parse(pm.collectionVariables.get(\"produtosJson\"));",
+              "const faixa = id => categorias.find(c => c.id === id).criterios;",
+              "const niveis = { bom: 0, medio: 0, ruim: 0, critico: 0 };",
+              "produtos.forEach(p => { const f = faixa(p.categoriaId); const q = p.quantidade; if (q >= f.bom) niveis.bom++; else if (q >= f.medio) niveis.medio++; else if (q >= f.ruim) niveis.ruim++; else niveis.critico++; });",
+              "pm.test(\"estoque.bom/medio/ruim/critico batem com o cálculo da lista de produtos\", () => { pm.expect(corpo.estoque.bom, \"bom\").to.eql(niveis.bom); pm.expect(corpo.estoque.medio, \"medio\").to.eql(niveis.medio); pm.expect(corpo.estoque.ruim, \"ruim\").to.eql(niveis.ruim); pm.expect(corpo.estoque.critico, \"critico\").to.eql(niveis.critico); });",
+              "pm.test(\"precisamReposicao = ruim + critico\", () => pm.expect(corpo.estoque.precisamReposicao).to.eql(niveis.ruim + niveis.critico));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{baseUrl}}/dashboard?inicio=2000-01-01&fim=2100-12-31",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "dashboard"
+          ],
+          "query": [
+            {
+              "key": "inicio",
+              "value": "2000-01-01"
+            },
+            {
+              "key": "fim",
+              "value": "2100-12-31"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}
