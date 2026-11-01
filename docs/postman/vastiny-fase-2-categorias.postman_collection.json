@@ -1,0 +1,1402 @@
+{
+  "info": {
+    "name": "Vastiny — Back-end, testes da Fase 2 (Categorias)",
+    "description": "Rode a coleção em ordem (Runner). Precisa da conta inicial (emailInicial e senhaInicial). O teste 23 é opcional: para rodá-lo, crie um produto no banco em uma categoria e preencha categoriaComProdutoId nas variáveis; sem isso ele é pulado.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080"
+    },
+    {
+      "key": "emailInicial",
+      "value": "admin@vastiny.com"
+    },
+    {
+      "key": "senhaInicial",
+      "value": "troque-esta-senha1"
+    },
+    {
+      "key": "token",
+      "value": ""
+    },
+    {
+      "key": "categoriaId",
+      "value": ""
+    },
+    {
+      "key": "categoriaIguaisId",
+      "value": ""
+    },
+    {
+      "key": "categoriaComProdutoId",
+      "value": ""
+    },
+    {
+      "key": "nomeCategoria",
+      "value": ""
+    },
+    {
+      "key": "nomeIguais",
+      "value": ""
+    },
+    {
+      "key": "nomeMaiusculo",
+      "value": ""
+    },
+    {
+      "key": "nomeComEspacos",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "0. Login da conta inicial → 200",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+              "const corpo = pm.response.json();",
+              "pm.collectionVariables.set(\"token\", corpo.token);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "auth": {
+          "type": "noauth"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/auth/login",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "auth",
+            "login"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"{{emailInicial}}\",\n  \"senha\": \"{{senhaInicial}}\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "1. GET /categorias SEM token → 401",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status 401\", () => pm.response.to.have.status(401));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "auth": {
+          "type": "noauth"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/categorias",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "categorias"
+          ]
+        }
+      }
+    },
+    {
+      "name": "2. Criar categoria válida → 201 (faixas na ordem certa)",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.collectionVariables.set(\"nomeCategoria\", \"Lâmpadas \" + Date.now());"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status 201\", () => pm.response.to.have.status(201));",
+              "const corpo = pm.response.json();",
+              "pm.test(\"id e nome\", () => { pm.expect(corpo.id).to.exist; pm.expect(corpo.nome).to.eql(pm.collectionVariables.get(\"nomeCategoria\")); });",
+              "pm.test(\"Faixas gravadas na ordem certa\", () => pm.expect(corpo.criterios).to.eql({ bom: 15, medio: 10, ruim: 5, critico: 0 }));",
+              "pm.collectionVariables.set(\"categoriaId\", corpo.id);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{baseUrl}}/categorias",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "categorias"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nome\": \"{{nomeCategoria}}\",\n  \"criterios\": {\n    \"bom\": 15,\n    \"medio\": 10,\n    \"ruim\": 5,\n    \"critico\": 0\n  }\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "3. GET /categorias/{id} → 200",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+              "const corpo = pm.response.json();",
+              "pm.test(\"Mesma categoria\", () => pm.expect(corpo.id).to.eql(Number(pm.collectionVariables.get(\"categoriaId\"))));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{baseUrl}}/categorias/{{categoriaId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "categorias",
+            "{{categoriaId}}"
+          ]
+        }
+      }
+    },
+    {
+      "name": "4. GET /categorias lista a nova → 200",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+              "const corpo = pm.response.json();",
+              "pm.test(\"É uma lista com a categoria criada\", () => pm.expect(corpo.some(c => c.id === Number(pm.collectionVariables.get(\"categoriaId\")))).to.be.true);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{baseUrl}}/categorias",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "categorias"
+          ]
+        }
+      }
+    },
+    {
+      "name": "5. Mesmo nome em MAIÚSCULAS → 409 com erros.nome",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.collectionVariables.set(\"nomeMaiusculo\", pm.collectionVariables.get(\"nomeCategoria\").toUpperCase());"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status 409\", () => pm.response.to.have.status(409));",
+              "const corpo = pm.response.json();",
+              "pm.test('erros[\"nome\"] preenchido', () => pm.expect(corpo.erros[\"nome\"]).to.be.a(\"string\").and.not.empty);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{baseUrl}}/categorias",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "categorias"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nome\": \"{{nomeMaiusculo}}\",\n  \"criterios\": {\n    \"bom\": 15,\n    \"medio\": 10,\n    \"ruim\": 5,\n    \"critico\": 0\n  }\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "6. Mesmo nome com espaços nas pontas → 409 (trim)",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.collectionVariables.set(\"nomeComEspacos\", \"  \" + pm.collectionVariables.get(\"nomeCategoria\") + \"  \");"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status 409\", () => pm.response.to.have.status(409));",
+              "const corpo = pm.response.json();",
+              "pm.test('erros[\"nome\"] preenchido', () => pm.expect(corpo.erros[\"nome\"]).to.be.a(\"string\").and.not.empty);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{baseUrl}}/categorias",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "categorias"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nome\": \"{{nomeComEspacos}}\",\n  \"criterios\": {\n    \"bom\": 15,\n    \"medio\": 10,\n    \"ruim\": 5,\n    \"critico\": 0\n  }\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "7. Bom menor que Médio → 400 em criterios.bom",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status 400\", () => pm.response.to.have.status(400));",
+              "const corpo = pm.response.json();",
+              "pm.test('erros[\"criterios.bom\"] preenchido', () => pm.expect(corpo.erros[\"criterios.bom\"]).to.be.a(\"string\").and.not.empty);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{baseUrl}}/categorias",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "categorias"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nome\": \"Faixa errada 1\",\n  \"criterios\": {\n    \"bom\": 3,\n    \"medio\": 10,\n    \"ruim\": 5,\n    \"critico\": 0\n  }\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "8. Médio menor que Ruim → 400 em criterios.medio",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status 400\", () => pm.response.to.have.status(400));",
+              "const corpo = pm.response.json();",
+              "pm.test('erros[\"criterios.medio\"] preenchido', () => pm.expect(corpo.erros[\"criterios.medio\"]).to.be.a(\"string\").and.not.empty);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{baseUrl}}/categorias",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "categorias"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nome\": \"Faixa errada 2\",\n  \"criterios\": {\n    \"bom\": 15,\n    \"medio\": 4,\n    \"ruim\": 5,\n    \"critico\": 0\n  }\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "9. Ruim menor que Crítico → 400 em criterios.ruim",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status 400\", () => pm.response.to.have.status(400));",
+              "const corpo = pm.response.json();",
+              "pm.test('erros[\"criterios.ruim\"] preenchido', () => pm.expect(corpo.erros[\"criterios.ruim\"]).to.be.a(\"string\").and.not.empty);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{baseUrl}}/categorias",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "categorias"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nome\": \"Faixa errada 3\",\n  \"criterios\": {\n    \"bom\": 15,\n    \"medio\": 10,\n    \"ruim\": 1,\n    \"critico\": 2\n  }\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "10. Faixas iguais são permitidas → 201",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.collectionVariables.set(\"nomeIguais\", \"Faixas iguais \" + Date.now());"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status 201\", () => pm.response.to.have.status(201));",
+              "const corpo = pm.response.json();",
+              "pm.collectionVariables.set(\"categoriaIguaisId\", corpo.id);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{baseUrl}}/categorias",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "categorias"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nome\": \"{{nomeIguais}}\",\n  \"criterios\": {\n    \"bom\": 5,\n    \"medio\": 5,\n    \"ruim\": 5,\n    \"critico\": 5\n  }\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "11. Sem o campo criterios → 400 (não pode ser 500)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status 400\", () => pm.response.to.have.status(400));",
+              "const corpo = pm.response.json();",
+              "pm.test('erros[\"criterios\"] preenchido', () => pm.expect(corpo.erros[\"criterios\"]).to.be.a(\"string\").and.not.empty);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{baseUrl}}/categorias",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "categorias"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nome\": \"Sem critérios\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "12. Nível negativo → 400 em criterios.critico",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status 400\", () => pm.response.to.have.status(400));",
+              "const corpo = pm.response.json();",
+              "pm.test('erros[\"criterios.critico\"] preenchido', () => pm.expect(corpo.erros[\"criterios.critico\"]).to.be.a(\"string\").and.not.empty);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{baseUrl}}/categorias",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "categorias"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nome\": \"Negativa\",\n  \"criterios\": {\n    \"bom\": 15,\n    \"medio\": 10,\n    \"ruim\": 5,\n    \"critico\": -1\n  }\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "13. Nível ausente → 400 em criterios.critico",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status 400\", () => pm.response.to.have.status(400));",
+              "const corpo = pm.response.json();",
+              "pm.test('erros[\"criterios.critico\"] preenchido', () => pm.expect(corpo.erros[\"criterios.critico\"]).to.be.a(\"string\").and.not.empty);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{baseUrl}}/categorias",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "categorias"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nome\": \"Sem nível\",\n  \"criterios\": {\n    \"bom\": 15,\n    \"medio\": 10,\n    \"ruim\": 5\n  }\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "14. Nome vazio → 400 em nome",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status 400\", () => pm.response.to.have.status(400));",
+              "const corpo = pm.response.json();",
+              "pm.test('erros[\"nome\"] preenchido', () => pm.expect(corpo.erros[\"nome\"]).to.be.a(\"string\").and.not.empty);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{baseUrl}}/categorias",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "categorias"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nome\": \"   \",\n  \"criterios\": {\n    \"bom\": 15,\n    \"medio\": 10,\n    \"ruim\": 5,\n    \"critico\": 0\n  }\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "15. Nível com texto → 400",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status 400\", () => pm.response.to.have.status(400));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{baseUrl}}/categorias",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "categorias"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{ \"nome\": \"Texto\", \"criterios\": { \"bom\": \"muito\", \"medio\": 10, \"ruim\": 5, \"critico\": 0 } }",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "16. PUT mudando só a faixa → 200",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+              "const corpo = pm.response.json();",
+              "pm.test(\"Faixa nova\", () => pm.expect(corpo.criterios).to.eql({ bom: 20, medio: 12, ruim: 6, critico: 1 }));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{baseUrl}}/categorias/{{categoriaId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "categorias",
+            "{{categoriaId}}"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nome\": \"{{nomeCategoria}}\",\n  \"criterios\": {\n    \"bom\": 20,\n    \"medio\": 12,\n    \"ruim\": 6,\n    \"critico\": 1\n  }\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "17. PUT com o próprio nome, sem mudar nada → 200 (não 409)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status 200\", () => pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{baseUrl}}/categorias/{{categoriaId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "categorias",
+            "{{categoriaId}}"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nome\": \"{{nomeCategoria}}\",\n  \"criterios\": {\n    \"bom\": 20,\n    \"medio\": 12,\n    \"ruim\": 6,\n    \"critico\": 1\n  }\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "18. PUT com o nome de OUTRA categoria → 409",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status 409\", () => pm.response.to.have.status(409));",
+              "const corpo = pm.response.json();",
+              "pm.test('erros[\"nome\"] preenchido', () => pm.expect(corpo.erros[\"nome\"]).to.be.a(\"string\").and.not.empty);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{baseUrl}}/categorias/{{categoriaId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "categorias",
+            "{{categoriaId}}"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nome\": \"{{nomeIguais}}\",\n  \"criterios\": {\n    \"bom\": 15,\n    \"medio\": 10,\n    \"ruim\": 5,\n    \"critico\": 0\n  }\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "19. PUT com faixa inválida → 400",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status 400\", () => pm.response.to.have.status(400));",
+              "const corpo = pm.response.json();",
+              "pm.test('erros[\"criterios.bom\"] preenchido', () => pm.expect(corpo.erros[\"criterios.bom\"]).to.be.a(\"string\").and.not.empty);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{baseUrl}}/categorias/{{categoriaId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "categorias",
+            "{{categoriaId}}"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nome\": \"{{nomeCategoria}}\",\n  \"criterios\": {\n    \"bom\": 1,\n    \"medio\": 10,\n    \"ruim\": 5,\n    \"critico\": 0\n  }\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "20. PUT de id inexistente → 404",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status 404\", () => pm.response.to.have.status(404));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{baseUrl}}/categorias/999999",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "categorias",
+            "999999"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nome\": \"Fantasma\",\n  \"criterios\": {\n    \"bom\": 15,\n    \"medio\": 10,\n    \"ruim\": 5,\n    \"critico\": 0\n  }\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "21. PUT de id inexistente com faixa inválida → 404 (não 400)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status 404\", () => pm.response.to.have.status(404));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{baseUrl}}/categorias/999999",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "categorias",
+            "999999"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nome\": \"Fantasma\",\n  \"criterios\": {\n    \"bom\": 1,\n    \"medio\": 10,\n    \"ruim\": 5,\n    \"critico\": 0\n  }\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "22. GET de id inexistente → 404",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status 404\", () => pm.response.to.have.status(404));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{baseUrl}}/categorias/999999",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "categorias",
+            "999999"
+          ]
+        }
+      }
+    },
+    {
+      "name": "23. DELETE de categoria COM produtos → 409 (opcional)",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "if (!pm.collectionVariables.get(\"categoriaComProdutoId\")) { pm.execution.skipRequest(); }"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status 409\", () => pm.response.to.have.status(409));",
+              "const corpo = pm.response.json();",
+              "pm.test('erros[\"categoria\"] preenchido', () => pm.expect(corpo.erros[\"categoria\"]).to.be.a(\"string\").and.not.empty);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{baseUrl}}/categorias/{{categoriaComProdutoId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "categorias",
+            "{{categoriaComProdutoId}}"
+          ]
+        }
+      }
+    },
+    {
+      "name": "24. DELETE de categoria sem produtos → 204",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status 204\", () => pm.response.to.have.status(204));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{baseUrl}}/categorias/{{categoriaId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "categorias",
+            "{{categoriaId}}"
+          ]
+        }
+      }
+    },
+    {
+      "name": "25. DELETE da mesma categoria de novo → 404",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status 404\", () => pm.response.to.have.status(404));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{baseUrl}}/categorias/{{categoriaId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "categorias",
+            "{{categoriaId}}"
+          ]
+        }
+      }
+    },
+    {
+      "name": "26. DELETE da categoria de faixas iguais → 204 (limpeza)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status 204\", () => pm.response.to.have.status(204));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{baseUrl}}/categorias/{{categoriaIguaisId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "categorias",
+            "{{categoriaIguaisId}}"
+          ]
+        }
+      }
+    }
+  ]
+}

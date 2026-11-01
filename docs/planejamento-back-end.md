@@ -46,7 +46,7 @@ Regras: `nome` único sem diferenciar maiúsculas; faixas inteiras com `bom ≥ 
 
 | Campo atual | Campo novo | Observação |
 | --- | --- | --- |
-| `descricao` | `nome` | renomear |
+| `descricao` | `descricao` | fica como está: é o nome completo do produto (o `nome` do site vem dela; não existe coluna `nome`) |
 | `codigo1` a `codigo4` | iguais | `codigo1` obrigatório; os 4 únicos; sem repetir entre si |
 | `foto` | `foto` | passa a guardar o endereço relativo (`/uploads/produtos/<uuid>.jpg`) |
 | `qtdEstoque` | iguais | nunca negativa |
@@ -73,7 +73,7 @@ Formato do produto (entrada e saída):
 {
   "id": 7,
   "codigos": ["SQ-H7", "H7-UNIV"],
-  "nome": "Soquete Lâmpada H7",
+  "descricao": "Soquete Lâmpada H7",
   "categoriaId": 3,
   "imagem": "/uploads/produtos/3f2a....jpg",
   "valorCompra": 6.00,
