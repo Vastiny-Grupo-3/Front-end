@@ -1,5 +1,5 @@
 import { API_URL, modoApi } from "./config.js";
-import { requisicao } from "./http.js";
+import { api } from "./http.js";
 
 /*
  * Imagem do produto. No modo API o arquivo vai para o servidor (`POST /imagens`, multipart) e o
@@ -27,7 +27,7 @@ export function validarImagem(arquivo) {
 export async function enviarImagem(arquivo) {
   const dados = new FormData();
   dados.append("arquivo", arquivo);
-  const resposta = await requisicao("/imagens", { metodo: "POST", corpo: dados });
+  const { data: resposta } = await api.post("/imagens", dados);
   if (typeof resposta?.url !== "string" || !resposta.url) throw new Error("Resposta sem o endereço da imagem.");
   return resposta.url;
 }

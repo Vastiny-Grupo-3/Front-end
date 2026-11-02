@@ -3,7 +3,7 @@
 Documento para quem implementa o back-end (repositório `Back-end`, Spring Boot). O front já está pronto para falar com a API deste contrato; o que não existir no back continua funcionando com dados de exemplo (mocks).
 
 - **Modo mock (padrão):** sem a variável `VITE_API_URL`, o site usa os dados de `src/data/` e as contas de `src/data/contas.js`.
-- **Modo API:** com `VITE_API_URL` (veja `.env.example`), o login, as contas e os clientes passam a usar a API. Produtos, categorias, vendas, estoque e histórico continuam nos mocks até existirem as rotas.
+- **Modo API:** com `VITE_API_URL` (veja `.env.example`), o login, as contas, os clientes, as categorias e a lista de produtos passam a usar a API. Vendas, estoque e histórico não têm rotas no back ainda: no modo API o histórico começa vazio e cadastrar produto, entrada, saída e venda funcionam só em memória (somem ao recarregar).
 
 ## O que foi validado no back-end atual
 
@@ -89,7 +89,54 @@ O site já envia `descricao`. Se o back ainda não a guardar, o site a mantém s
 
 `tipo` é `PESSOA_FISICA` ou `EMPRESA` (empresa ou auto elétrica) e **define o preço da venda**: cliente `EMPRESA` paga `precoEmpresa` do produto; cliente `PESSOA_FISICA` ou venda sem cliente paga `precoConsumidor`. Se o `tipo` não vier, assumir `PESSOA_FISICA`.
 
-Os demais contratos (categorias, produtos, estoque, vendas, histórico, imagens) estão em `docs/planejamento-back-end.md`.
+### Categorias (ligadas no site)
+
+| Rota | Corpo | Resposta |
+| --- | --- | --- |
+| `GET /categorias` | | `200 [ { id, nome, criterios: { bom, medio, ruim, critico } } ]` |
+| `POST /categorias` | `{ nome, criterios }` | `201` com a categoria |
+| `PUT /categorias/{id}` | `{ nome, criterios }` | `200` com a categoria |
+| `DELETE /categorias/{id}` | | `204`; `409 { erros: { categoria } }` se houver produtos |
+
+`nome` é único sem diferenciar maiúsculas (`409 { erros: { nome } }`). A faixa tem de ser `bom ≥ medio ≥ ruim ≥ critico ≥ 0`; os erros por campo vêm como `criterios.bom`, `criterios.medio` e `criterios.ruim`, e o site os mostra no campo `bom`, `medio` ou `ruim`. O site valida nome repetido e faixa antes de enviar.
+
+### Produtos (ligados no site, somente leitura)
+
+`GET /produtos` devolve só os produtos ativos, por ordem de `descricao`:
+
+```json
+{
+  "id": 1,
+  "codigos": ["SQ-001"],
+  "descricao": "Soquete Lâmpada H7",
+  "categoriaId": 2,
+  "imagem": null,
+  "valorCompra": 6.50,
+  "precoEmpresa": 10.10,
+  "precoConsumidor": 12.50,
+  "quantidade": 50,
+  "faixaPropria": null
+}
+```
+
+O site mostra `descricao` como o nome do produto. O estado (Bom, Médio, Ruim, Crítico) e a faixa efetiva (a própria, se existir, senão a da categoria) o site calcula; a API não os devolve. `GET /produtos/{id}` existe no back, mas o site ainda não o usa.
+
+### Dashboard
+
+`GET /dashboard?inicio=aaaa-mm-dd&fim=aaaa-mm-dd[&categorias=1,2]`, com `inicio` e `fim` inclusivos (o site manda os ids separados por vírgula):
+
+```json
+{
+  "kpis": { "vendasNoPeriodo": 63, "faturamento": 6320.65, "lucro": 3310.65, "precoMedio": 100.33 },
+  "categorias": [ { "categoria": "Lâmpadas", "faturado": 2437.30 } ],
+  "topProdutos": [ { "codigo": "SQ-003", "nome": "Soquete Pingo T10 Universal", "categoria": "Soquetes", "qtdVendida": 51, "faturado": 288.15, "lucro": 226.95 } ],
+  "estoque": { "bom": 7, "medio": 5, "ruim": 4, "critico": 4, "precisamReposicao": 8 }
+}
+```
+
+`categorias` (opcional, lista de ids) filtra `kpis` e `topProdutos`; a lista `categorias` (até 6, por faturamento) e o `estoque` não usam o filtro. O site calcula os contadores e a tabela da aba Estoque com `GET /produtos` e `GET /categorias`, e não usa o campo `estoque`.
+
+Os demais contratos (estoque, vendas, histórico, imagens) estão em `docs/planejamento-back-end.md`.
 
 ### Erros
 
@@ -104,7 +151,8 @@ Os demais contratos (categorias, produtos, estoque, vendas, histórico, imagens)
 
 - **Descrição e histórico de alterações do cliente:** a descrição é enviada, mas não volta enquanto o back não a guardar. A aba "Alteração de Clientes" precisa de uma tabela de versões (`cliente_versao`, em `docs/modelagem-dados.md`); no modo API ela começa vazia.
 - **"Esqueceu sua senha?":** hoje o site gera o código no próprio navegador, o que não é seguro com back real. No modo API o link some. Para ligar, o back precisa de `POST /auth/esqueci-senha` (envia código ou link por e-mail) e `POST /auth/redefinir-senha` (valida o código no servidor e troca a senha).
-- **Compras do cliente:** vendas, produtos, categorias, estoque e histórico seguem nos mocks. A coluna "Qtd. Compras" dos clientes da API fica zerada até existirem vendas na API.
+- **Compras do cliente:** vendas, estoque e histórico não existem na API. A coluna "Qtd. Compras" dos clientes da API fica zerada até existirem vendas na API.
+- **Cadastro de produto e imagem:** `POST/PUT/DELETE /produtos` e `POST /imagens` ainda não existem no back. No modo API, cadastrar ou editar produto, entrada, saída e venda funcionam só em memória, e enviar uma imagem nova falha.
 
 ## Roteiro de teste do back (curl)
 

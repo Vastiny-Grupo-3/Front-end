@@ -444,7 +444,8 @@ export function validarCriterios(entrada) {
   return { valores };
 }
 
-function montarCategoria(dados, entrada, idIgnorado) {
+/** Valida nome e faixa de uma categoria. Retorna { nome, criterios } ou { erros }. */
+export function montarCategoria(dados, entrada, idIgnorado) {
   const erros = {};
   const erroNome = validarNomeCategoria(dados, entrada?.nome, idIgnorado);
   if (erroNome) erros.nome = erroNome;

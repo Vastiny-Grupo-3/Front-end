@@ -3,6 +3,9 @@ import { dadosIniciais } from "../data/index.js";
 import { useAuth } from "./AuthContext.jsx";
 import { modoApi } from "../services/config.js";
 import * as clientesApi from "../services/clientes.js";
+import * as categoriasApi from "../services/categorias.js";
+import * as produtosApi from "../services/produtos.js";
+import { ErroApi } from "../services/http.js";
 import * as estoque from "../utils/estoque.js";
 import { hojeIso } from "../utils/formatadores.js";
 
@@ -11,10 +14,11 @@ import { hojeIso } from "../utils/formatadores.js";
  * para todas as contas. Mock em memória: recarregar a página volta aos dados
  * iniciais de src/data/.
  *
- * No modo API (VITE_API_URL) os clientes vêm da API: a lista começa vazia e é
- * carregada ao entrar, e cadastrar, editar e excluir passam a ser assíncronos.
- * O resto continua nos mocks. As vendas de exemplo perdem o vínculo com o cliente
- * (ids de exemplo não existem na API) mas mantêm o nome dele.
+ * No modo API (VITE_API_URL) clientes, categorias e produtos vêm da API: as listas começam
+ * vazias e são carregadas ao entrar; cadastrar, editar e excluir clientes e categorias passam a
+ * ser assíncronos. Produtos são só de leitura: cadastrar, entrada, saída e venda funcionam em
+ * memória e somem ao recarregar, porque o back ainda não tem essas rotas. As vendas e os
+ * históricos de exemplo não existem no modo API (os ids deles não são os do banco).
  *
  * Cada ação devolve o resultado da função pura: { erro?, erros?, registro? }.
  */
@@ -23,18 +27,33 @@ const StockContext = createContext(null);
 
 const dadosDoModo = modoApi
   ? {
-      ...dadosIniciais,
+      categorias: [],
+      produtos: [],
       clientes: [],
+      vendas: [],
+      entradas: [],
+      saidas: [],
+      cadastrosProdutos: [],
       cadastrosClientes: [],
-      vendas: dadosIniciais.vendas.map((venda) => ({ ...venda, clienteId: null })),
     }
   : dadosIniciais;
+
+/** Erro de uma chamada de categoria → { erros } do formulário; falhas de rede e do servidor são lançadas. */
+function resultadoDeErroDeCategoria(erro) {
+  if (erro instanceof ErroApi && ["validacao", "conflito"].includes(erro.tipo)) {
+    const erros = categoriasApi.errosDosCampos(erro);
+    if (Object.keys(erros).length > 0) return { erros };
+  }
+  throw erro;
+}
 
 export function StockProvider({ children }) {
   const { usuario } = useAuth();
   const [dados, setDados] = useState(dadosDoModo);
   const dadosRef = useRef(dadosDoModo);
   const [statusClientes, setStatusClientes] = useState(modoApi ? "carregando" : "pronto");
+  // Categorias e produtos: "carregando" | "pronto" | "erro". Com os mocks é sempre "pronto".
+  const [status, setStatus] = useState(modoApi ? "carregando" : "pronto");
 
   // Aplica uma função pura sobre os dados mais recentes e guarda o resultado.
   const aplicar = useCallback((operacao) => {
@@ -67,10 +86,29 @@ export function StockProvider({ children }) {
     }
   }, []);
 
+  // Carrega categorias e produtos da API (a faixa e o estado dos produtos o site calcula).
+  const carregarCadastros = useCallback(async () => {
+    if (!modoApi) return;
+    setStatus("carregando");
+    try {
+      const [categorias, produtos] = await Promise.all([
+        categoriasApi.listarCategorias(),
+        produtosApi.listarProdutos(),
+      ]);
+      dadosRef.current = { ...dadosRef.current, categorias, produtos };
+      setDados(dadosRef.current);
+      setStatus("pronto");
+    } catch {
+      setStatus("erro");
+    }
+  }, []);
+
   const idDaConta = usuario?.id ?? null;
   useEffect(() => {
-    if (idDaConta != null) carregarClientes();
-  }, [idDaConta, carregarClientes]);
+    if (idDaConta == null) return;
+    carregarClientes();
+    carregarCadastros();
+  }, [idDaConta, carregarClientes, carregarCadastros]);
 
   // Clientes pela API: validam no site, chamam a API e só então atualizam a lista.
   // Falhas de rede ou do servidor são lançadas (a tela mostra a mensagem de erro ao salvar).
@@ -103,6 +141,47 @@ export function StockProvider({ children }) {
     [aplicar],
   );
 
+  // Categorias pela API: validam no site (nome repetido e faixa), chamam a API e só então atualizam a lista.
+  const acoesCategoriasApi = useMemo(
+    () => ({
+      criarCategoria: async (entrada) => {
+        const montado = estoque.montarCategoria(dadosRef.current, entrada);
+        if (montado.erros) return { erros: montado.erros };
+        try {
+          const salva = await categoriasApi.criarCategoria(montado);
+          return aplicar((d) => ({ dados: { ...d, categorias: [...d.categorias, salva] }, registro: salva }));
+        } catch (erro) {
+          return resultadoDeErroDeCategoria(erro);
+        }
+      },
+      editarCategoria: async (id, entrada) => {
+        const montado = estoque.montarCategoria(dadosRef.current, entrada, id);
+        if (montado.erros) return { erros: montado.erros };
+        try {
+          const salva = await categoriasApi.atualizarCategoria(id, montado);
+          return aplicar((d) => ({
+            dados: { ...d, categorias: d.categorias.map((categoria) => (categoria.id === id ? salva : categoria)) },
+          }));
+        } catch (erro) {
+          return resultadoDeErroDeCategoria(erro);
+        }
+      },
+      // Categoria com produtos (409): devolve a mensagem do servidor em `erro`.
+      excluirCategoria: async (id) => {
+        try {
+          await categoriasApi.excluirCategoria(id);
+        } catch (erro) {
+          if (erro instanceof ErroApi && erro.tipo === "conflito") {
+            return { erro: erro.erros.categoria ?? estoque.MENSAGENS_ESTOQUE.categoriaComProdutos(estoque.contarProdutosDaCategoria(dadosRef.current, id)) };
+          }
+          throw erro;
+        }
+        return aplicar((d) => ({ dados: { ...d, categorias: d.categorias.filter((categoria) => categoria.id !== id) } }));
+      },
+    }),
+    [aplicar],
+  );
+
   const acoes = useMemo(
     () => ({
       cadastrarProduto: (entrada) => aplicar((d) => estoque.cadastrarProduto(d, entrada, hojeIso())),
@@ -119,18 +198,16 @@ export function StockProvider({ children }) {
       criarCategoria: (entrada) => aplicar((d) => estoque.criarCategoria(d, entrada)),
       editarCategoria: (id, entrada) => aplicar((d) => estoque.editarCategoria(d, id, entrada)),
       excluirCategoria: (id) => aplicar((d) => estoque.excluirCategoria(d, id)),
-      ...(modoApi ? acoesClientesApi : {}),
+      ...(modoApi ? { ...acoesClientesApi, ...acoesCategoriasApi } : {}),
     }),
-    [aplicar, acoesClientesApi],
+    [aplicar, acoesClientesApi, acoesCategoriasApi],
   );
 
   // Leitura dos dados mais recentes (útil para quem precisa calcular antes de agir).
   const lerDados = useCallback(() => dadosRef.current, []);
 
-  // Situação do carregamento: "carregando" | "pronto" | "erro". Com os mocks é sempre "pronto";
-  // o back-end vai alimentar este valor e `recarregar` ("Tentar novamente").
-  const [status] = useState("pronto");
-  const recarregar = useCallback(() => {}, []);
+  // `status` e `recarregar` ("Tentar novamente") são da carga de categorias e produtos.
+  const recarregar = carregarCadastros;
 
   // Os produtos chegam às telas com a faixa efetiva e o estado já calculados; por isso o
   // estado se atualiza sozinho após venda, entrada, saída ou edição de faixa.

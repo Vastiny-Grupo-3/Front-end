@@ -18,9 +18,9 @@ Sistema web de controle de estoque e vendas para auto elétricas.
 ## Stack
 
 - React 19.2.7, JavaScript (sem TypeScript) e CSS puro.
-- Dependências permitidas: `react-router-dom` e `lucide-react`. Não adicionar outras sem perguntar.
+- Dependências permitidas: `react-router-dom`, `lucide-react` e `axios`. Não adicionar outras sem perguntar.
 - Gráficos do Dashboard: SVG/CSS próprios, sem biblioteca.
-- Chamadas à API com `fetch` nativo (sem axios ou outra biblioteca). O modo API liga com `VITE_API_URL`; sem ela o site usa os mocks. O token JWT fica no `sessionStorage` e vai em `Authorization: Bearer`.
+- Chamadas à API com `axios`, sempre pela instância `api` de `src/services/http.js` (ela envia o token e traduz as falhas em `ErroApi`); nenhum serviço chama `fetch` nem cria outra instância. O modo API liga com `VITE_API_URL`; sem ela o site usa os mocks. O token JWT fica no `sessionStorage` e vai em `Authorization: Bearer`.
 - O back-end (repositório `Back-end`) é feito sem IA, por exigência da faculdade: não alterar esse repositório; o que ele precisa fica em `docs/contrato-api.md`.
 
 ## Comandos

@@ -1,4 +1,4 @@
-import { requisicao } from "./http.js";
+import { api } from "./http.js";
 
 /*
  * Clientes pela API (docs/contrato-api.md). A descrição só volta se o back-end a
@@ -20,18 +20,20 @@ function dosDados(cliente) {
 }
 
 export async function listarClientes() {
-  const lista = await requisicao("/clientes");
+  const { data: lista } = await api.get("/clientes");
   return Array.isArray(lista) ? lista.map(dosDados) : [];
 }
 
 export async function criarCliente(campos) {
-  return dosDados(await requisicao("/clientes", { metodo: "POST", corpo: { ...campos, tipo: tipoParaApi(campos.tipo) } }));
+  const { data } = await api.post("/clientes", { ...campos, tipo: tipoParaApi(campos.tipo) });
+  return dosDados(data);
 }
 
 export async function atualizarCliente(id, campos) {
-  return dosDados(await requisicao(`/clientes/${id}`, { metodo: "PUT", corpo: { ...campos, tipo: tipoParaApi(campos.tipo) } }));
+  const { data } = await api.put(`/clientes/${id}`, { ...campos, tipo: tipoParaApi(campos.tipo) });
+  return dosDados(data);
 }
 
 export async function excluirCliente(id) {
-  await requisicao(`/clientes/${id}`, { metodo: "DELETE" });
+  await api.delete(`/clientes/${id}`);
 }
