@@ -11,6 +11,8 @@ import { useToast } from "../../context/ToastContext.jsx";
 import { CAMPOS_FAIXA, MENSAGENS_ESTOQUE, contarProdutosDaCategoria, textoCriterios } from "../../utils/estoque.js";
 
 const CRITERIOS_VAZIOS = { bom: "", medio: "", ruim: "", critico: "" };
+const ERRO_SALVAR = "Não conseguimos salvar. Verifique sua conexão e tente novamente.";
+const ERRO_EXCLUIR = "Não conseguimos excluir. Verifique sua conexão e tente novamente.";
 
 /** "Nova categoria" / "Editar categoria", com os mínimos de Bom, Médio, Ruim e Crítico. */
 function CategoriaFormModal({ aberto, categoria, aoFechar }) {
@@ -19,10 +21,13 @@ function CategoriaFormModal({ aberto, categoria, aoFechar }) {
   const [nome, setNome] = useState("");
   const [criterios, setCriterios] = useState(CRITERIOS_VAZIOS);
   const [erros, setErros] = useState({});
+  const [erroGeral, setErroGeral] = useState("");
+  const [enviando, setEnviando] = useState(false);
   const nomeRef = useRef(null);
 
   useEffect(() => {
     if (!aberto) return;
+    setErroGeral("");
     setNome(categoria?.nome ?? "");
     setCriterios(
       categoria?.criterios
@@ -42,10 +47,21 @@ function CategoriaFormModal({ aberto, categoria, aoFechar }) {
     setErros((atual) => ({ ...atual, [chave]: "" }));
   }
 
-  function salvar(evento) {
+  async function salvar(evento) {
     evento.preventDefault();
+    if (enviando) return;
+    setEnviando(true);
+    setErroGeral("");
     const entrada = { nome, ...criterios };
-    const resultado = categoria ? editarCategoria(categoria.id, entrada) : criarCategoria(entrada);
+    let resultado;
+    try {
+      resultado = await (categoria ? editarCategoria(categoria.id, entrada) : criarCategoria(entrada));
+    } catch {
+      setEnviando(false);
+      setErroGeral(ERRO_SALVAR);
+      return;
+    }
+    setEnviando(false);
     if (resultado.erros || resultado.erro) {
       const mapa = resultado.erros ?? { nome: resultado.erro };
       setErros(mapa);
@@ -64,12 +80,13 @@ function CategoriaFormModal({ aberto, categoria, aoFechar }) {
       aoFechar={aoFechar}
       titulo={categoria ? "Editar categoria" : "Nova categoria"}
       tamanho="medio"
+      erro={erroGeral}
       rodape={
         <>
           <Button variante="secundario" onClick={aoFechar}>
             Cancelar
           </Button>
-          <Button type="submit" form="formulario-categoria">
+          <Button type="submit" form="formulario-categoria" carregando={enviando}>
             Salvar
           </Button>
         </>
@@ -121,15 +138,33 @@ export default function Categorias() {
   const { mostrarToast } = useToast();
   // modal: { tipo: "nova" | "editar" | "excluir", categoria? } | null
   const [modal, setModal] = useState(null);
+  const [erroExclusao, setErroExclusao] = useState("");
+  const [excluindo, setExcluindo] = useState(false);
   const listaRef = useRef(null);
-  const fechar = () => setModal(null);
+  const fechar = () => {
+    setModal(null);
+    setErroExclusao("");
+  };
 
   const associados = modal?.tipo === "excluir" ? contarProdutosDaCategoria(stock, modal.categoria.id) : 0;
 
-  function confirmarExclusao() {
-    const resultado = excluirCategoria(modal.categoria.id);
-    if (resultado.erro) return;
-    setModal(null);
+  async function confirmarExclusao() {
+    setExcluindo(true);
+    setErroExclusao("");
+    let resultado;
+    try {
+      resultado = await excluirCategoria(modal.categoria.id);
+    } catch {
+      setExcluindo(false);
+      setErroExclusao(ERRO_EXCLUIR);
+      return;
+    }
+    setExcluindo(false);
+    if (resultado.erro) {
+      setErroExclusao(resultado.erro);
+      return;
+    }
+    fechar();
     mostrarToast({ variante: "sucesso", mensagem: "Categoria excluída." });
   }
 
@@ -203,6 +238,8 @@ export default function Categorias() {
         titulo={`Tem certeza que deseja excluir a categoria '${modal?.categoria?.nome ?? ""}'?`}
         destrutivo
         confirmarDesabilitado={associados > 0}
+        carregando={excluindo}
+        erro={erroExclusao}
         focoAoFechar={listaRef}
       >
         {associados > 0 && (
