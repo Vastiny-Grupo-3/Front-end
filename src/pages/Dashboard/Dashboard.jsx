@@ -24,6 +24,8 @@ import PeriodoModal from "./PeriodoModal.jsx";
 import CategoriaModal from "./CategoriaModal.jsx";
 import EstoqueFiltroModal from "./EstoqueFiltroModal.jsx";
 import { useStock } from "../../context/StockContext.jsx";
+import { modoApi } from "../../services/config.js";
+import { useDashboardApi } from "./useDashboardApi.js";
 import {
   ESTADOS_ESTOQUE,
   MAXIMO_PRODUTOS,
@@ -34,6 +36,7 @@ import {
   gravidadeDoEstado,
   niveisDeEstoque,
   periodoPadrao,
+  periodoPadraoApi,
   resumoEstoque,
   produtosMaisVendidos,
   textoDiasFiltrados,
@@ -44,6 +47,13 @@ import "./Dashboard.css";
 
 const ERRO = "Não conseguimos carregar as informações. Verifique sua conexão e tente novamente.";
 const TITULO_PRODUTOS = `Top ${MAXIMO_PRODUTOS} Produtos mais Vendidos`;
+
+/** Vendas do modo API enquanto a resposta não chega: o estado "carregando" cobre a tela. */
+const SEM_DADOS_DA_API = {
+  indicadores: { vendas: 0, faturamento: 0, lucro: 0, precoMedio: null, produtosAtivos: 0 },
+  barras: [],
+  maisVendidos: [],
+};
 
 const ABAS = [
   { id: "vendas", rotulo: "Vendas", cor: "var(--cor-aba-vendas)" },
@@ -68,19 +78,35 @@ function Painel({ id, titulo, acao, children, className = "" }) {
 export default function Dashboard() {
   const stock = useStock();
   const { vendas, produtos, categorias, status, recarregar } = stock;
-  const [periodo, setPeriodo] = useState(() => periodoPadrao(vendas, hojeIso()));
-  const todas = () => categorias.map((categoria) => categoria.id);
-  const [categoriaIds, setCategoriaIds] = useState(todas);
-  const [categoriaEstoqueIds, setCategoriaEstoqueIds] = useState(todas);
+  const [periodo, setPeriodo] = useState(() =>
+    modoApi ? periodoPadraoApi(hojeIso()) : periodoPadrao(vendas, hojeIso()),
+  );
+  // `null` = todas as categorias (no modo API a lista só chega depois da carga).
+  const [selecaoCategorias, setCategoriaIds] = useState(null);
+  const [selecaoEstoque, setCategoriaEstoqueIds] = useState(null);
   const [estadoEstoque, setEstadoEstoque] = useState(ESTADOS_ESTOQUE);
   const [aba, setAba] = useState("vendas");
   const [modal, setModal] = useState(null); // "periodo" | "categoria" | "estoque" | null
 
   const todasIds = categorias.map((categoria) => categoria.id);
-  const indicadores = calcularIndicadores({ vendas, produtos, ...periodo, categoriaIds });
-  const vendasNoPeriodo = calcularIndicadores({ vendas, produtos, ...periodo, categoriaIds: todasIds }).vendas;
-  const barras = categoriasMaisVendidas({ vendas, categorias, ...periodo, categoriaIds: todasIds });
-  const maisVendidos = produtosMaisVendidos({ vendas, ...periodo, categoriaIds });
+  const categoriaIds = selecaoCategorias ?? todasIds;
+  const categoriaEstoqueIds = selecaoEstoque ?? todasIds;
+
+  // Vendas: dos dados de exemplo (cálculo local) ou da API. Estoque: sempre dos produtos e categorias do contexto.
+  const api = useDashboardApi({ ativo: modoApi && status === "pronto", periodo, categoriaIds, categorias, produtos });
+  const { indicadores, barras, maisVendidos } = modoApi
+    ? (api.dados ?? SEM_DADOS_DA_API)
+    : {
+        indicadores: calcularIndicadores({ vendas, produtos, ...periodo, categoriaIds }),
+        barras: categoriasMaisVendidas({ vendas, categorias, ...periodo, categoriaIds: todasIds }),
+        maisVendidos: produtosMaisVendidos({ vendas, ...periodo, categoriaIds }),
+      };
+  const vendasNoPeriodo = modoApi
+    ? barras.length
+    : calcularIndicadores({ vendas, produtos, ...periodo, categoriaIds: todasIds }).vendas;
+  const statusVendas =
+    modoApi && status === "pronto" ? api.status : status;
+  const recarregarVendas = modoApi && status === "pronto" ? api.recarregar : recarregar;
   const produtosEstoque = useMemo(
     () =>
       produtos.filter(
@@ -92,8 +118,10 @@ export default function Dashboard() {
   const estoque = useMemo(() => niveisDeEstoque(produtos), [produtos]);
   const estoqueResumo = useMemo(() => resumoEstoque(produtos), [produtos]);
 
-  const carregando = status === "carregando";
-  const comErro = status === "erro";
+  const carregando = statusVendas === "carregando";
+  const comErro = statusVendas === "erro";
+  const carregandoEstoque = status === "carregando";
+  const comErroEstoque = status === "erro";
   const semVendas = indicadores.vendas === 0;
   const semVendasNoPeriodo = vendasNoPeriodo === 0;
   const todasCategorias = categoriaIds.length === categorias.length;
@@ -101,7 +129,7 @@ export default function Dashboard() {
   const todosEstados = estadoEstoque.length === ESTADOS_ESTOQUE.length;
 
   function escolherCategoria(id) {
-    setCategoriaIds((atual) => (atual.length === 1 && atual[0] === id ? todasIds : [id]));
+    setCategoriaIds(categoriaIds.length === 1 && categoriaIds[0] === id ? null : [id]);
     document.getElementById("painel-produtos")?.closest("section")?.scrollIntoView({
       behavior: "smooth",
       block: "nearest",
@@ -128,6 +156,7 @@ export default function Dashboard() {
   }
 
   const estadoIndicador = carregando ? "carregando" : comErro ? "erro" : "padrao";
+  const estadoIndicadorEstoque = carregandoEstoque ? "carregando" : comErroEstoque ? "erro" : "padrao";
   const textoPeriodo = `${textoDiasFiltrados(diasNoPeriodo(periodo.inicio, periodo.fim))}: ${formatarData(periodo.inicio)} a ${formatarData(periodo.fim)}`;
 
   function conteudoVendas(conteudo, { vazio = semVendas } = {}) {
@@ -135,7 +164,7 @@ export default function Dashboard() {
     if (comErro) {
       return (
         <EmptyState mensagem={ERRO}>
-          <Button variante="secundario" onClick={recarregar}>
+          <Button variante="secundario" onClick={recarregarVendas}>
             Tentar novamente
           </Button>
         </EmptyState>
@@ -334,25 +363,25 @@ export default function Dashboard() {
                 rotulo="Produtos ativos"
                 valor={estoque.total}
                 icone={Package}
-                estado={estadoIndicador}
+                estado={estadoIndicadorEstoque}
               />
               <StatCard
                 rotulo="Precisam de reposição"
                 valor={estoqueResumo.reposicao}
                 icone={AlertTriangle}
-                estado={estadoIndicador}
+                estado={estadoIndicadorEstoque}
               />
               <StatCard
                 rotulo="Custo em estoque"
                 valor={formatarMoeda(estoqueResumo.custo)}
                 icone={Wallet}
-                estado={estadoIndicador}
+                estado={estadoIndicadorEstoque}
               />
             </div>
 
             <div className="dashboard__linha">
               <Painel id="painel-niveis" className="dashboard__painel--centro" titulo="Níveis de Estoque Atual">
-                {carregando ? (
+                {carregandoEstoque ? (
                   <span className="esqueleto dashboard__esqueleto" aria-hidden="true" />
                 ) : (
                   <DonutChart
@@ -383,7 +412,7 @@ export default function Dashboard() {
                   legenda="Estoque"
                   colunas={colunasEstoque}
                   linhas={produtosEstoque}
-                  estado={carregando || comErro ? status : "padrao"}
+                  estado={carregandoEstoque || comErroEstoque ? status : "padrao"}
                   aoTentarNovamente={recarregar}
                   mensagemVazio={
                     todoEstoque && todosEstados

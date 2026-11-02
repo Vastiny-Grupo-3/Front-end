@@ -123,7 +123,7 @@ O site mostra `descricao` como o nome do produto. O estado (Bom, Médio, Ruim, C
 
 ### Dashboard
 
-`GET /dashboard?inicio=aaaa-mm-dd&fim=aaaa-mm-dd[&categorias=1&categorias=2]`, com `inicio` e `fim` inclusivos:
+`GET /dashboard?inicio=aaaa-mm-dd&fim=aaaa-mm-dd[&categorias=1,2]`, com `inicio` e `fim` inclusivos (o site manda os ids separados por vírgula):
 
 ```json
 {

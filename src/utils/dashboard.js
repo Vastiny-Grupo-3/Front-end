@@ -46,6 +46,62 @@ export function periodoPadrao(vendas, hoje) {
   return { inicio: primeira, fim: hoje };
 }
 
+/** Período padrão no modo API (não há lista de vendas para achar a primeira): os últimos 90 dias até hoje. */
+export function periodoPadraoApi(hoje) {
+  const inicio = new Date(paraData(hoje) - 89 * UM_DIA).toISOString().slice(0, 10);
+  return { inicio, fim: hoje };
+}
+
+/**
+ * Resposta de `GET /dashboard` no formato dos cálculos locais acima:
+ * { indicadores, barras, maisVendidos }. A API manda a categoria só pelo nome e o produto só pelo
+ * código; o id, a cor, a imagem e a categoria do produto vêm das listas que o site já carregou.
+ * As barras não usam o filtro de categorias, então `barras` vazio quer dizer "sem vendas no período".
+ */
+export function dashboardDaApi(resposta, { categorias, produtos, categoriaIds }) {
+  const kpis = resposta?.kpis ?? {};
+  const vendas = Number(kpis.vendasNoPeriodo ?? 0);
+
+  const barras = (resposta?.categorias ?? []).map((item) => {
+    const posicao = categorias.findIndex((categoria) => categoria.nome === item.categoria);
+    return {
+      id: categorias[posicao]?.id ?? item.categoria,
+      nome: item.categoria,
+      valor: arredondar(Number(item.faturado ?? 0)),
+      indiceCor: (Math.max(posicao, 0) % 6) + 1,
+    };
+  });
+
+  const maisVendidos = (resposta?.topProdutos ?? []).map((item) => {
+    const produto =
+      produtos.find((candidato) => candidato.codigos[0] === item.codigo) ??
+      produtos.find((candidato) => candidato.codigos.includes(item.codigo));
+    return {
+      id: produto?.id ?? item.codigo,
+      nome: item.nome,
+      codigo: item.codigo,
+      imagem: produto?.imagem ?? "",
+      categoriaId: produto?.categoriaId ?? null,
+      categoria: item.categoria,
+      quantidade: Number(item.qtdVendida ?? 0),
+      faturado: arredondar(Number(item.faturado ?? 0)),
+      lucro: arredondar(Number(item.lucro ?? 0)),
+    };
+  });
+
+  return {
+    indicadores: {
+      vendas,
+      faturamento: arredondar(Number(kpis.faturamento ?? 0)),
+      lucro: arredondar(Number(kpis.lucro ?? 0)),
+      precoMedio: vendas > 0 ? arredondar(Number(kpis.precoMedio ?? 0)) : null,
+      produtosAtivos: produtos.filter((produto) => categoriaIds.includes(produto.categoriaId)).length,
+    },
+    barras,
+    maisVendidos,
+  };
+}
+
 /** Itens vendidos no período, só das categorias selecionadas, com a data da venda. */
 function itensDoPeriodo(vendas, { inicio, fim, categoriaIds }) {
   return vendas
