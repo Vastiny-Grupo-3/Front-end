@@ -1,6 +1,7 @@
 /*
  * Modo de funcionamento do site. Sem VITE_API_URL ele usa os dados de exemplo
- * (src/data/); com ela, login, contas e clientes usam a API (docs/contrato-api.md).
+ * (src/data/); com ela, login, contas e clientes usam a API (docs/contrato-api.md), por axios
+ * (instância `api`, em ./http.js).
  */
 export const API_URL = String(import.meta.env?.VITE_API_URL ?? "").trim().replace(/\/+$/, "");
 

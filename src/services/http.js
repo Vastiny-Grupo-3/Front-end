@@ -1,10 +1,18 @@
+import axios from "axios";
 import { API_URL } from "./config.js";
 import { lerToken, limparSessao } from "./sessao.js";
 
 /*
- * Cliente HTTP do modo API (fetch nativo). Envia o JWT em `Authorization: Bearer`
- * e traduz as falhas em ErroApi, com `tipo` (conexao, nao-autorizado, validacao,
- * conflito, nao-encontrado ou servidor) e `erros` por campo quando a API manda.
+ * Cliente HTTP do modo API (axios). Envia o JWT em `Authorization: Bearer` e traduz as
+ * falhas em ErroApi, com `tipo` (conexao, nao-autorizado, validacao, conflito,
+ * nao-encontrado ou servidor) e `erros` por campo quando a API manda.
+ *
+ * Os serviços usam a instância `api`: api.get(caminho), api.post(caminho, corpo),
+ * api.put(caminho, corpo) e api.delete(caminho), e leem `.data` da resposta. Um corpo
+ * FormData (envio de arquivo) vai como está, o axios acrescenta o separador do multipart.
+ * `{ autenticado: false }` no config é para o login: um 401 ali é "credenciais inválidas",
+ * não sessão vencida. Uma chamada cancelada (AbortController) lança o cancelamento do axios,
+ * que quem cancelou reconhece com `axios.isCancel`.
  */
 
 export class ErroApi extends Error {
@@ -32,46 +40,43 @@ function tipoDoStatus(status) {
   return "servidor";
 }
 
-/**
- * requisicao("/clientes", { metodo, corpo, autenticado })
- * `corpo` é enviado como JSON; um FormData (envio de arquivo) vai como está, sem `Content-Type`,
- * para o navegador acrescentar o separador do multipart. Devolve o JSON da resposta (ou null quando não há corpo). `autenticado: false`
- * é para o login: um 401 ali é "credenciais inválidas", não sessão vencida.
- */
-export async function requisicao(caminho, { metodo = "GET", corpo, autenticado = true } = {}) {
-  const cabecalhos = { Accept: "application/json" };
-  const formulario = typeof FormData !== "undefined" && corpo instanceof FormData;
-  if (corpo !== undefined && !formulario) cabecalhos["Content-Type"] = "application/json";
-  const token = autenticado ? lerToken() : null;
-  if (token) cabecalhos.Authorization = `Bearer ${token}`;
+export const api = axios.create({
+  baseURL: API_URL,
+  timeout: 15000,
+  headers: { Accept: "application/json" },
+});
 
-  let resposta;
-  try {
-    resposta = await fetch(`${API_URL}${caminho}`, {
-      method: metodo,
-      headers: cabecalhos,
-      body: corpo === undefined ? undefined : formulario ? corpo : JSON.stringify(corpo),
-    });
-  } catch {
-    throw new ErroApi("conexao");
+api.interceptors.request.use((config) => {
+  if (config.autenticado !== false) {
+    const token = lerToken();
+    if (token) config.headers.Authorization = `Bearer ${token}`;
   }
+  return config;
+});
 
-  let dados = null;
-  try {
-    dados = resposta.status === 204 ? null : await resposta.json();
-  } catch {
-    dados = null;
-  }
-  if (resposta.ok) return dados;
+api.interceptors.response.use(
+  (resposta) => {
+    if (resposta.status === 204) resposta.data = null;
+    return resposta;
+  },
+  (erro) => {
+    if (axios.isCancel(erro) || erro instanceof ErroApi) return Promise.reject(erro);
 
-  const tipo = tipoDoStatus(resposta.status);
-  if (tipo === "nao-autorizado" && autenticado) {
-    limparSessao();
-    quemOuveExpiracao.forEach((aoExpirar) => aoExpirar());
-  }
-  throw new ErroApi(tipo, {
-    status: resposta.status,
-    erros: dados?.erros && typeof dados.erros === "object" ? dados.erros : {},
-    mensagem: typeof dados?.erro === "string" ? dados.erro : "",
-  });
-}
+    const resposta = erro.response;
+    if (!resposta) return Promise.reject(new ErroApi("conexao"));
+
+    const tipo = tipoDoStatus(resposta.status);
+    if (tipo === "nao-autorizado" && erro.config?.autenticado !== false) {
+      limparSessao();
+      quemOuveExpiracao.forEach((aoExpirar) => aoExpirar());
+    }
+    const dados = resposta.data;
+    return Promise.reject(
+      new ErroApi(tipo, {
+        status: resposta.status,
+        erros: dados?.erros && typeof dados.erros === "object" ? dados.erros : {},
+        mensagem: typeof dados?.erro === "string" ? dados.erro : "",
+      }),
+    );
+  },
+);

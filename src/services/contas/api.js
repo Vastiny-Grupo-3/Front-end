@@ -1,4 +1,4 @@
-import { ErroApi, requisicao } from "../http.js";
+import { ErroApi, api } from "../http.js";
 import { gravarSessao, lerSessao, limparSessao } from "../sessao.js";
 import { MENSAGENS_CONTA, emailValido, senhaValida } from "../../utils/contas.js";
 
@@ -26,11 +26,11 @@ export const servicoApi = {
   /** Resolve com { ok: true, usuario } ou { ok: false, motivo: "credenciais" | "conexao" }. */
   async entrar(email, senha) {
     try {
-      const dados = await requisicao("/auth/login", {
-        metodo: "POST",
-        corpo: { email: texto(email), senha },
-        autenticado: false,
-      });
+      const { data: dados } = await api.post(
+        "/auth/login",
+        { email: texto(email), senha },
+        { autenticado: false },
+      );
       if (!dados?.token || !dados.usuario) return { ok: false, motivo: "conexao" };
       gravarSessao({ token: dados.token, usuario: dados.usuario });
       return { ok: true, usuario: dados.usuario };
@@ -53,7 +53,7 @@ export const servicoApi = {
     if (Object.keys(erros).length > 0) return { erros };
 
     try {
-      await requisicao("/usuarios", { metodo: "POST", corpo: { nome: texto(nome), email: texto(email), senha } });
+      await api.post("/usuarios", { nome: texto(nome), email: texto(email), senha });
       return {};
     } catch (erro) {
       return falha(erro);
@@ -73,7 +73,7 @@ export const servicoApi = {
     try {
       const corpo = { nome: texto(nome), email: texto(email) };
       if (novaSenha) Object.assign(corpo, { senhaAtual, novaSenha });
-      const usuario = await requisicao("/usuarios/me", { metodo: "PUT", corpo });
+      const { data: usuario } = await api.put("/usuarios/me", corpo);
       const sessao = lerSessao();
       if (sessao && usuario) gravarSessao({ token: sessao.token, usuario });
       return { usuario: usuario ?? sessao?.usuario };
@@ -85,7 +85,7 @@ export const servicoApi = {
   async excluirConta(senhaAtual) {
     if (!senhaAtual) return { erro: MENSAGENS_CONTA.senhaAtual };
     try {
-      await requisicao("/usuarios/me", { metodo: "DELETE", corpo: { senhaAtual } });
+      await api.delete("/usuarios/me", { data: { senhaAtual } });
       limparSessao();
       return {};
     } catch (erro) {
